@@ -15,6 +15,8 @@ DROP TABLE IF EXISTS pieces_moves;
 CREATE TABLE pieces_moves (
     piece_id int(11) NOT NULL,
     move_id int(11) NOT NULL,
+    phase int NOT NULL,
+    game_year DATE,
     PRIMARY KEY (piece_id, move_id),
     CONSTRAINT Constr_Pieces_Moves_Piece_id_fk
         FOREIGN KEY Piece_id_fk (piece_id) REFERENCES pieces (id),
