@@ -21,7 +21,7 @@ type engine struct {
 }
 
 func (e *engine) Create(ctx context.Context, p *model.Game) (int64, error) {
-	query := "Insert games SET title=?"
+	query := "Insert games SET title=?, game_year=?"
 
 	stmt, err := e.Conn.PrepareContext(ctx, query)
 	fmt.Printf("err %+v \n", err)
@@ -29,7 +29,7 @@ func (e *engine) Create(ctx context.Context, p *model.Game) (int64, error) {
 		return -1, err
 	}
 
-	res, err := stmt.ExecContext(ctx, p.Title)
+	res, err := stmt.ExecContext(ctx, p.Title, "1901-04-01")
 	defer stmt.Close()
 
 	if err != nil {
