@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS users_games;
 CREATE TABLE users_games (
     user_id int(11) NOT NULL,
     game_id int(11) NOT NULL,
+    country char(11) NOT NULL,
     PRIMARY KEY (user_id, game_id),
     CONSTRAINT Constr_Users_Games_User_id_fk
         FOREIGN KEY User_id_fk (user_id) REFERENCES users (id),
