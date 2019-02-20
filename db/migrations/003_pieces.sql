@@ -5,7 +5,7 @@ CREATE TABLE pieces (
   id int(11) NOT NULL AUTO_INCREMENT,
   game_id int(11) NOT NULL,
   owner_id int(11) NOT NULL,
-  type char(5) NOT NULL,
+  type int(5) NOT NULL,
   location VARCHAR(10) CHARACTER SET utf8 NOT NULL,
   PRIMARY KEY (id)
 );
