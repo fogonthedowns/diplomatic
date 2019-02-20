@@ -1,4 +1,5 @@
 USE diplomacy;
+DROP TABLE IF EXISTS users_games;
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
   id int(11) NOT NULL AUTO_INCREMENT,
@@ -8,15 +9,13 @@ CREATE TABLE users (
   PRIMARY KEY (id)
 );
 
-
-CREATE TABLE usersgames (
-    user int(11) NOT NULL,
-    game int(11) NOT NULL,
-    PRIMARY KEY (user, game),
-    CONSTRAINT Constr_UsersGames_User_fk
-        FOREIGN KEY User_fk (user) REFERENCES users (id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT Constr_UserGames_Game_fk
-        FOREIGN KEY Game_fk (game) REFERENCES games (id)
-        ON DELETE CASCADE ON UPDATE CASCADE
+DROP TABLE IF EXISTS users_games;
+CREATE TABLE users_games (
+    user_id int(11) NOT NULL,
+    game_id int(11) NOT NULL,
+    PRIMARY KEY (user_id, game_id),
+    CONSTRAINT Constr_Users_Games_User_id_fk
+        FOREIGN KEY User_id_fk (user_id) REFERENCES users (id),
+    CONSTRAINT Constr_Users_Games_Game_id_fk
+        FOREIGN KEY Game_id_fk (game_id) REFERENCES games (id)
 ) CHARACTER SET utf8 COLLATE utf8_general_ci;
