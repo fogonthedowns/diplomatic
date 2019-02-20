@@ -9,7 +9,7 @@ CREATE TABLE games (
   title varchar(50) CHARACTER SET utf8 NOT NULL,
   started_at TIMESTAMP NULL DEFAULT NULL,
   game_year DATE,
-  phase int NOT NULL DEFAULT 1, 
+  phase int NOT NULL DEFAULT 0, 
   phase_end TIMESTAMP NULL DEFAULT NULL,
   orders_interval int NOT NULL DEFAULT 1,
   PRIMARY KEY (id)
