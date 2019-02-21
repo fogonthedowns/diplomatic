@@ -6,7 +6,8 @@ CREATE TABLE pieces (
   game_id int(11) NOT NULL,
   owner_id int(11) NOT NULL,
   type int(5) NOT NULL,
-  location VARCHAR(10) CHARACTER SET utf8 NOT NULL,
+  is_active boolean NOT NULL DEFAULT true,
+  location varchar(10) CHARACTER SET utf8 NOT NULL,
   PRIMARY KEY (id)
 );
 

@@ -8,10 +8,10 @@ import (
 
 	// "github.com/go-chi/chi"
 
-	"diplomacy/driver"
-	model "diplomacy/model"
 	db "diplomacy/db"
 	gamecrud "diplomacy/db/gamecrud"
+	"diplomacy/driver"
+	model "diplomacy/model"
 )
 
 // NewGameHandler() creates a new HTTP handler
@@ -30,13 +30,14 @@ type GameHandler struct {
 func (g *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	game := model.Game{}
 
-    decoder := json.NewDecoder(r.Body)
-    err := decoder.Decode(&game)
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&game)
 	if err != nil {
-        panic(err)
-    }
-
-    fmt.Printf("****%+v \n", game)
+		panic(err)
+	}
+	t := model.Territory("MUN")
+	b := model.Territory("RUH")
+	fmt.Printf("****%+v \n", t.DoesBorder(b))
 
 	id, err := g.db.Create(r.Context(), &game)
 
@@ -62,7 +63,6 @@ func respondwithJSON(w http.ResponseWriter, code int, payload interface{}) {
 func respondWithError(w http.ResponseWriter, code int, msg string) {
 	respondwithJSON(w, code, map[string]string{"message": msg})
 }
-
 
 // // Fetch all post data
 // func (p *GameDb) Fetch(w http.ResponseWriter, r *http.Request) {
@@ -108,5 +108,3 @@ func respondWithError(w http.ResponseWriter, code int, msg string) {
 
 // 	respondwithJSON(w, http.StatusMovedPermanently, map[string]string{"message": "Delete Successfully"})
 // }
-
-
