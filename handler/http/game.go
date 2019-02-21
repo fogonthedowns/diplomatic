@@ -35,9 +35,9 @@ func (g *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	t := model.Territory("MUN")
-	b := model.Territory("RUH")
-	fmt.Printf("****%+v \n", t.DoesBorder(b))
+	t := model.Territory("NOS")
+	b := model.Territory("SYR")
+	fmt.Printf("****%+v \n", t.ValidShipMovement(b))
 
 	id, err := g.db.Create(r.Context(), &game)
 
