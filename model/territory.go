@@ -1,8 +1,7 @@
 package model
 
-import "fmt"
-
 const (
+	AEGEAN_SEA                = Territory("AEG")
 	CLYDE                     = Territory("CLY")
 	NORTH_ATLANTIC_OCEAN      = Territory("NAO")
 	IRISH_SEA                 = Territory("IHS")
@@ -13,7 +12,7 @@ const (
 	WALES                     = Territory("WLS")
 	LIVERPOOL                 = Territory("LIV")
 	NORTH_SEA                 = Territory("NHS")
-	NORWEGIAN_SEA             = Territory("NNS")
+	NORWEGIAN_SEA             = Territory("NOS")
 	MID_ATLANTIC_OCEAN        = Territory("MAO")
 	BREST                     = Territory("BST")
 	PICARDY                   = Territory("PIC")
@@ -151,13 +150,13 @@ var validNavyMoves = map[Territory][]Territory{
 	LIVERPOOL:                 []Territory{CLYDE, WALES, IRISH_SEA, NORTH_ATLANTIC_OCEAN},
 	WALES:                     []Territory{LIVERPOOL, ENGLISH_CHANNEL, IRISH_SEA, LONDON},
 	LONDON:                    []Territory{WALES, ENGLISH_CHANNEL, NORTH_SEA, YORKSHIRE},
-	YORKSHIRE:                 []Territory{},
+	YORKSHIRE:                 []Territory{LONDON, EDINBURGH, NORTH_SEA},
 }
 
 // validShipMovement will return true if the checked territory
 // is included inside of the mapOfBorders map
 // uses the origional terriotry as they key
-func (t *Territory) validShipMovement(check Territory) bool {
+func (t *Territory) ValidShipMovement(check Territory) bool {
 	for _, borderTerritory := range validNavyMoves[*t] {
 		if borderTerritory == check {
 			return true
