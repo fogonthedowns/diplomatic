@@ -153,11 +153,81 @@ var validNavyMoves = map[Territory][]Territory{
 	YORKSHIRE:                 []Territory{LONDON, EDINBURGH, NORTH_SEA},
 }
 
+// validLandMovess defines a map of Valid moves for Navy Units
+var validLandMoves = map[Territory][]Territory{
+	CLYDE:          []Territory{EDINBURGH, LIVERPOOL},
+	EDINBURGH:      []Territory{CLYDE, YORKSHIRE},
+	LIVERPOOL:      []Territory{CLYDE, EDINBURGH, YORKSHIRE, WALES},
+	WALES:          []Territory{LIVERPOOL, LONDON, YORKSHIRE},
+	YORKSHIRE:      []Territory{LIVERPOOL, LONDON, WALES, EDINBURGH},
+	BREST:          []Territory{PICARDY, PARIS, GASCONY},
+	PICARDY:        []Territory{BREST, BELGIUM, BURGUNDY, PARIS},
+	PARIS:          []Territory{GASCONY, BREST, PICARDY, BURGUNDY},
+	BURGUNDY:       []Territory{MARSEILLES, GASCONY, PARIS, BELGIUM, RUHR, MUNICH},
+	GASCONY:        []Territory{BREST, PARIS, BURGUNDY, MARSEILLES, SPAIN},
+	MARSEILLES:     []Territory{SPAIN, GASCONY, BURGUNDY, PIEDMONT},
+	SPAIN:          []Territory{MARSEILLES, GASCONY, PORTUGAL},
+	PORTUGAL:       []Territory{SPAIN},
+	BELGIUM:        []Territory{PICARDY, BURGUNDY, RUHR, HOLLAND},
+	HOLLAND:        []Territory{BELGIUM, RUHR, KIEL},
+	DENMARK:        []Territory{KIEL},
+	KIEL:           []Territory{HOLLAND, DENMARK, BERLIN, MUNICH, RUHR},
+	RUHR:           []Territory{BELGIUM, HOLLAND, KIEL, MUNICH, BURGUNDY},
+	MUNICH:         []Territory{BURGUNDY, RUHR, TYROLIA, BOHEMIA, SILESIA, BERLIN, KIEL},
+	BOHEMIA:        []Territory{MUNICH, SILESIA, GALICIA, VIENNA, TYROLIA},
+	SILESIA:        []Territory{MUNICH, BOHEMIA, BERLIN, PRUSSIA, WARSAW, GALICIA},
+	PRUSSIA:        []Territory{BERLIN, LIVONIA, WARSAW, SILESIA},
+	LIVONIA:        []Territory{PRUSSIA, WARSAW, MOSCOW, ST_PETERSBURG},
+	ST_PETERSBURG:  []Territory{LIVONIA, MOSCOW, FINLAND},
+	MOSCOW:         []Territory{ST_PETERSBURG, LIVONIA, WARSAW, UKRAINE, SEVASTOPOL},
+	WARSAW:         []Territory{LIVONIA, MOSCOW, UKRAINE, GALICIA, SILESIA, PRUSSIA},
+	UKRAINE:        []Territory{WARSAW, MOSCOW, SEVASTOPOL, ROMANIA, GALICIA},
+	SEVASTOPOL:     []Territory{UKRAINE, ARMENIA, MOSCOW, ROMANIA},
+	GALICIA:        []Territory{BOHEMIA, SILESIA, WARSAW, UKRAINE, ROMANIA, BUDAPEST, VIENNA},
+	ROMANIA:        []Territory{BUDAPEST, GALICIA, UKRAINE, SEVASTOPOL, BULGARIA, SERBIA},
+	BUDAPEST:       []Territory{GREECE, SERBIA, ROMANIA, CONSTANTINOPLE},
+	SERBIA:         []Territory{ROMANIA, BULGARIA, GREECE, ALBANIA, TRIESTE, BUDAPEST},
+	ALBANIA:        []Territory{TRIESTE, SERBIA, GREECE},
+	GREECE:         []Territory{ALBANIA, SERBIA, BUDAPEST},
+	BUDAPEST:       []Territory{GALICIA, ROMANIA, SERBIA, TRIESTE, VIENNA},
+	VIENNA:         []Territory{BOHEMIA, GALICIA, BUDAPEST, TRIESTE, TYROLIA},
+	TRIESTE:        []Territory{SERBIA, ALBANIA, VENICE, TYROLIA, VIENNA, BUDAPEST},
+	TYROLIA:        []Territory{MUNICH, BOHEMIA, VIENNA, TRIESTE, VENICE, PIEDMONT},
+	VENICE:         []Territory{TYROLIA, TRIESTE, PIEDMONT, TUSCANY, APULIA, ROME},
+	PIEDMONT:       []Territory{MARSEILLES, TYROLIA, VENICE, TUSCANY},
+	TUSCANY:        []Territory{PIEDMONT, VENICE, ROME},
+	ROME:           []Territory{TUSCANY, VENICE, APULIA, NAPLES},
+	APULIA:         []Territory{VENICE, ROME, NAPLES},
+	NAPLES:         []Territory{APULIA, ROME},
+	TUNIS:          []Territory{NORTH_AFRICA},
+	NORTH_AFRICA:   []Territory{TUNIS},
+	SYRIA:          []Territory{ARMENIA, SMYRNA},
+	ARMENIA:        []Territory{SYRIA, SMYRNA, ANKARA, SEVASTOPOL},
+	CONSTANTINOPLE: []Territory{ANKARA, SMYRNA, BULGARIA},
+	SMYRNA:         []Territory{CONSTANTINOPLE, ANKARA, ARMENIA, SYRIA},
+	ANKARA:         []Territory{CONSTANTINOPLE, SMYRNA, ARMENIA},
+	FINLAND:        []Territory{ST_PETERSBURG, NORWAY, SWEDEN},
+	SWEDEN:         []Territory{NORWAY, FINLAND},
+	NORWAY:         []Territory{SWEDEN, FINLAND, ST_PETERSBURG},
+}
+
 // validShipMovement will return true if the checked territory
 // is included inside of the mapOfBorders map
 // uses the origional terriotry as they key
 func (t *Territory) ValidShipMovement(check Territory) bool {
 	for _, borderTerritory := range validNavyMoves[*t] {
+		if borderTerritory == check {
+			return true
+		}
+	}
+	return false
+}
+
+// ValidLandMovement will return true if the checked territory
+// is included inside of the mapOfBorders map
+// uses the origional terriotry as they key
+func (t *Territory) ValidLandMovement(check Territory) bool {
+	for _, borderTerritory := range validLandMoves[*t] {
 		if borderTerritory == check {
 			return true
 		}
