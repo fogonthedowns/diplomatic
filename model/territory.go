@@ -85,6 +85,10 @@ const (
 	RUHR                      = Territory("RUH")
 )
 
+// TODO
+// mapOfCenters
+// mapOfLandOrSea
+
 type Territory string
 
 // validNavyMovess defines a map of Valid moves for Navy Units
