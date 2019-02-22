@@ -1,0 +1,25 @@
+// Response GET game endpoint:
+
+{ 
+  "phase": 4,
+  "type":"retreat",
+  "season":"fall",
+  "year":"1903",
+  "phase_will_end": 1550820285, 
+  "map": { 
+	  "DEN": {"is_center": true, "owner":"germany", "unit":[{"type":"navy", "owner":"england"}, {"type":"navy", "owner":"germany", "will_retreat":true}], "type":"land"}, 
+	  "RUH": {"is_center": false, "owner":"germany", "unit":{"type":"army", "owner":"germany"}, "type":"land"}, 
+	  "HEL": {"is_center": false, "owner":"germany", "type":"sea"}, 
+  }
+}
+
+// game phases
+// 0 - waiting for players
+// 1 - spring orders 
+// 2 - spring retreat
+// 3 - fall orders
+// 4 - fall retreat
+// 5 - fall build
+
+// phase_will_end
+// ISO 8601 UTC to Unix time stamp
