@@ -18,7 +18,7 @@ func main() {
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 
-	fmt.Printf("dbHost%v\n",dbHost)
+	fmt.Printf("dbHost%v\n", dbHost)
 
 	connection, err := driver.ConnectSQL(dbHost, dbPort, "root", dbPass, dbName)
 	if err != nil {
@@ -45,7 +45,7 @@ func postRouter(h *gameHandler.GameHandler) http.Handler {
 	// r.Get("/", pHandler.Fetch)
 	// r.Get("/{id:[0-9]+}", pHandler.GetByID)
 	r.Post("/", h.Create)
-	// r.Put("/{id:[0-9]+}", pHandler.Update)
+	r.Put("/{[0-9]+}", h.Update)
 	// r.Delete("/{id:[0-9]+}", pHandler.Delete)
 
 	return r

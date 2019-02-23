@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	model "diplomacy/model"
 	db "diplomacy/db"
+	model "diplomacy/model"
 )
 
 // NewSQLPostRepo retunrs implement of game db interface
@@ -20,7 +20,7 @@ type engine struct {
 	Conn *sql.DB
 }
 
-func (e *engine) Create(ctx context.Context, p *model.Game) (int64, error) {
+func (e *engine) Create(ctx context.Context, p *model.GameInput) (int64, error) {
 	query := "Insert games SET title=?, game_year=?"
 
 	stmt, err := e.Conn.PrepareContext(ctx, query)
@@ -69,7 +69,7 @@ func (e *engine) Create(ctx context.Context, p *model.Game) (int64, error) {
 // 	return m.fetch(ctx, query, num)
 // }
 
-// func (m *mysqlPostRepo) GetByID(ctx context.Context, id int64) (*models.Post, error) {
+// func (m *mysqlPostRepo) FindByID(ctx context.Context, id int64) (*model.Game, error) {
 // 	query := "Select id, title, content From posts where id=?"
 
 // 	rows, err := m.fetch(ctx, query, id)
@@ -87,28 +87,28 @@ func (e *engine) Create(ctx context.Context, p *model.Game) (int64, error) {
 // 	return payload, nil
 // }
 
+func (e *engine) Update(ctx context.Context, p *model.GameInput) (*model.GameInput, error) {
+	query := "Insert users_games SET user_id=?, country=?, game_id=?"
+	fmt.Printf("input: %+v \n", p)
+	stmt, err := e.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		fmt.Printf("err %v\n", err)
+		return nil, err
+	}
+	_, err = stmt.ExecContext(
+		ctx,
+		p.UserId,
+		p.Country,
+		p.Id,
+	)
+	if err != nil {
+		fmt.Printf("err %v\n", err)
+		return nil, err
+	}
+	defer stmt.Close()
 
-
-// func (m *mysqlPostRepo) Update(ctx context.Context, p *models.Post) (*models.Post, error) {
-// 	query := "Update posts set title=?, content=? where id=?"
-
-// 	stmt, err := m.Conn.PrepareContext(ctx, query)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	_, err = stmt.ExecContext(
-// 		ctx,
-// 		p.Title,
-// 		p.Content,
-// 		p.ID,
-// 	)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer stmt.Close()
-
-// 	return p, nil
-// }
+	return p, nil
+}
 
 // func (m *mysqlPostRepo) Delete(ctx context.Context, id int64) (bool, error) {
 // 	query := "Delete From posts Where id=?"

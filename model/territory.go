@@ -22,7 +22,7 @@ const (
 	GASCONY                   = Territory("GAS")
 	BURGUNDY                  = Territory("BRG")
 	MARSEILLES                = Territory("MAR")
-	SPAIN                     = Territory("SPN")
+	SPAIN                     = Territory("SPA")
 	SPAIN_NORTH_COAST         = Territory("SNC")
 	SPAIN_SOUTH_COAST         = Territory("SSC")
 	PORTUGAL                  = Territory("PRT")
@@ -91,8 +91,8 @@ const (
 
 type Territory string
 
-// validNavyMovess defines a map of Valid moves for Navy Units
-var validNavyMoves = map[Territory][]Territory{
+// validSeaMoves defines a map of Valid moves for Navy Units
+var validSeaMoves = map[Territory][]Territory{
 	NORWEGIAN_SEA:             []Territory{NORTH_ATLANTIC_OCEAN, BARRENTS_SEA, NORWAY, NORTH_SEA},
 	BARRENTS_SEA:              []Territory{ST_PETERSBURG_NORTH_COAST, NORWAY, NORWEGIAN_SEA},
 	NORTH_ATLANTIC_OCEAN:      []Territory{NORWEGIAN_SEA, CLYDE, IRISH_SEA, MID_ATLANTIC_OCEAN, LIVERPOOL},
@@ -158,6 +158,7 @@ var validNavyMoves = map[Territory][]Territory{
 }
 
 // validLandMovess defines a map of Valid moves for Navy Units
+// The keys of this are also available land territories
 var validLandMoves = map[Territory][]Territory{
 	CLYDE:          []Territory{EDINBURGH, LIVERPOOL},
 	EDINBURGH:      []Territory{CLYDE, YORKSHIRE},
@@ -189,11 +190,11 @@ var validLandMoves = map[Territory][]Territory{
 	SEVASTOPOL:     []Territory{UKRAINE, ARMENIA, MOSCOW, ROMANIA},
 	GALICIA:        []Territory{BOHEMIA, SILESIA, WARSAW, UKRAINE, ROMANIA, BUDAPEST, VIENNA},
 	ROMANIA:        []Territory{BUDAPEST, GALICIA, UKRAINE, SEVASTOPOL, BULGARIA, SERBIA},
-	BUDAPEST:       []Territory{GREECE, SERBIA, ROMANIA, CONSTANTINOPLE},
+	BULGARIA:       []Territory{GREECE, SERBIA, ROMANIA, CONSTANTINOPLE},
+	BUDAPEST:       []Territory{GALICIA, ROMANIA, SERBIA, TRIESTE, VIENNA},
 	SERBIA:         []Territory{ROMANIA, BULGARIA, GREECE, ALBANIA, TRIESTE, BUDAPEST},
 	ALBANIA:        []Territory{TRIESTE, SERBIA, GREECE},
 	GREECE:         []Territory{ALBANIA, SERBIA, BUDAPEST},
-	BUDAPEST:       []Territory{GALICIA, ROMANIA, SERBIA, TRIESTE, VIENNA},
 	VIENNA:         []Territory{BOHEMIA, GALICIA, BUDAPEST, TRIESTE, TYROLIA},
 	TRIESTE:        []Territory{SERBIA, ALBANIA, VENICE, TYROLIA, VIENNA, BUDAPEST},
 	TYROLIA:        []Territory{MUNICH, BOHEMIA, VIENNA, TRIESTE, VENICE, PIEDMONT},
@@ -215,11 +216,39 @@ var validLandMoves = map[Territory][]Territory{
 	NORWAY:         []Territory{SWEDEN, FINLAND, ST_PETERSBURG},
 }
 
-// validShipMovement will return true if the checked territory
+// exclusiveSeaTerritories defines a list of Sea Exclusive territories
+var exclusiveSeaTerritories = []Territory{
+	NORWEGIAN_SEA,
+	BARRENTS_SEA,
+	NORTH_ATLANTIC_OCEAN,
+	IRISH_SEA,
+	ENGLISH_CHANNEL,
+	NORTH_SEA,
+	HELGOLAND_BIGHT,
+	SKAGERRAK,
+	BALTIC_SEA,
+	GULF_OF_BOTHNIA,
+	MID_ATLANTIC_OCEAN,
+	WESTERN_MEDITERRANEAN,
+	GULF_OF_LYON,
+	TYRRHENIAN_SEA,
+	IONIAN_SEA,
+	ADRIATIC_SEA,
+	AEGEAN_SEA,
+	BLACK_SEA,
+	BULGARIA_EAST_COAST,
+	BULGARIA_SOUTH_COAST,
+	SPAIN_SOUTH_COAST,
+	SPAIN_NORTH_COAST,
+	ST_PETERSBURG_SOUTH_COAST,
+	ST_PETERSBURG_NORTH_COAST,
+}
+
+// ValidSeaMovement will return true if the checked territory
 // is included inside of the mapOfBorders map
 // uses the origional terriotry as they key
-func (t *Territory) ValidShipMovement(check Territory) bool {
-	for _, borderTerritory := range validNavyMoves[*t] {
+func (t *Territory) ValidSeaMovement(check Territory) bool {
+	for _, borderTerritory := range validSeaMoves[*t] {
 		if borderTerritory == check {
 			return true
 		}
