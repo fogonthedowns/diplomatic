@@ -48,7 +48,7 @@ func (g *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("1 ****%+v \n", id)
 
 	if err != nil {
-		respondwithJSON(w, http.StatusInternalServerError, map[string]string{"message": fmt.Sprintf("%v", err)})
+		respondwithJSON(w, http.StatusInternalServerError, model.ErrorMessage{Message: fmt.Sprintf("%v\n", err)})
 	} else {
 		respondwithJSON(w, http.StatusCreated, map[string]string{"message": "Successfully Created"})
 	}
@@ -112,7 +112,7 @@ func (g *GameHandler) Update(w http.ResponseWriter, r *http.Request) {
 		case 409:
 			respondwithJSON(w, http.StatusConflict, map[string]string{"message": fmt.Sprintf("%v\n", err)})
 		default:
-			respondwithJSON(w, http.StatusInternalServerError, map[string]string{"message": fmt.Sprintf("%v\n", err)})
+			respondwithJSON(w, http.StatusInternalServerError, model.ErrorMessage{Message: fmt.Sprintf("%v\n", err)})
 		}
 	} else {
 		respondwithJSON(w, http.StatusOK, payload)
