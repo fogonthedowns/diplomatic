@@ -48,15 +48,24 @@ func (g *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("1 ****%+v \n", id)
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Server Error")
+		respondwithJSON(w, http.StatusInternalServerError, map[string]string{"message": fmt.Sprintf("%v", err)})
+	} else {
+		respondwithJSON(w, http.StatusCreated, map[string]string{"message": "Successfully Created"})
 	}
+}
 
-	respondwithJSON(w, http.StatusCreated, map[string]string{"message": "Successfully Created"})
+type ErrorMessage struct {
+	message string `json:"message"`
 }
 
 // respondwithJSON write json response format
 func respondwithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	response, _ := json.Marshal(payload)
+	fmt.Printf("payload %v\n", payload)
+
+	response, err := json.Marshal(payload)
+	if err != nil {
+		fmt.Printf("error: %v \n", err)
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
@@ -65,7 +74,8 @@ func respondwithJSON(w http.ResponseWriter, code int, payload interface{}) {
 
 // respondwithError return error message
 func respondWithError(w http.ResponseWriter, code int, msg string) {
-	respondwithJSON(w, code, map[string]string{"message": msg})
+	em := ErrorMessage{message: msg}
+	respondwithJSON(w, code, em)
 }
 
 // // Fetch all post data
@@ -95,13 +105,18 @@ func (g *GameHandler) Update(w http.ResponseWriter, r *http.Request) {
 	data := model.GameInput{Id: int64(id)}
 	json.NewDecoder(r.Body).Decode(&data)
 
-	payload, err := g.db.Update(r.Context(), &data)
+	payload, code, err := g.db.Update(r.Context(), &data)
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Server Error")
+		switch code {
+		case 409:
+			respondwithJSON(w, http.StatusConflict, map[string]string{"message": fmt.Sprintf("%v\n", err)})
+		default:
+			respondwithJSON(w, http.StatusInternalServerError, map[string]string{"message": fmt.Sprintf("%v\n", err)})
+		}
+	} else {
+		respondwithJSON(w, http.StatusOK, payload)
 	}
-
-	respondwithJSON(w, http.StatusOK, payload)
 }
 
 // // GetByID returns a post details
