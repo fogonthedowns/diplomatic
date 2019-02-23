@@ -87,27 +87,64 @@ func (e *engine) Create(ctx context.Context, p *model.GameInput) (int64, error) 
 // 	return payload, nil
 // }
 
-func (e *engine) Update(ctx context.Context, p *model.GameInput) (*model.GameInput, error) {
+func (e *engine) Update(ctx context.Context, p *model.GameInput) (*model.GameInput, int, error) {
 	query := "Insert users_games SET user_id=?, country=?, game_id=?"
-	fmt.Printf("input: %+v \n", p)
 	stmt, err := e.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		fmt.Printf("err %v\n", err)
-		return nil, err
+		return nil, 500, err
 	}
+
+	gameusers, err := e.getGameUsers(ctx, p.Id)
+	err = model.Validate(gameusers, p.Country)
+
+	if err != nil {
+		fmt.Printf("err %v\n", err)
+		return nil, 409, err
+	}
+
 	_, err = stmt.ExecContext(
 		ctx,
 		p.UserId,
 		p.Country,
 		p.Id,
 	)
+
 	if err != nil {
 		fmt.Printf("err %v\n", err)
-		return nil, err
+		return nil, 500, err
 	}
 	defer stmt.Close()
 
-	return p, nil
+	return p, 200, nil
+}
+
+func (e *engine) getGameUsers(ctx context.Context, game_id int64) ([]model.GameUser, error) {
+	gameusers := []model.GameUser{}
+	var err error
+	var rows *sql.Rows
+
+	rows, err = e.Conn.Query(`
+          SELECT user_id, game_id, country
+          FROM users_games
+          WHERE game_id = ?`,
+		game_id)
+	if err != nil {
+		return nil, fmt.Errorf("%v; inputs %#v", err, game_id)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var record model.GameUser
+		if err = rows.Scan(&record.UserId, &record.GameId, &record.Country); err != nil {
+			return nil, err
+		}
+		gameusers = append(gameusers, record)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return gameusers, err
 }
 
 // func (m *mysqlPostRepo) Delete(ctx context.Context, id int64) (bool, error) {
