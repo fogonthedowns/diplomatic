@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	// "strconv"
+	"strconv"
+	"strings"
 
 	// "github.com/go-chi/chi"
 
@@ -26,20 +27,23 @@ type GameHandler struct {
 	db db.Crud
 }
 
-// Create a new post
+// Creates a new game
+// default password game is false
+// writes a game row
 func (g *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
-	game := model.Game{}
+	gameInput := model.GameInput{}
 
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&game)
+	err := decoder.Decode(&gameInput)
 	if err != nil {
 		panic(err)
 	}
-	t := model.Territory("NOS")
-	b := model.Territory("SYR")
-	fmt.Printf("****%+v \n", t.ValidShipMovement(b))
+	// t := model.Territory("NOS")
+	// b := model.Territory("SYR")
+	// game.AddGameSquares()
+	// fmt.Printf("****%+v \n", t.ValidSeaMovement(b))
 
-	id, err := g.db.Create(r.Context(), &game)
+	id, err := g.db.Create(r.Context(), &gameInput)
 
 	fmt.Printf("1 ****%+v \n", id)
 
@@ -71,19 +75,34 @@ func respondWithError(w http.ResponseWriter, code int, msg string) {
 // 	respondwithJSON(w, http.StatusOK, payload)
 // }
 
-// // Update a post by id
-// func (p *Post) Update(w http.ResponseWriter, r *http.Request) {
-// 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-// 	data := models.Post{ID: int64(id)}
-// 	json.NewDecoder(r.Body).Decode(&data)
-// 	payload, err := p.repo.Update(r.Context(), &data)
+// Update a post by id
+// Read UserGames Table
+// Count the number of Users in a game
+// when the Game is full, Loop through each UserGame.User_id
+// determine the country
+// Create Piece records, setting the user.id
+// Create Territory records, setting the user.id
+func (g *GameHandler) Update(w http.ResponseWriter, r *http.Request) {
+	p := strings.Split(r.URL.Path, "/")
 
-// 	if err != nil {
-// 		respondWithError(w, http.StatusInternalServerError, "Server Error")
-// 	}
+	fmt.Printf("key %+v\n", p[2])
+	var id int
+	if len(p) == 3 {
+		id, _ = strconv.Atoi(p[2])
+	}
 
-// 	respondwithJSON(w, http.StatusOK, payload)
-// }
+	// id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	data := model.GameInput{Id: int64(id)}
+	json.NewDecoder(r.Body).Decode(&data)
+
+	payload, err := g.db.Update(r.Context(), &data)
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Server Error")
+	}
+
+	respondwithJSON(w, http.StatusOK, payload)
+}
 
 // // GetByID returns a post details
 // func (p *Post) GetByID(w http.ResponseWriter, r *http.Request) {

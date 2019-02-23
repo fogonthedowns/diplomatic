@@ -12,5 +12,6 @@ CREATE TABLE games (
   phase int NOT NULL DEFAULT 0, 
   phase_end TIMESTAMP NULL DEFAULT NULL,
   orders_interval int NOT NULL DEFAULT 1,
+  password varchar(50) CHARACTER SET utf8,
   PRIMARY KEY (id)
 ) CHARACTER SET utf8 COLLATE utf8_general_ci;

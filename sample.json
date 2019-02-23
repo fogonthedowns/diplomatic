@@ -1,6 +1,7 @@
-// Response GET game/<id> endpoint:
+// Response GET game/<id> endpoint, fall retreat
 
 { 
+  "id": 1, 
   "phase": 4, // fall retreat can be implied from phase 
   "year":"1903",
   "phase_will_end": 1550820285, 
@@ -29,5 +30,13 @@
 // determine if unit should always be an array
 
 
-// Option 1: loop over pieces to build map
-// but you need a way to save land control concept - ie which country controls centers
+// Option 1: loop over pieces and territories to build map
+
+
+// Response GET game/<id> endpoint, waiting for players:
+{ 
+  "id": 2, 
+  "phase": 0, // waiting for players can be implied from phase 
+  "year":"1901",
+  "phase_will_end": null,
+}
