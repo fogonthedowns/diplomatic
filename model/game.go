@@ -15,6 +15,26 @@ type Game struct {
 	GameBoard      GameBoard  `json: "game_squares,omitempty"`
 }
 
+// SetUpGameBoard() Fills in an empty game.GameBoard from data loaded from territory and piece rows in the db
+func (g *Game) SetUpGameBoard(territoryRows []TerritoryRow, pieceRows []PieceRow) {
+	var gb = GameBoard{}
+	var unit = &Unit{}
+
+	for _, row := range territoryRows {
+		units := make([]Unit, 0)
+		for _, pr := range pieceRows {
+			if row.Country == pr.Country {
+				unit.UnitType = pr.UnitType
+				unit.Owner = pr.Owner
+				unit.PieceId = pr.Id
+				units = append(units, *unit)
+			}
+		}
+		gb[row.Country] = GameSquareData{Owner: row.Owner, Units: units}
+	}
+	g.GameBoard = gb
+}
+
 // NewGame() creates a new Game model
 func (g *Game) NewGameBoard() {
 	var gb = GameBoard{
