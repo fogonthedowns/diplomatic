@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -17,7 +16,7 @@ type Game struct {
 }
 
 // NewGame() creates a new Game model
-func (g *Game) AddGameSquares() {
+func (g *Game) BuildGameBoard() {
 	var gb = GameBoard{
 
 		EDINBURGH: GameSquareData{Owner: ENGLAND, Units: []Unit{{UnitType: NAVY, Owner: ENGLAND}}},
@@ -48,12 +47,12 @@ func (g *Game) AddGameSquares() {
 		APULIA:   GameSquareData{Owner: ITALY},
 		NAPLES:   GameSquareData{Owner: ITALY},
 
-		TYROLIA:  GameSquareData{Owner: AUSTRIA_HUNGRY},
-		VIENNA:   GameSquareData{Owner: AUSTRIA_HUNGRY},
-		BOHEMIA:  GameSquareData{Owner: AUSTRIA_HUNGRY},
-		TRIESTE:  GameSquareData{Owner: AUSTRIA_HUNGRY},
-		BUDAPEST: GameSquareData{Owner: AUSTRIA_HUNGRY},
-		GALICIA:  GameSquareData{Owner: AUSTRIA_HUNGRY},
+		TYROLIA:  GameSquareData{Owner: AUSTRIA_HUNGARY},
+		VIENNA:   GameSquareData{Owner: AUSTRIA_HUNGARY},
+		BOHEMIA:  GameSquareData{Owner: AUSTRIA_HUNGARY},
+		TRIESTE:  GameSquareData{Owner: AUSTRIA_HUNGARY},
+		BUDAPEST: GameSquareData{Owner: AUSTRIA_HUNGARY},
+		GALICIA:  GameSquareData{Owner: AUSTRIA_HUNGARY},
 
 		CONSTANTINOPLE: GameSquareData{Owner: TURKEY},
 		ANKARA:         GameSquareData{Owner: TURKEY},
@@ -111,6 +110,5 @@ func (g *Game) AddGameSquares() {
 		HELGOLAND_BIGHT:       GameSquareData{},
 	}
 
-	fmt.Printf("******%v \n", gb)
 	g.GameBoard = gb
 }
