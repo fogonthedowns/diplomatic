@@ -43,7 +43,13 @@ func (e *engine) Create(ctx context.Context, in *model.GameInput) (int64, error)
 		return -1, err
 	}
 
-	err = e.setTerritoryRecords(ctx, game_id, in.Country)
+	err = e.setTerritoryRecords(ctx, game_id)
+
+	if err != nil {
+		return -1, err
+	}
+
+	err = e.setGamePieceRecords(ctx, game_id)
 
 	if err != nil {
 		return -1, err
@@ -162,16 +168,13 @@ func (e *engine) getGameUsers(ctx context.Context, game_id int64) ([]model.GameU
 	return gameusers, err
 }
 
-func (e *engine) setTerritoryRecords(ctx context.Context, game_id int64, country model.Country) error {
+func (e *engine) setTerritoryRecords(ctx context.Context, game_id int64) error {
 	g := model.Game{}
 	g.BuildGameBoard()
 	query := "Insert INTO territory(game_id, country, owner) VALUES "
-	// vals := []interface{}{}
 
 	for key, territory := range g.GameBoard {
-		// query += "(?, ?, ?),"
 		query += "(" + strconv.FormatInt(game_id, 10) + ", " + fmt.Sprintf("%#v", key) + ", " + fmt.Sprintf("%#v", territory.Owner) + "),"
-		// vals = append(vals, game_id, key, territory.Owner)
 	}
 
 	//trim the last ,
@@ -179,13 +182,49 @@ func (e *engine) setTerritoryRecords(ctx context.Context, game_id int64, country
 	//prepare the statement
 	fmt.Printf("query %v", query)
 	stmt, err := e.Conn.PrepareContext(ctx, query)
+
 	if err != nil {
 		fmt.Printf("err %v", err)
 		return err
 	}
-	//format all vals at once
+
 	_, err = stmt.Exec()
-	fmt.Printf("err %v", err)
+	if err != nil {
+		fmt.Printf("err %v", err)
+	}
+
+	return err
+}
+
+func (e *engine) setGamePieceRecords(ctx context.Context, game_id int64) error {
+	g := model.Game{}
+	g.BuildGameBoard()
+	query := "Insert INTO pieces(game_id, type, location, owner) VALUES "
+
+	for key, territory := range g.GameBoard {
+		if len(territory.Units) > 0 {
+			for _, piece := range territory.Units {
+				query += "(" + strconv.FormatInt(game_id, 10) + ", " + fmt.Sprintf("%#v", piece.UnitType) + ", " + fmt.Sprintf("%#v", key) + ", " + fmt.Sprintf("%#v", piece.Owner) + "),"
+			}
+		}
+	}
+
+	//trim the last ,
+	query = query[0 : len(query)-1]
+	//prepare the statement
+	fmt.Printf("query %v", query)
+	stmt, err := e.Conn.PrepareContext(ctx, query)
+
+	if err != nil {
+		fmt.Printf("err %v", err)
+		return err
+	}
+
+	_, err = stmt.Exec()
+	if err != nil {
+		fmt.Printf("err %v", err)
+	}
+
 	return err
 }
 
