@@ -42,7 +42,7 @@ func main() {
 // A completely separate router for posts routes
 func postRouter(handler *gameHandler.GameHandler) http.Handler {
 	r := chi.NewRouter()
-	// r.Get("/", pHandler.Fetch)
+	r.Get("/", handler.Fetch)
 	r.Get("/{[0-9]+}", handler.GetByID)
 	r.Post("/", handler.Create)
 	r.Put("/{[0-9]+}", handler.Update)

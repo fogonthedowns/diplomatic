@@ -138,11 +138,11 @@ func (e *engine) fetchPieces(ctx context.Context, query string, args ...interfac
 	return payload, nil
 }
 
-// func (m *mysqlPostRepo) Fetch(ctx context.Context, num int64) ([]*models.Post, error) {
-// 	query := "Select id, title, content From posts limit ?"
+func (m *engine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
+	query := "Select id, game_year, phase, phase_end, title From games limit ?"
 
-// 	return m.fetch(ctx, query, num)
-// }
+	return m.fetch(ctx, query, num)
+}
 
 func (e *engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 	query := "Select id, game_year, phase, phase_end, title From games where id=?"
