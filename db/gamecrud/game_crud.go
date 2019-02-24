@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	db "diplomacy/db"
 	model "diplomacy/model"
@@ -20,23 +21,35 @@ type engine struct {
 	Conn *sql.DB
 }
 
-func (e *engine) Create(ctx context.Context, p *model.GameInput) (int64, error) {
+func (e *engine) Create(ctx context.Context, in *model.GameInput) (int64, error) {
 	query := "Insert games SET title=?, game_year=?"
 
 	stmt, err := e.Conn.PrepareContext(ctx, query)
-	fmt.Printf("err %+v \n", err)
+
 	if err != nil {
 		return -1, err
 	}
 
-	res, err := stmt.ExecContext(ctx, p.Title, "1901-04-01")
+	res, err := stmt.ExecContext(ctx, in.Title, "1901-04-01")
 	defer stmt.Close()
 
 	if err != nil {
 		return -1, err
 	}
 
-	return res.LastInsertId()
+	game_id, err := res.LastInsertId()
+
+	if err != nil {
+		return -1, err
+	}
+
+	err = e.setTerritoryRecords(ctx, game_id, in.Country)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return game_id, err
 }
 
 // func (m *mysqlPostRepo) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Post, error) {
@@ -87,7 +100,9 @@ func (e *engine) Create(ctx context.Context, p *model.GameInput) (int64, error) 
 // 	return payload, nil
 // }
 
-func (e *engine) Update(ctx context.Context, p *model.GameInput) (*model.GameInput, int, error) {
+// Create Piece records, setting the user.id
+// Create Territory records, setting the user.id
+func (e *engine) Update(ctx context.Context, in *model.GameInput) (*model.GameInput, int, error) {
 	query := "Insert users_games SET user_id=?, country=?, game_id=?"
 	stmt, err := e.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -95,8 +110,8 @@ func (e *engine) Update(ctx context.Context, p *model.GameInput) (*model.GameInp
 		return nil, 500, err
 	}
 
-	gameusers, err := e.getGameUsers(ctx, p.Id)
-	err = model.Validate(gameusers, p.Country)
+	gameusers, err := e.getGameUsers(ctx, in.Id)
+	err = model.Validate(gameusers, in.Country)
 
 	if err != nil {
 		fmt.Printf("err %v\n", err)
@@ -105,9 +120,9 @@ func (e *engine) Update(ctx context.Context, p *model.GameInput) (*model.GameInp
 
 	_, err = stmt.ExecContext(
 		ctx,
-		p.UserId,
-		p.Country,
-		p.Id,
+		in.UserId,
+		in.Country,
+		in.Id,
 	)
 
 	if err != nil {
@@ -116,7 +131,7 @@ func (e *engine) Update(ctx context.Context, p *model.GameInput) (*model.GameInp
 	}
 	defer stmt.Close()
 
-	return p, 200, nil
+	return in, 200, nil
 }
 
 func (e *engine) getGameUsers(ctx context.Context, game_id int64) ([]model.GameUser, error) {
@@ -145,6 +160,33 @@ func (e *engine) getGameUsers(ctx context.Context, game_id int64) ([]model.GameU
 		return nil, err
 	}
 	return gameusers, err
+}
+
+func (e *engine) setTerritoryRecords(ctx context.Context, game_id int64, country model.Country) error {
+	g := model.Game{}
+	g.BuildGameBoard()
+	query := "Insert INTO territory(game_id, country, owner) VALUES "
+	// vals := []interface{}{}
+
+	for key, territory := range g.GameBoard {
+		// query += "(?, ?, ?),"
+		query += "(" + strconv.FormatInt(game_id, 10) + ", " + fmt.Sprintf("%#v", key) + ", " + fmt.Sprintf("%#v", territory.Owner) + "),"
+		// vals = append(vals, game_id, key, territory.Owner)
+	}
+
+	//trim the last ,
+	query = query[0 : len(query)-1]
+	//prepare the statement
+	fmt.Printf("query %v", query)
+	stmt, err := e.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		fmt.Printf("err %v", err)
+		return err
+	}
+	//format all vals at once
+	_, err = stmt.Exec()
+	fmt.Printf("err %v", err)
+	return err
 }
 
 // func (m *mysqlPostRepo) Delete(ctx context.Context, id int64) (bool, error) {
