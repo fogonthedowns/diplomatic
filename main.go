@@ -33,6 +33,7 @@ func main() {
 	h := gameHandler.NewGameHandler(connection)
 	r.Route("/", func(rt chi.Router) {
 		rt.Mount("/games", postRouter(h))
+		rt.Mount("/moves", movesRouter(h))
 	})
 
 	fmt.Println("Server listen at :8005")
@@ -45,6 +46,18 @@ func postRouter(handler *gameHandler.GameHandler) http.Handler {
 	r.Get("/", handler.Fetch)
 	r.Get("/{[0-9]+}", handler.GetByID)
 	r.Post("/", handler.Create)
+	r.Put("/{[0-9]+}", handler.Update)
+	// r.Delete("/{id:[0-9]+}", pHandler.Delete)
+
+	return r
+}
+
+// A completely separate router for game mvoes
+func movesRouter(handler *gameHandler.GameHandler) http.Handler {
+	r := chi.NewRouter()
+	// r.Get("/", handler.Fetch)
+	// r.Get("/{[0-9]+}", handler.GetByID)
+	// r.Post("/", handler.Create)
 	r.Put("/{[0-9]+}", handler.Update)
 	// r.Delete("/{id:[0-9]+}", pHandler.Delete)
 
