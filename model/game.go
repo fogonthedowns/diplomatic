@@ -30,7 +30,7 @@ func (g *Game) SetUpGameBoard(territoryRows []TerritoryRow, pieceRows []PieceRow
 				units = append(units, *unit)
 			}
 		}
-		gb[row.Country] = GameSquareData{Owner: row.Owner, Units: units}
+		gb[row.Country] = GameSquareData{Owner: row.Owner, Units: units, TerritoryId: row.Id}
 	}
 	g.GameBoard = gb
 }
