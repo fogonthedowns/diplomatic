@@ -110,6 +110,34 @@ func (e *engine) fetchTerritories(ctx context.Context, query string, args ...int
 	return payload, nil
 }
 
+func (e *engine) fetchPieces(ctx context.Context, query string, args ...interface{}) ([]*model.PieceRow, error) {
+	rows, err := e.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	payload := make([]*model.PieceRow, 0)
+	for rows.Next() {
+		data := new(model.PieceRow)
+
+		err := rows.Scan(
+			&data.Id,
+			&data.GameId,
+			&data.Owner,
+			&data.UnitType,
+			&data.IsActive,
+			&data.Country,
+		)
+		if err != nil {
+			fmt.Printf("error \n", err)
+			return nil, err
+		}
+		payload = append(payload, data)
+	}
+	return payload, nil
+}
+
 // func (m *mysqlPostRepo) Fetch(ctx context.Context, num int64) ([]*models.Post, error) {
 // 	query := "Select id, title, content From posts limit ?"
 
@@ -118,17 +146,18 @@ func (e *engine) fetchTerritories(ctx context.Context, query string, args ...int
 
 func (e *engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 	query := "Select id, game_year, phase, phase_end, title From games where id=?"
-	second_query := "select * from territory where game_id=?"
+	secondQuery := "select id, game_id, owner, country from territory where game_id=?"
+	thirdQuery := "select id, game_id, owner, type, is_active, location from pieces where game_id=?"
 
 	// fetch the Pieces of this game
-	// territory_rows, err := e.fetchPieces(ctx, third_query, id)
-	// if err != nil {
-	// 	fmt.Printf("err %v \n", err)
-	// 	return nil, err
-	// }
+	piecesRows, err := e.fetchPieces(ctx, thirdQuery, id)
+	if err != nil {
+		fmt.Printf("err %v \n", err)
+		return nil, err
+	}
 
 	// fetch the Territories of this game
-	territory_rows, err := e.fetchTerritories(ctx, second_query, id)
+	territoryRows, err := e.fetchTerritories(ctx, secondQuery, id)
 	if err != nil {
 		fmt.Printf("err %v \n", err)
 		return nil, err
@@ -142,11 +171,19 @@ func (e *engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 		return nil, err
 	}
 
+	// Make an array of Piece Models
+	pm := &model.PieceRow{}
+	pieces := make([]model.PieceRow, 0)
+	for index, _ := range piecesRows {
+		pm = piecesRows[index]
+		pieces = append(pieces, *pm)
+	}
+
 	// Make an array of Territory Models
 	tm := &model.TerritoryRow{}
 	territories := make([]model.TerritoryRow, 0)
-	for index, _ := range territory_rows {
-		tm = territory_rows[index]
+	for index, _ := range territoryRows {
+		tm = territoryRows[index]
 		territories = append(territories, *tm)
 	}
 
@@ -226,7 +263,7 @@ func (e *engine) getGameUsers(ctx context.Context, game_id int64) ([]model.GameU
 
 func (e *engine) setTerritoryRecords(ctx context.Context, game_id int64) error {
 	g := model.Game{}
-	g.BuildGameBoard()
+	g.NewGameBoard()
 	query := "Insert INTO territory(game_id, country, owner) VALUES "
 
 	for key, territory := range g.GameBoard {
@@ -254,7 +291,7 @@ func (e *engine) setTerritoryRecords(ctx context.Context, game_id int64) error {
 
 func (e *engine) setGamePieceRecords(ctx context.Context, game_id int64) error {
 	g := model.Game{}
-	g.BuildGameBoard()
+	g.NewGameBoard()
 	query := "Insert INTO pieces(game_id, type, location, owner) VALUES "
 
 	for key, territory := range g.GameBoard {
