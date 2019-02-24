@@ -115,11 +115,10 @@ func respondWithError(w http.ResponseWriter, code int, msg string) {
 }
 
 // // Fetch all post data
-// func (p *GameDb) Fetch(w http.ResponseWriter, r *http.Request) {
-// 	payload, _ := p.repo.Fetch(r.Context(), 5)
-
-// 	respondwithJSON(w, http.StatusOK, payload)
-// }
+func (g *GameHandler) Fetch(w http.ResponseWriter, r *http.Request) {
+	payload, _ := g.db.Fetch(r.Context(), 5)
+	respondwithJSON(w, http.StatusOK, payload)
+}
 
 // GetByID returns a post details
 func (g *GameHandler) GetByID(w http.ResponseWriter, r *http.Request) {
