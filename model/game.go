@@ -16,7 +16,7 @@ type Game struct {
 }
 
 // NewGame() creates a new Game model
-func (g *Game) BuildGameBoard() {
+func (g *Game) NewGameBoard() {
 	var gb = GameBoard{
 
 		EDINBURGH: GameSquareData{Owner: ENGLAND, Units: []Unit{{UnitType: NAVY, Owner: ENGLAND}}},
