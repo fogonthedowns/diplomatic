@@ -118,31 +118,48 @@ func (e *engine) fetchTerritories(ctx context.Context, query string, args ...int
 
 func (e *engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 	query := "Select id, game_year, phase, phase_end, title From games where id=?"
-	query_two := "select * from territory where game_id=?"
-	territory_rows, err := e.fetchTerritories(ctx, query_two, id)
-	rows, err := e.fetch(ctx, query, id)
+	second_query := "select * from territory where game_id=?"
+
+	// fetch the Pieces of this game
+	// territory_rows, err := e.fetchPieces(ctx, third_query, id)
+	// if err != nil {
+	// 	fmt.Printf("err %v \n", err)
+	// 	return nil, err
+	// }
+
+	// fetch the Territories of this game
+	territory_rows, err := e.fetchTerritories(ctx, second_query, id)
 	if err != nil {
 		fmt.Printf("err %v \n", err)
 		return nil, err
 	}
-	p2 := &model.TerritoryRow{}
-	pay := make([]model.TerritoryRow, 0)
-	for index, _ := range territory_rows {
-		p2 = territory_rows[index]
-		pay = append(pay, *p2)
+
+	// fetch the Game
+	rows, err := e.fetch(ctx, query, id)
+
+	if err != nil {
+		fmt.Printf("err %v \n", err)
+		return nil, err
 	}
 
-	payload := &model.Game{}
+	// Make an array of Territory Models
+	tm := &model.TerritoryRow{}
+	territories := make([]model.TerritoryRow, 0)
+	for index, _ := range territory_rows {
+		tm = territory_rows[index]
+		territories = append(territories, *tm)
+	}
 
-	fmt.Printf("**** yo %+v \n", pay)
-
+	// Make the Game model
+	game := &model.Game{}
 	if len(rows) > 0 {
-		payload = rows[0]
+		game = rows[0]
 	} else {
 		return nil, nil //model.ErrNotFound
 	}
 
-	return payload, nil
+	// return the Game
+	return game, nil
 }
 
 // Create Piece records, setting the user.id
