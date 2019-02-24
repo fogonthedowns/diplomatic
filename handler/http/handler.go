@@ -24,7 +24,7 @@ func NewGameHandler(db *driver.DB) *GameHandler {
 }
 
 type GameHandler struct {
-	db db.Crud
+	db db.GameCrud
 }
 
 // Creates a new game
