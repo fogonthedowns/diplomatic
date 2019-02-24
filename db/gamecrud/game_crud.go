@@ -195,6 +195,7 @@ func (e *engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 		return nil, nil //model.ErrNotFound
 	}
 
+	game.SetUpGameBoard(territories, pieces)
 	// return the Game
 	return game, nil
 }
