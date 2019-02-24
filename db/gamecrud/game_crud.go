@@ -138,6 +138,9 @@ func (e *engine) fetchPieces(ctx context.Context, query string, args ...interfac
 	return payload, nil
 }
 
+// TODO SORT BY DATE
+// WHERE game phase is 0
+// Search by user_games
 func (m *engine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
 	query := "Select id, game_year, phase, phase_end, title From games limit ?"
 
