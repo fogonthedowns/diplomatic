@@ -24,12 +24,13 @@ func NewGameHandler(db *driver.DB) *GameHandler {
 }
 
 type GameHandler struct {
-	db db.GameCrud
+	db db.Crud
 }
 
 // Creates a new game
 // default password game is false
 // writes a game row
+// TODO respond with ID!!
 func (g *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	gameInput := model.GameInput{}
 

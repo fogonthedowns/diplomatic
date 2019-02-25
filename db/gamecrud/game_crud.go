@@ -11,7 +11,7 @@ import (
 )
 
 // NewSQLPostRepo retunrs implement of game db interface
-func NewEngine(Conn *sql.DB) db.GameCrud {
+func NewEngine(Conn *sql.DB) db.Crud {
 	return &engine{
 		Conn: Conn,
 	}
