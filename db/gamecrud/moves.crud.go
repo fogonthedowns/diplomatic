@@ -101,6 +101,8 @@ func (e *movesEngine) Validate(in *model.GameInput, res *model.GameUser) (valid 
 	return true, err
 }
 
+// TODO determine when to move game from phase 0 -> phase 1
+// TODO determine where to set the phase time.Time when the above occurs
 func (e *movesEngine) ValidPhase(in *model.GameInput, game *model.Game) (valid bool, err error) {
 	// fetch the Game
 	if game.Phase < 1 {
