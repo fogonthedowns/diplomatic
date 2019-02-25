@@ -3,7 +3,8 @@ package gamecrud
 import (
 	"context"
 	"database/sql"
-	// "fmt"
+	"errors"
+	"fmt"
 
 	db "diplomacy/db"
 	model "diplomacy/model"
@@ -28,29 +29,41 @@ type movesEngine struct {
 // Count the pieces_moves table, when the records are complete or when time expires update the pieces_moves.location_resolved
 // Update the game phase, year and phase_end based on the orders_interval
 func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, error) {
-	query := "Insert pieces_moves SET title=?, game_year=?"
+	// first_query := "Insert pieces_moves SET title=?, game_year=?"
+	query := "Select user_id, game_id, country from users_games where user_id=? and game_id=?"
+
+	res, err := e.fetchGameUser(ctx, query, in.UserId, in.Id)
+
+	if res == nil {
+		return -1, errors.New("The User is not a member of this game")
+	}
+
+	if err != nil {
+		fmt.Printf("error fetchGameUser(): %v \n", err)
+		return -1, err
+	}
 
 	// TODO IMPLEMENT
-	err = e.Validate(in.Id, in.UserId, in.Country, in.Phase, in.PhaseEnd)
+	_, err = e.Validate(in, res)
 
-	stmt, err := e.Conn.PrepareContext(ctx, query)
+	// stmt, err := e.Conn.PrepareContext(ctx, query)
 
-	if err != nil {
-		return -1, err
-	}
+	// if err != nil {
+	// 	return -1, err
+	// }
 
-	res, err := stmt.ExecContext(ctx, in.Title, "1901-04-01")
-	defer stmt.Close()
+	// res, err = stmt.ExecContext(ctx, in.Title, "1901-04-01")
+	// defer stmt.Close()
 
-	if err != nil {
-		return -1, err
-	}
+	// if err != nil {
+	// 	return -1, err
+	// }
 
-	game_id, err := res.LastInsertId()
+	// game_id, err := res.LastInsertId()
 
-	if err != nil {
-		return -1, err
-	}
+	// if err != nil {
+	// 	return -1, err
+	// }
 
 	// err = e.setTerritoryRecords(ctx, game_id)
 
@@ -64,11 +77,76 @@ func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, e
 	// 	return -1, err
 	// }
 
-	return game_id, err
+	return 0, err
+}
+
+func (e *movesEngine) Validate(in *model.GameInput, res *model.GameUser) (valid bool, err error) {
+	if in.Country != res.Country {
+		return false, errors.New("The User does not control this country")
+	}
+
+	return true, err
+}
+
+// func (e *movesEngine) ValidInsert(in *model.GameInput) (valid bool, err error) {
+// 	// fetch the Game
+// 	query := "Select id, game_year, phase, phase_end, title From games where id=?"
+// 	rows, err := e.fetchGame(ctx, query, in.Id)
+// 	// TODO compare the time.Before()
+// }
+
+func (e *movesEngine) fetchGame(ctx context.Context, query string, args ...interface{}) ([]*model.Game, error) {
+	rows, err := e.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	payload := make([]*model.Game, 0)
+	for rows.Next() {
+		data := new(model.Game)
+
+		err := rows.Scan(
+			&data.Id,
+			&data.GameYear,
+			&data.Phase,
+			&data.PhaseEnd,
+			&data.Title,
+		)
+		if err != nil {
+			return nil, err
+		}
+		payload = append(payload, data)
+	}
+	return payload, nil
+}
+
+func (e *movesEngine) fetchGameUser(ctx context.Context, query string, args ...interface{}) (*model.GameUser, error) {
+	rows, err := e.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var payload *model.GameUser
+	for rows.Next() {
+		data := &model.GameUser{}
+
+		err := rows.Scan(
+			&data.UserId,
+			&data.GameId,
+			&data.Country,
+		)
+		if err != nil {
+			return nil, err
+		}
+		payload = data
+	}
+	return payload, nil
 }
 
 // TODO IMPLEMENT
-func (m *movesEngine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
+func (e *movesEngine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
 	game := make([]*model.Game, 0)
 	return game, nil
 }
