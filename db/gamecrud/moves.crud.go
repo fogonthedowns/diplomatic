@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	db "diplomacy/db"
 	model "diplomacy/model"
@@ -31,6 +32,7 @@ type movesEngine struct {
 func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, error) {
 	// first_query := "Insert pieces_moves SET title=?, game_year=?"
 	query := "Select user_id, game_id, country from users_games where user_id=? and game_id=?"
+	gameQuery := "Select id, game_year, phase, phase_end, title From games where id=?"
 
 	res, err := e.fetchGameUser(ctx, query, in.UserId, in.Id)
 
@@ -43,8 +45,19 @@ func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, e
 		return -1, err
 	}
 
+	game, err := e.fetchGame(ctx, gameQuery, in.Id)
+
+	if game == nil {
+		return -1, errors.New("The Game can not be loaded")
+	}
+
+	if err != nil {
+		fmt.Printf("error fetchGameUser(): %v \n", err)
+		return -1, err
+	}
 	// TODO IMPLEMENT
 	_, err = e.Validate(in, res)
+	_, err = e.ValidPhase(in, game)
 
 	// stmt, err := e.Conn.PrepareContext(ctx, query)
 
@@ -88,23 +101,32 @@ func (e *movesEngine) Validate(in *model.GameInput, res *model.GameUser) (valid 
 	return true, err
 }
 
-// func (e *movesEngine) ValidInsert(in *model.GameInput) (valid bool, err error) {
-// 	// fetch the Game
-// 	query := "Select id, game_year, phase, phase_end, title From games where id=?"
-// 	rows, err := e.fetchGame(ctx, query, in.Id)
-// 	// TODO compare the time.Before()
-// }
+func (e *movesEngine) ValidPhase(in *model.GameInput, game *model.Game) (valid bool, err error) {
+	// fetch the Game
+	if game.Phase < 1 {
+		return false, errors.New("The Game has not started yet")
+	}
+	now := time.Now()
+	fmt.Printf("*** before *game.PhaseEnd%v\n", *game)
+	valid = now.Before(*game.PhaseEnd)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("***** valid %v \n", valid)
+	return valid, err
+	// TODO compare the time.Before()
+}
 
-func (e *movesEngine) fetchGame(ctx context.Context, query string, args ...interface{}) ([]*model.Game, error) {
+func (e *movesEngine) fetchGame(ctx context.Context, query string, args ...interface{}) (*model.Game, error) {
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	payload := make([]*model.Game, 0)
+	var payload *model.Game
 	for rows.Next() {
-		data := new(model.Game)
+		data := &model.Game{}
 
 		err := rows.Scan(
 			&data.Id,
@@ -116,7 +138,7 @@ func (e *movesEngine) fetchGame(ctx context.Context, query string, args ...inter
 		if err != nil {
 			return nil, err
 		}
-		payload = append(payload, data)
+		payload = data
 	}
 	return payload, nil
 }
