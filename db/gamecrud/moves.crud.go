@@ -20,7 +20,7 @@ type movesEngine struct {
 	Conn *sql.DB
 }
 
-// This should be update or create but this conforms to the interface
+// This could be update or create but this conforms to the interface
 // A Player can send moves
 // Validate a player is part of the game
 // Validate they own the country
@@ -29,6 +29,9 @@ type movesEngine struct {
 // Update the game phase, year and phase_end based on the orders_interval
 func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, error) {
 	query := "Insert pieces_moves SET title=?, game_year=?"
+
+	// TODO IMPLEMENT
+	err = e.Validate(in.Id, in.UserId, in.Country, in.Phase, in.PhaseEnd)
 
 	stmt, err := e.Conn.PrepareContext(ctx, query)
 
