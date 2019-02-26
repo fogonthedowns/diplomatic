@@ -46,12 +46,10 @@ func (g *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	id, err := g.db.Create(r.Context(), &gameInput)
 
-	fmt.Printf("1 ****%+v \n", id)
-
 	if err != nil {
-		respondwithJSON(w, http.StatusInternalServerError, model.ErrorMessage{Message: fmt.Sprintf("%v\n", err)})
+		respondwithJSON(w, http.StatusInternalServerError, model.ErrorMessage{Message: fmt.Sprintf("%v", err)})
 	} else {
-		respondwithJSON(w, http.StatusCreated, map[string]string{"message": "Successfully Created"})
+		respondwithJSON(w, http.StatusCreated, map[string]string{"message": fmt.Sprintf("%v created", id)})
 	}
 }
 
@@ -67,7 +65,6 @@ func (g *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (g *GameHandler) Update(w http.ResponseWriter, r *http.Request) {
 	p := strings.Split(r.URL.Path, "/")
 
-	fmt.Printf("key %+v\n", p[2])
 	var id int
 	if len(p) == 3 {
 		id, _ = strconv.Atoi(p[2])

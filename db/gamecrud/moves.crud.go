@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	db "diplomacy/db"
@@ -56,7 +57,7 @@ func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, e
 		return -1, err
 	}
 	// TODO IMPLEMENT
-	_, err = e.Validate(in, res)
+	_, err = e.ValidateCountry(in, res)
 	_, err = e.ValidPhase(in, game)
 
 	// stmt, err := e.Conn.PrepareContext(ctx, query)
@@ -93,7 +94,7 @@ func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, e
 	return 0, err
 }
 
-func (e *movesEngine) Validate(in *model.GameInput, res *model.GameUser) (valid bool, err error) {
+func (e *movesEngine) ValidateCountry(in *model.GameInput, res *model.GameUser) (valid bool, err error) {
 	if in.Country != res.Country {
 		return false, errors.New("The User does not control this country")
 	}
@@ -110,7 +111,9 @@ func (e *movesEngine) ValidPhase(in *model.GameInput, game *model.Game) (valid b
 	}
 	now := time.Now()
 	fmt.Printf("*** before *game.PhaseEnd%v\n", *game)
-	valid = now.Before(*game.PhaseEnd)
+	timestamp, err := strconv.ParseInt(game.PhaseEnd, 10, 64)
+	tm := time.Unix(timestamp, 0)
+	valid = now.Before(tm)
 	if err != nil {
 		panic(err)
 	}

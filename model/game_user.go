@@ -9,7 +9,7 @@ type GameUser struct {
 }
 
 func Validate(gameusers []GameUser, c Country) error {
-	if len(gameusers) == 5 {
+	if len(gameusers) == 7 {
 		return errors.New("The Selected Game is Full")
 	}
 

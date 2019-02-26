@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"time"
 )
 
@@ -10,13 +11,14 @@ type Game struct {
 	StartedAt      *time.Time `json: "started_at"`
 	GameYear       *time.Time `json: "game_year"`
 	Phase          int        `json: "phase"`
-	PhaseEnd       *time.Time `json: "phase_end"`
+	PhaseEnd       string     `json: "phase_end"`
 	OrdersInterval int        `json: "orders_interval"`
 	GameBoard      GameBoard  `json: "game_squares,omitempty"`
 }
 
-// SetUpGameBoard() Fills in an empty game.GameBoard from data loaded from territory and piece rows in the db
-func (g *Game) SetUpGameBoard(territoryRows []TerritoryRow, pieceRows []PieceRow) {
+// DrawGameBoard() Fills in an empty game.GameBoard from data loaded from territory and piece rows in the db
+// Its reads from the db and can be used at any time to get the current game board state
+func (g *Game) DrawGameBoard(territoryRows []TerritoryRow, pieceRows []PieceRow) {
 	var gb = GameBoard{}
 	var unit = &Unit{}
 
@@ -131,4 +133,11 @@ func (g *Game) NewGameBoard() {
 	}
 
 	g.GameBoard = gb
+}
+
+func (g *Game) ValidatePhaseUpdate(updateToPhase int) error {
+	if g.Phase >= updateToPhase {
+		return errors.New("The Phase has already been updated")
+	}
+	return nil
 }
