@@ -18,4 +18,5 @@ type GameInput struct {
 	LocationStart     Territory `json:"location_start"`
 	LocationSubmitted Territory `json:"location_submitted"`
 	PieceId           int       `json:"piece_id"`
+	MoveType          MoveType  `json:"move_type"`
 }

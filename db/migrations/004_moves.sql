@@ -1,14 +1,13 @@
 USE diplomacy;
-DROP TABLE IF EXISTS pieces_moves;
 DROP TABLE IF EXISTS moves;
 CREATE TABLE moves (
   id int(11) NOT NULL AUTO_INCREMENT,
   location_start VARCHAR(10) CHARACTER SET utf8 NOT NULL,
   location_submitted VARCHAR(10) CHARACTER SET utf8 NOT NULL,
-  location_resolved VARCHAR(10) CHARACTER SET utf8 NOT NULL,
+  location_resolved VARCHAR(10) CHARACTER SET utf8,
   phase int NOT NULL,
   game_year DATE,
-  type int(5) NOT NULL,
+  type VARCHAR(10) NOT NULL,
   piece_id int(11) NOT NULL,
   game_id int(11) NOT NULL,
   PRIMARY KEY (id)

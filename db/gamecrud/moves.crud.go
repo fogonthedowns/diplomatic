@@ -31,9 +31,11 @@ type movesEngine struct {
 // Count the pieces_moves table, when the records are complete or when time expires update the pieces_moves.location_resolved
 // Update the game phase, year and phase_end based on the orders_interval
 func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, error) {
-	// first_query := "Insert pieces_moves SET title=?, game_year=?"
 	query := "Select user_id, game_id, country from users_games where user_id=? and game_id=?"
 	gameQuery := "Select id, game_year, phase, phase_end, title From games where id=?"
+	// moveQuery := "Select id, game_year, phase, piece_id where id=?"
+	// type corresponds to move type (hold, move, support)
+	pieceMoveInsert := "Insert moves SET location_start=?, location_submitted=?, phase=?, piece_id=?, game_id=?, type=?"
 
 	res, err := e.fetchGameUser(ctx, query, in.UserId, in.Id)
 
@@ -60,36 +62,26 @@ func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, e
 	_, err = e.ValidateCountry(in, res)
 	_, err = e.ValidPhase(in, game)
 
-	// stmt, err := e.Conn.PrepareContext(ctx, query)
+	stmt, err := e.Conn.PrepareContext(ctx, pieceMoveInsert)
 
-	// if err != nil {
-	// 	return -1, err
-	// }
+	if err != nil {
+		return -1, err
+	}
 
-	// res, err = stmt.ExecContext(ctx, in.Title, "1901-04-01")
-	// defer stmt.Close()
+	fmt.Printf("********* %+v \n", in)
 
-	// if err != nil {
-	// 	return -1, err
-	// }
+	_, err = stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, in.Phase, in.PieceId, in.Id, in.MoveType)
+	defer stmt.Close()
 
-	// game_id, err := res.LastInsertId()
+	if err != nil {
+		return -1, err
+	}
 
-	// if err != nil {
-	// 	return -1, err
-	// }
+	// res_id, err := res.LastInsertId()
 
-	// err = e.setTerritoryRecords(ctx, game_id)
-
-	// if err != nil {
-	// 	return -1, err
-	// }
-
-	// err = e.setGamePieceRecords(ctx, game_id)
-
-	// if err != nil {
-	// 	return -1, err
-	// }
+	if err != nil {
+		return -1, err
+	}
 
 	return 0, err
 }
