@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"time"
 
 	db "diplomacy/db"
 	model "diplomacy/model"
@@ -27,6 +28,7 @@ func (e *engine) Create(ctx context.Context, in *model.GameInput) (int64, error)
 	stmt, err := e.Conn.PrepareContext(ctx, query)
 
 	if err != nil {
+		fmt.Printf("**** PrepareContext %v", err)
 		return -1, err
 	}
 
@@ -34,24 +36,28 @@ func (e *engine) Create(ctx context.Context, in *model.GameInput) (int64, error)
 	defer stmt.Close()
 
 	if err != nil {
+		fmt.Printf("**** ExecContext %v", err)
 		return -1, err
 	}
 
 	game_id, err := res.LastInsertId()
 
 	if err != nil {
+		fmt.Printf("**** ExecContext %v", err)
 		return -1, err
 	}
 
-	err = e.setTerritoryRecords(ctx, game_id)
+	err = e.initTerritoryRecords(ctx, game_id)
 
 	if err != nil {
+		fmt.Printf("**** ExecContext %v", err)
 		return -1, err
 	}
 
-	err = e.setGamePieceRecords(ctx, game_id)
+	err = e.initGamePieceRecords(ctx, game_id)
 
 	if err != nil {
+		fmt.Printf("**** ExecContext %v", err)
 		return -1, err
 	}
 
@@ -198,7 +204,28 @@ func (e *engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 		return nil, nil //model.ErrNotFound
 	}
 
-	game.SetUpGameBoard(territories, pieces)
+	game.DrawGameBoard(territories, pieces)
+	// return the Game
+	return game, nil
+}
+
+func (e *engine) getGameByIdWithoutBoard(ctx context.Context, id int64) (*model.Game, error) {
+	query := "Select id, game_year, phase, phase_end, title From games where id=?"
+	// fetch the Game
+	rows, err := e.fetch(ctx, query, id)
+
+	if err != nil {
+		fmt.Printf("err %v \n", err)
+		return nil, err
+	}
+
+	// Make the Game model
+	game := &model.Game{}
+	if len(rows) > 0 {
+		game = rows[0]
+	} else {
+		return nil, nil //model.ErrNotFound
+	}
 	// return the Game
 	return game, nil
 }
@@ -214,10 +241,11 @@ func (e *engine) Update(ctx context.Context, in *model.GameInput) (*model.GameIn
 	}
 
 	gameusers, err := e.getGameUsers(ctx, in.Id)
+
 	err = model.Validate(gameusers, in.Country)
 
 	if err != nil {
-		fmt.Printf("err %v\n", err)
+		fmt.Printf("err1: %v\n", err)
 		return nil, 409, err
 	}
 
@@ -229,12 +257,54 @@ func (e *engine) Update(ctx context.Context, in *model.GameInput) (*model.GameIn
 	)
 
 	if err != nil {
-		fmt.Printf("err %v\n", err)
+		fmt.Printf("err2: %v\n", err)
 		return nil, 500, err
 	}
 	defer stmt.Close()
 
+	// The last user was added to the game with success of ExecContext()
+	// and a user count of 6, update the phase!
+	if len(gameusers) == 6 {
+		err := e.updateGamePhase(ctx, in.Id, 1)
+		return nil, 500, err
+	}
+
 	return in, 200, nil
+}
+
+// Create Piece records, setting the user.id
+// Create Territory records, setting the user.id
+func (e *engine) updateGamePhase(ctx context.Context, game_id int64, phase int) error {
+	game, err := e.getGameByIdWithoutBoard(ctx, game_id)
+	if err != nil {
+		fmt.Printf("**** getGameByIdWithoutBoard %v\n", err)
+		return err
+	}
+	err = game.ValidatePhaseUpdate(phase)
+	if err != nil {
+		fmt.Printf("**** error %v\n", err)
+		return err
+	}
+
+	query := "UPDATE games SET phase = ?, phase_end=? WHERE id=?"
+	stmt, err := e.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(
+		ctx,
+		phase,
+		time.Now().Add(time.Hour*time.Duration(12)).Unix(),
+		game_id,
+	)
+
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	return nil
 }
 
 func (e *engine) getGameUsers(ctx context.Context, game_id int64) ([]model.GameUser, error) {
@@ -265,7 +335,7 @@ func (e *engine) getGameUsers(ctx context.Context, game_id int64) ([]model.GameU
 	return gameusers, err
 }
 
-func (e *engine) setTerritoryRecords(ctx context.Context, game_id int64) error {
+func (e *engine) initTerritoryRecords(ctx context.Context, game_id int64) error {
 	g := model.Game{}
 	g.NewGameBoard()
 	query := "Insert INTO territory(game_id, country, owner) VALUES "
@@ -293,7 +363,7 @@ func (e *engine) setTerritoryRecords(ctx context.Context, game_id int64) error {
 	return err
 }
 
-func (e *engine) setGamePieceRecords(ctx context.Context, game_id int64) error {
+func (e *engine) initGamePieceRecords(ctx context.Context, game_id int64) error {
 	g := model.Game{}
 	g.NewGameBoard()
 	query := "Insert INTO pieces(game_id, type, location, owner) VALUES "
