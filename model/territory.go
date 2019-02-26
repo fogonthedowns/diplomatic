@@ -1,5 +1,13 @@
 package model
 
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"regexp"
+)
+
 const (
 	AEGEAN_SEA                = Territory("AEG")
 	CLYDE                     = Territory("CLY")
@@ -266,4 +274,40 @@ func (t *Territory) ValidLandMovement(check Territory) bool {
 		}
 	}
 	return false
+}
+
+var reTerritory = regexp.MustCompile(`^(|AEG|LON|CLY)$`)
+
+func (d *Territory) validate(s string) error {
+	if matched := reTerritory.MatchString(s); matched == false {
+		return errors.New("Territory: invalid value")
+	}
+	return nil
+}
+
+func (d *Territory) assign(s string) {
+	*d = Territory(s)
+}
+
+func (d *Territory) UnmarshalJSON(b []byte) (err error) {
+	var s string
+	if err := json.Unmarshal(b, &s); err == nil {
+		if err = d.validate(s); err == nil {
+			d.assign(s)
+		}
+		fmt.Printf("*********** error %v\n", err)
+	}
+	return err
+}
+
+func (d Territory) Value() (driver.Value, error) {
+	return string(d), nil
+}
+
+func (z *Territory) Scan(s interface{}) (err error) {
+	if z == nil {
+		return errors.New("Territory: Scan on nil pointer")
+	}
+	*z = Territory(string(s.([]uint8)))
+	return nil
 }
