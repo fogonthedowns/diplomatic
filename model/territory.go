@@ -276,7 +276,7 @@ func (t *Territory) ValidLandMovement(check Territory) bool {
 	return false
 }
 
-var reTerritory = regexp.MustCompile(`^(|AEG|LON|CLY)$`)
+var reTerritory = regexp.MustCompile(`^(|"AEG"|"CLY"|"NAO"|"IHS"|"ENC"|"EDB"|"YRK"|"LON"|"WLS"|"LIV"|"NHS"|"NOS"|"MAO"|"BST"|"PIC"|"PRS"|"BGM"|"HOL"|"GAS"|"BRG"|"MAR"|"SPA"|"SNC"|"SSC"||"PRT"|"GOL"|"WMD"|"NAK"|"TUN"|"TYR"|"ION"|"PDT"|"VEN"|"TUS"|"ROM"|"APU"|"NAP"|"ADR"|"TYA"|"BOH"|"VNA"|"TTE"|"BUD"|"SBA"|"ALB"|"GRC"|"RMA"|"BUL"|"BUE"|"BUS"|"AGS"|"EMD"|"CON"|"ANK"|"SMY"|"ARM"|"SYR"|"BLA"|"SEV"|"MOS"|"UKR"|"STP"|"SPN"|"SPS"|"LVA"|"WAR"|"FIN"|"SWE"|"NOR"|"GOB"|"BAS"|"BAL"|"PRU"|"SIL"|"GAL"|"DEN"|"SKA"|"HEL"|"KIE"|"BER"|"MUN"|"RUH")$`)
 
 func (d *Territory) validate(s string) error {
 	if matched := reTerritory.MatchString(s); matched == false {
