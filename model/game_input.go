@@ -14,7 +14,7 @@ type GameInput struct {
 	OrdersInterval    int       `json: "orders_interval"`
 	GameBoard         GameBoard `json: "game_squares,omitempty"`
 	Country           Country   `json:"country"`
-	UserId            int       `json:"user_id"`
+	UserId            int       `json:"user_id"` // must be hard coded in request, based on logged in user_id
 	LocationStart     Territory `json:"location_start"`
 	LocationSubmitted Territory `json:"location_submitted"`
 	PieceId           int       `json:"piece_id"`

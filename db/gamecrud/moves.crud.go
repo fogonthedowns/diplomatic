@@ -30,16 +30,21 @@ type movesEngine struct {
 // Validate time/phase
 // Count the pieces_moves table, when the records are complete or when time expires update the pieces_moves.location_resolved
 // Update the game phase, year and phase_end based on the orders_interval
+
+// TODO USE A DIFFERNET STRUCT where COUNTRY IS NOT AMBIGOUS
+// ITS REALLY THE PIECE COUNTRY BUT I LOST 20 minutes trying to determine if it was user country!
+// IN THIS STRUCT INTRODUCE FINALIZED CONCEPT
+
 func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, error) {
 	query := "Select user_id, game_id, country from users_games where user_id=? and game_id=?"
 	gameQuery := "Select id, game_year, phase, phase_end, title From games where id=?"
-	// moveQuery := "Select id, game_year, phase, piece_id where id=?"
-	// type corresponds to move type (hold, move, support)
-	pieceMoveInsert := "Insert moves SET location_start=?, location_submitted=?, phase=?, piece_id=?, game_id=?, type=?"
+	doesPieceMoveExist := "select id from moves where game_id=? AND phase=? AND piece_id=?"
+	pieceMoveInsert := "Insert moves SET location_start=?, location_submitted=?, phase=?, game_id=?, type=?, piece_id=?"
+	pieceMoveUpdate := "Update moves SET location_start=?, location_submitted=?, phase=?, game_id=?, type=? WHERE piece_id=?"
 
-	res, err := e.fetchGameUser(ctx, query, in.UserId, in.Id)
+	gameUser, err := e.fetchGameUser(ctx, query, in.UserId, in.Id)
 
-	if res == nil {
+	if gameUser == nil {
 		return -1, errors.New("The User is not a member of this game")
 	}
 
@@ -54,23 +59,43 @@ func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, e
 		return -1, errors.New("The Game can not be loaded")
 	}
 
-	if err != nil {
-		fmt.Printf("error fetchGameUser(): %v \n", err)
-		return -1, err
-	}
-	// TODO IMPLEMENT
-	_, err = e.ValidateCountry(in, res)
-	_, err = e.ValidPhase(in, game)
-
-	stmt, err := e.Conn.PrepareContext(ctx, pieceMoveInsert)
+	// validate
+	err = e.ValidateCountry(in, gameUser)
 
 	if err != nil {
 		return -1, err
 	}
 
-	fmt.Printf("********* %+v \n", in)
+	err = e.ValidPhase(in, game)
 
-	_, err = stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, in.Phase, in.PieceId, in.Id, in.MoveType)
+	if err != nil {
+		return -1, err
+	}
+
+	// Does the submitted move exist for this piece?
+	move, err := e.fetchMove(ctx, doesPieceMoveExist, in.Id, in.Phase, in.PieceId)
+
+	if err != nil {
+		fmt.Printf("error fetchMove(): %v \n", err)
+		return -1, err
+	}
+
+	// if the submitted move does not exist create it; otherwise update it
+	var insertType string
+	switch move {
+	case nil:
+		insertType = pieceMoveInsert
+	default:
+		insertType = pieceMoveUpdate
+	}
+
+	stmt, err := e.Conn.PrepareContext(ctx, insertType)
+
+	if err != nil {
+		return -1, err
+	}
+
+	_, err = stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, in.Phase, in.Id, in.MoveType, in.PieceId)
 	defer stmt.Close()
 
 	if err != nil {
@@ -86,32 +111,33 @@ func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, e
 	return 0, err
 }
 
-func (e *movesEngine) ValidateCountry(in *model.GameInput, res *model.GameUser) (valid bool, err error) {
+// This validation does not make sense
+func (e *movesEngine) ValidateCountry(in *model.GameInput, res *model.GameUser) (err error) {
 	if in.Country != res.Country {
-		return false, errors.New("The User does not control this country")
+		return errors.New("The User does not control this country")
 	}
-
-	return true, err
+	return err
 }
 
 // TODO determine when to move game from phase 0 -> phase 1
 // TODO determine where to set the phase time.Time when the above occurs
-func (e *movesEngine) ValidPhase(in *model.GameInput, game *model.Game) (valid bool, err error) {
+func (e *movesEngine) ValidPhase(in *model.GameInput, game *model.Game) (err error) {
 	// fetch the Game
 	if game.Phase < 1 {
-		return false, errors.New("The Game has not started yet")
+		return errors.New("The Game has not started yet")
 	}
 	now := time.Now()
-	fmt.Printf("*** before *game.PhaseEnd%v\n", *game)
 	timestamp, err := strconv.ParseInt(game.PhaseEnd, 10, 64)
-	tm := time.Unix(timestamp, 0)
-	valid = now.Before(tm)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("***** valid %v \n", valid)
-	return valid, err
-	// TODO compare the time.Before()
+	tm := time.Unix(timestamp, 0)
+	valid := now.Before(tm)
+	if !valid {
+		return errors.New("The phase has ended")
+	}
+
+	return err
 }
 
 func (e *movesEngine) fetchGame(ctx context.Context, query string, args ...interface{}) (*model.Game, error) {
@@ -131,6 +157,28 @@ func (e *movesEngine) fetchGame(ctx context.Context, query string, args ...inter
 			&data.Phase,
 			&data.PhaseEnd,
 			&data.Title,
+		)
+		if err != nil {
+			return nil, err
+		}
+		payload = data
+	}
+	return payload, nil
+}
+
+func (e *movesEngine) fetchMove(ctx context.Context, query string, args ...interface{}) (*model.GameInput, error) {
+	rows, err := e.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var payload *model.GameInput
+	for rows.Next() {
+		data := &model.GameInput{}
+
+		err := rows.Scan(
+			&data.Id,
 		)
 		if err != nil {
 			return nil, err
