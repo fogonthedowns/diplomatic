@@ -37,9 +37,13 @@ func (g *MovesHandler) CreateOrUpdate(w http.ResponseWriter, r *http.Request) {
 	gameInput := model.GameInput{}
 
 	decoder := json.NewDecoder(r.Body)
+
+	// UnmarshalJSON() of gameInput
+	// will do some data validation
 	err := decoder.Decode(&gameInput)
 	if err != nil {
-		panic(err)
+		respondwithJSON(w, http.StatusInternalServerError, model.ErrorMessage{Message: fmt.Sprintf("%v\n", err)})
+		return
 	}
 	// t := model.Territory("NOS")
 	// b := model.Territory("SYR")
@@ -52,7 +56,9 @@ func (g *MovesHandler) CreateOrUpdate(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		respondwithJSON(w, http.StatusInternalServerError, model.ErrorMessage{Message: fmt.Sprintf("%v\n", err)})
-	} else {
-		respondwithJSON(w, http.StatusCreated, map[string]string{"message": "Successfully Created"})
+		return
 	}
+
+	respondwithJSON(w, http.StatusCreated, map[string]string{"message": "Successfully Created"})
+
 }
