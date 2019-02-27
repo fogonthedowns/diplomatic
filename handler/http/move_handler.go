@@ -38,7 +38,7 @@ func (g *MovesHandler) CreateOrUpdate(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 
-	// UnmarshalJSON() of gameInput
+	// UnmarshalJSON() is called on GameInput
 	// will do some data validation
 	err := decoder.Decode(&gameInput)
 	if err != nil {
@@ -50,9 +50,9 @@ func (g *MovesHandler) CreateOrUpdate(w http.ResponseWriter, r *http.Request) {
 	// game.AddGameSquares()
 	// fmt.Printf("****%+v \n", t.ValidSeaMovement(b))
 
-	id, err := g.db.Create(r.Context(), &gameInput)
+	_, err = g.db.Create(r.Context(), &gameInput)
 
-	fmt.Printf("1 ****%+v \n", id)
+	// fmt.Printf("1 ****%+v \n", id)
 
 	if err != nil {
 		respondwithJSON(w, http.StatusInternalServerError, model.ErrorMessage{Message: fmt.Sprintf("%v\n", err)})
