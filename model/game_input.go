@@ -10,7 +10,7 @@ type GameInput struct {
 	StartedAt         time.Time `json: "started_at"`
 	GameYear          time.Time `json: "game_year"`
 	Phase             int       `json: "phase"`
-	PhaseEnd          time.Time `json: "phase_end"`
+	PhaseEnd          string    `json: "phase_end"`
 	OrdersInterval    int       `json: "orders_interval"`
 	GameBoard         GameBoard `json: "game_squares,omitempty"`
 	Country           Country   `json:"country"`
@@ -18,5 +18,5 @@ type GameInput struct {
 	LocationStart     Territory `json:"location_start"`
 	LocationSubmitted Territory `json:"location_submitted"`
 	PieceId           int       `json:"piece_id"`
-	MoveType          MoveType  `json:"move_type"`
+	MoveType          OrderType `json:"move_type"`
 }
