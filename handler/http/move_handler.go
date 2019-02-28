@@ -4,12 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	// "strconv"
-	// "strings"
 
-	// "github.com/go-chi/chi"
-
-	// db "diplomacy/db"
 	gamecrud "diplomacy/db/gamecrud"
 	"diplomacy/driver"
 	model "diplomacy/model"
@@ -50,7 +45,7 @@ func (g *MovesHandler) CreateOrUpdate(w http.ResponseWriter, r *http.Request) {
 	// game.AddGameSquares()
 	// fmt.Printf("****%+v \n", t.ValidSeaMovement(b))
 
-	_, err = g.db.Create(r.Context(), &moveInput)
+	_, err = g.db.CreateOrUpdate(r.Context(), &moveInput)
 
 	// fmt.Printf("1 ****%+v \n", id)
 

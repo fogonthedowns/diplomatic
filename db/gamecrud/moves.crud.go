@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	// db "diplomacy/db"
 	model "diplomacy/model"
 )
 
@@ -31,12 +30,9 @@ type MovesEngine struct {
 // Validate time/phase
 // Count the pieces_moves table, when the records are complete or when time expires update the pieces_moves.location_resolved
 // Update the game phase, year and phase_end based on the orders_interval
+// todi introduce finalize moves
 
-// TODO USE A DIFFERNET STRUCT where COUNTRY IS NOT AMBIGOUS
-// ITS REALLY THE PIECE COUNTRY BUT I LOST 20 minutes trying to determine if it was user country!
-// IN THIS STRUCT INTRODUCE FINALIZED CONCEPT
-
-func (e *MovesEngine) Create(ctx context.Context, in *model.MoveInput) (int64, error) {
+func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.MoveInput) (int64, error) {
 	query := "Select user_id, game_id, country from users_games where user_id=? and game_id=?"
 	gameQuery := "Select id, game_year, phase, phase_end, title From games where id=?"
 	doesPieceMoveExist := "select id from moves where game_id=? AND phase=? AND piece_id=?"

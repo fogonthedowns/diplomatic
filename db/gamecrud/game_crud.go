@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	// db "diplomacy/db"
 	model "diplomacy/model"
 )
 
