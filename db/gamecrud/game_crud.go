@@ -7,22 +7,23 @@ import (
 	"strconv"
 	"time"
 
-	db "diplomacy/db"
+	// db "diplomacy/db"
 	model "diplomacy/model"
 )
 
 // NewSQLPostRepo retunrs implement of game db interface
-func NewEngine(Conn *sql.DB) db.Crud {
-	return &engine{
+func NewEngine(Conn *sql.DB) Engine {
+	e := Engine{
 		Conn: Conn,
 	}
+	return e
 }
 
-type engine struct {
+type Engine struct {
 	Conn *sql.DB
 }
 
-func (e *engine) Create(ctx context.Context, in *model.GameInput) (int64, error) {
+func (e *Engine) Create(ctx context.Context, in *model.GameInput) (int64, error) {
 	query := "Insert games SET title=?, game_year=?"
 
 	stmt, err := e.Conn.PrepareContext(ctx, query)
@@ -64,7 +65,7 @@ func (e *engine) Create(ctx context.Context, in *model.GameInput) (int64, error)
 	return game_id, err
 }
 
-func (e *engine) fetch(ctx context.Context, query string, args ...interface{}) ([]*model.Game, error) {
+func (e *Engine) fetch(ctx context.Context, query string, args ...interface{}) ([]*model.Game, error) {
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -90,7 +91,7 @@ func (e *engine) fetch(ctx context.Context, query string, args ...interface{}) (
 	return payload, nil
 }
 
-func (e *engine) fetchTerritories(ctx context.Context, query string, args ...interface{}) ([]*model.TerritoryRow, error) {
+func (e *Engine) fetchTerritories(ctx context.Context, query string, args ...interface{}) ([]*model.TerritoryRow, error) {
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -116,7 +117,7 @@ func (e *engine) fetchTerritories(ctx context.Context, query string, args ...int
 	return payload, nil
 }
 
-func (e *engine) fetchPieces(ctx context.Context, query string, args ...interface{}) ([]*model.PieceRow, error) {
+func (e *Engine) fetchPieces(ctx context.Context, query string, args ...interface{}) ([]*model.PieceRow, error) {
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -147,13 +148,13 @@ func (e *engine) fetchPieces(ctx context.Context, query string, args ...interfac
 // TODO SORT BY DATE
 // WHERE game phase is 0
 // Search by user_games
-func (m *engine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
+func (m *Engine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
 	query := "Select id, game_year, phase, phase_end, title From games limit ?"
 
 	return m.fetch(ctx, query, num)
 }
 
-func (e *engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
+func (e *Engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 	query := "Select id, game_year, phase, phase_end, title From games where id=?"
 	secondQuery := "select id, game_id, owner, country from territory where game_id=?"
 	thirdQuery := "select id, game_id, owner, type, is_active, location from pieces where game_id=?"
@@ -209,7 +210,7 @@ func (e *engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 	return game, nil
 }
 
-func (e *engine) getGameByIdWithoutBoard(ctx context.Context, id int64) (*model.Game, error) {
+func (e *Engine) getGameByIdWithoutBoard(ctx context.Context, id int64) (*model.Game, error) {
 	query := "Select id, game_year, phase, phase_end, title From games where id=?"
 	// fetch the Game
 	rows, err := e.fetch(ctx, query, id)
@@ -232,7 +233,7 @@ func (e *engine) getGameByIdWithoutBoard(ctx context.Context, id int64) (*model.
 
 // Create Piece records, setting the user.id
 // Create Territory records, setting the user.id
-func (e *engine) Update(ctx context.Context, in *model.GameInput) (*model.GameInput, int, error) {
+func (e *Engine) Update(ctx context.Context, in *model.GameInput) (*model.GameInput, int, error) {
 	query := "Insert users_games SET user_id=?, country=?, game_id=?"
 	stmt, err := e.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -274,7 +275,7 @@ func (e *engine) Update(ctx context.Context, in *model.GameInput) (*model.GameIn
 
 // Create Piece records, setting the user.id
 // Create Territory records, setting the user.id
-func (e *engine) updateGamePhase(ctx context.Context, game_id int64, phase int) error {
+func (e *Engine) updateGamePhase(ctx context.Context, game_id int64, phase int) error {
 	game, err := e.getGameByIdWithoutBoard(ctx, game_id)
 	if err != nil {
 		fmt.Printf("**** getGameByIdWithoutBoard %v\n", err)
@@ -307,7 +308,7 @@ func (e *engine) updateGamePhase(ctx context.Context, game_id int64, phase int) 
 	return nil
 }
 
-func (e *engine) getGameUsers(ctx context.Context, game_id int64) ([]model.GameUser, error) {
+func (e *Engine) getGameUsers(ctx context.Context, game_id int64) ([]model.GameUser, error) {
 	gameusers := []model.GameUser{}
 	var err error
 	var rows *sql.Rows
@@ -335,7 +336,7 @@ func (e *engine) getGameUsers(ctx context.Context, game_id int64) ([]model.GameU
 	return gameusers, err
 }
 
-func (e *engine) initTerritoryRecords(ctx context.Context, game_id int64) error {
+func (e *Engine) initTerritoryRecords(ctx context.Context, game_id int64) error {
 	g := model.Game{}
 	g.NewGameBoard()
 	query := "Insert INTO territory(game_id, country, owner) VALUES "
@@ -363,7 +364,7 @@ func (e *engine) initTerritoryRecords(ctx context.Context, game_id int64) error 
 	return err
 }
 
-func (e *engine) initGamePieceRecords(ctx context.Context, game_id int64) error {
+func (e *Engine) initGamePieceRecords(ctx context.Context, game_id int64) error {
 	g := model.Game{}
 	g.NewGameBoard()
 	query := "Insert INTO pieces(game_id, type, location, owner) VALUES "

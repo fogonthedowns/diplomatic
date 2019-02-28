@@ -9,7 +9,7 @@ import (
 
 	// "github.com/go-chi/chi"
 
-	db "diplomacy/db"
+	// db "diplomacy/db"
 	gamecrud "diplomacy/db/gamecrud"
 	"diplomacy/driver"
 	model "diplomacy/model"
@@ -24,7 +24,7 @@ func NewMovesHandler(db *driver.DB) *MovesHandler {
 }
 
 type MovesHandler struct {
-	db db.Crud
+	db gamecrud.MovesEngine
 }
 
 // A Player can send moves
@@ -34,13 +34,13 @@ type MovesHandler struct {
 // Count the pieces_moves table, when the records are complete or when time expires update the pieces_moves.location_resolved
 // Update the game phase, year and phase_end based on the orders_interval
 func (g *MovesHandler) CreateOrUpdate(w http.ResponseWriter, r *http.Request) {
-	gameInput := model.GameInput{}
+	moveInput := model.MoveInput{}
 
 	decoder := json.NewDecoder(r.Body)
 
 	// UnmarshalJSON() is called on GameInput
 	// will do some data validation
-	err := decoder.Decode(&gameInput)
+	err := decoder.Decode(&moveInput)
 	if err != nil {
 		respondwithJSON(w, http.StatusInternalServerError, model.ErrorMessage{Message: fmt.Sprintf("%v\n", err)})
 		return
@@ -50,7 +50,7 @@ func (g *MovesHandler) CreateOrUpdate(w http.ResponseWriter, r *http.Request) {
 	// game.AddGameSquares()
 	// fmt.Printf("****%+v \n", t.ValidSeaMovement(b))
 
-	_, err = g.db.Create(r.Context(), &gameInput)
+	_, err = g.db.Create(r.Context(), &moveInput)
 
 	// fmt.Printf("1 ****%+v \n", id)
 

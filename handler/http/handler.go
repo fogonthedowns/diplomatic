@@ -9,7 +9,7 @@ import (
 
 	// "github.com/go-chi/chi"
 
-	db "diplomacy/db"
+	// db "diplomacy/db/engine"
 	gamecrud "diplomacy/db/gamecrud"
 	"diplomacy/driver"
 	model "diplomacy/model"
@@ -24,7 +24,7 @@ func NewGameHandler(db *driver.DB) *GameHandler {
 }
 
 type GameHandler struct {
-	db db.Crud
+	db gamecrud.Engine
 }
 
 // Creates a new game
