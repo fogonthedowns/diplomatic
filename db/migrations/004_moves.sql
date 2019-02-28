@@ -6,7 +6,7 @@ CREATE TABLE moves (
   location_submitted VARCHAR(10) CHARACTER SET utf8 NOT NULL,
   location_resolved VARCHAR(10) CHARACTER SET utf8,
   phase int NOT NULL,
-  game_year DATE,
+  game_year VARCHAR(5),
   type VARCHAR(10) NOT NULL,
   piece_id int(11) NOT NULL,
   game_id int(11) NOT NULL,

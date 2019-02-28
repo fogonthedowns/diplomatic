@@ -8,18 +8,19 @@ import (
 	"strconv"
 	"time"
 
-	db "diplomacy/db"
+	// db "diplomacy/db"
 	model "diplomacy/model"
 )
 
 // NewSQLPostRepo retunrs implement of game db interface
-func NewMovesEngine(Conn *sql.DB) db.Crud {
-	return &movesEngine{
+func NewMovesEngine(Conn *sql.DB) MovesEngine {
+	me := MovesEngine{
 		Conn: Conn,
 	}
+	return me
 }
 
-type movesEngine struct {
+type MovesEngine struct {
 	Conn *sql.DB
 }
 
@@ -35,15 +36,17 @@ type movesEngine struct {
 // ITS REALLY THE PIECE COUNTRY BUT I LOST 20 minutes trying to determine if it was user country!
 // IN THIS STRUCT INTRODUCE FINALIZED CONCEPT
 
-func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, error) {
+func (e *MovesEngine) Create(ctx context.Context, in *model.MoveInput) (int64, error) {
 	query := "Select user_id, game_id, country from users_games where user_id=? and game_id=?"
 	gameQuery := "Select id, game_year, phase, phase_end, title From games where id=?"
 	doesPieceMoveExist := "select id from moves where game_id=? AND phase=? AND piece_id=?"
 	pieceMoveInsert := "Insert moves SET location_start=?, location_submitted=?, phase=?, game_id=?, type=?, piece_id=?"
 	pieceMoveUpdate := "Update moves SET location_start=?, location_submitted=?, phase=?, game_id=?, type=? WHERE piece_id=?"
 
-	gameUser, err := e.fetchGameUser(ctx, query, in.UserId, in.Id)
+	gameUser, err := e.fetchGameUser(ctx, query, in.UserId, in.GameId)
+	fmt.Printf("GAME ID? %+v", in)
 
+	// Is the User part of this game?
 	if gameUser == nil {
 		return -1, errors.New("The User is not a member of this game")
 	}
@@ -53,19 +56,21 @@ func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, e
 		return -1, err
 	}
 
-	game, err := e.fetchGame(ctx, gameQuery, in.Id)
+	game, err := e.fetchGame(ctx, gameQuery, in.GameId)
 
 	if game == nil {
 		return -1, errors.New("The Game can not be loaded")
 	}
 
-	// validate
+	// Does your User control the piece you are trying to move?
 	err = e.ValidateCountry(in, gameUser)
 
 	if err != nil {
 		return -1, err
 	}
 
+	// Has the game started?
+	// Has the phase ended?
 	err = e.ValidPhase(in, game)
 
 	if err != nil {
@@ -73,14 +78,14 @@ func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, e
 	}
 
 	// Does the submitted move exist for this piece?
-	move, err := e.fetchMove(ctx, doesPieceMoveExist, in.Id, in.Phase, in.PieceId)
+	move, err := e.fetchMove(ctx, doesPieceMoveExist, in.GameId, in.Phase, in.PieceId)
 
 	if err != nil {
 		fmt.Printf("error fetchMove(): %v \n", err)
 		return -1, err
 	}
 
-	// if the submitted move does not exist create it; otherwise update it
+	// if the submitted move does not exist (based on piece id) create it; otherwise update it
 	var insertType string
 	switch move {
 	case nil:
@@ -88,32 +93,24 @@ func (e *movesEngine) Create(ctx context.Context, in *model.GameInput) (int64, e
 	default:
 		insertType = pieceMoveUpdate
 	}
-
 	stmt, err := e.Conn.PrepareContext(ctx, insertType)
 
 	if err != nil {
 		return -1, err
 	}
-
-	_, err = stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, in.Phase, in.Id, in.MoveType, in.PieceId)
+	_, err = stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, in.Phase, in.GameId, in.OrderType, in.PieceId)
 	defer stmt.Close()
-
 	if err != nil {
 		return -1, err
 	}
 
-	// res_id, err := res.LastInsertId()
-
-	if err != nil {
-		return -1, err
-	}
-
+	// return 0
 	return 0, err
 }
 
 // This validation does not make sense
-func (e *movesEngine) ValidateCountry(in *model.GameInput, res *model.GameUser) (err error) {
-	if in.Country != res.Country {
+func (e *MovesEngine) ValidateCountry(move *model.MoveInput, gameUser *model.GameUser) (err error) {
+	if move.PieceOwner != gameUser.Country {
 		return errors.New("The User does not control this country")
 	}
 	return err
@@ -121,7 +118,7 @@ func (e *movesEngine) ValidateCountry(in *model.GameInput, res *model.GameUser) 
 
 // TODO determine when to move game from phase 0 -> phase 1
 // TODO determine where to set the phase time.Time when the above occurs
-func (e *movesEngine) ValidPhase(in *model.GameInput, game *model.Game) (err error) {
+func (e *MovesEngine) ValidPhase(in *model.MoveInput, game *model.Game) (err error) {
 	// fetch the Game
 	if game.Phase < 1 {
 		return errors.New("The Game has not started yet")
@@ -140,7 +137,7 @@ func (e *movesEngine) ValidPhase(in *model.GameInput, game *model.Game) (err err
 	return err
 }
 
-func (e *movesEngine) fetchGame(ctx context.Context, query string, args ...interface{}) (*model.Game, error) {
+func (e *MovesEngine) fetchGame(ctx context.Context, query string, args ...interface{}) (*model.Game, error) {
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -166,16 +163,16 @@ func (e *movesEngine) fetchGame(ctx context.Context, query string, args ...inter
 	return payload, nil
 }
 
-func (e *movesEngine) fetchMove(ctx context.Context, query string, args ...interface{}) (*model.GameInput, error) {
+func (e *MovesEngine) fetchMove(ctx context.Context, query string, args ...interface{}) (*model.MoveInput, error) {
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var payload *model.GameInput
+	var payload *model.MoveInput
 	for rows.Next() {
-		data := &model.GameInput{}
+		data := &model.MoveInput{}
 
 		err := rows.Scan(
 			&data.Id,
@@ -188,7 +185,7 @@ func (e *movesEngine) fetchMove(ctx context.Context, query string, args ...inter
 	return payload, nil
 }
 
-func (e *movesEngine) fetchGameUser(ctx context.Context, query string, args ...interface{}) (*model.GameUser, error) {
+func (e *MovesEngine) fetchGameUser(ctx context.Context, query string, args ...interface{}) (*model.GameUser, error) {
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -213,19 +210,19 @@ func (e *movesEngine) fetchGameUser(ctx context.Context, query string, args ...i
 }
 
 // TODO IMPLEMENT
-func (e *movesEngine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
+func (e *MovesEngine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
 	game := make([]*model.Game, 0)
 	return game, nil
 }
 
 // TODO IMPLEMENT
-func (e *movesEngine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
+func (e *MovesEngine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 	game := &model.Game{}
 	return game, nil
 }
 
 // TODO IMPLEMENT
-func (e *movesEngine) Update(ctx context.Context, in *model.GameInput) (*model.GameInput, int, error) {
-	in = &model.GameInput{}
+func (e *MovesEngine) Update(ctx context.Context, in *model.MoveInput) (*model.MoveInput, int, error) {
+	in = &model.MoveInput{}
 	return in, 200, nil
 }
