@@ -32,7 +32,7 @@ func (e *Engine) Create(ctx context.Context, in *model.GameInput) (int64, error)
 		return -1, err
 	}
 
-	res, err := stmt.ExecContext(ctx, in.Title, "1901-04-01")
+	res, err := stmt.ExecContext(ctx, in.Title, "1901")
 	defer stmt.Close()
 
 	if err != nil {
@@ -176,6 +176,9 @@ func (e *Engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 		return nil, nil //model.ErrNotFound
 	}
 
+	// if the Phase is over
+	// process the moves
+	// update the phase and update PhaseEnd
 	phaseOver := game.HasPhaseEnded()
 	fmt.Printf("has this phase ended? %v\n", phaseOver)
 
