@@ -153,28 +153,41 @@ func (m *Engine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
 	return m.fetch(ctx, query, num)
 }
 
+// TODO add game.IsActive; modify game query.
+// TODO if the phase has ended, calculate moves
 func (e *Engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 	query := "Select id, game_year, phase, phase_end, title From games where id=?"
 	secondQuery := "select id, game_id, owner, country from territory where game_id=?"
 	thirdQuery := "select id, game_id, owner, type, is_active, location from pieces where game_id=?"
 
-	// fetch the Pieces of this game
+	// Get the Game by id
+	rows, err := e.fetch(ctx, query, id)
+
+	if err != nil {
+		fmt.Printf("err %v \n", err)
+		return nil, err
+	}
+
+	// Make the Game model
+	game := &model.Game{}
+	if len(rows) > 0 {
+		game = rows[0]
+	} else {
+		return nil, nil //model.ErrNotFound
+	}
+
+	phaseOver := game.HasPhaseEnded()
+	fmt.Printf("has this phase ended? %v\n", phaseOver)
+
+	// Get the Pieces of this game
 	piecesRows, err := e.fetchPieces(ctx, thirdQuery, id)
 	if err != nil {
 		fmt.Printf("err %v \n", err)
 		return nil, err
 	}
 
-	// fetch the Territories of this game
+	// Get the Territories of this game
 	territoryRows, err := e.fetchTerritories(ctx, secondQuery, id)
-	if err != nil {
-		fmt.Printf("err %v \n", err)
-		return nil, err
-	}
-
-	// fetch the Game
-	rows, err := e.fetch(ctx, query, id)
-
 	if err != nil {
 		fmt.Printf("err %v \n", err)
 		return nil, err
@@ -194,14 +207,6 @@ func (e *Engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 	for index, _ := range territoryRows {
 		tm = territoryRows[index]
 		territories = append(territories, *tm)
-	}
-
-	// Make the Game model
-	game := &model.Game{}
-	if len(rows) > 0 {
-		game = rows[0]
-	} else {
-		return nil, nil //model.ErrNotFound
 	}
 
 	game.DrawGameBoard(territories, pieces)
@@ -394,17 +399,3 @@ func (e *Engine) initGamePieceRecords(ctx context.Context, game_id int64) error 
 
 	return err
 }
-
-// func (m *mysqlPostRepo) Delete(ctx context.Context, id int64) (bool, error) {
-// 	query := "Delete From posts Where id=?"
-
-// 	stmt, err := m.Conn.PrepareContext(ctx, query)
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	_, err = stmt.ExecContext(ctx, id)
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	return true, nil
-// }
