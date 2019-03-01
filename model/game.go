@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"strconv"
 	"time"
 )
 
@@ -140,4 +141,21 @@ func (g *Game) ValidatePhaseUpdate(updateToPhase int) error {
 		return errors.New("The Phase has already been updated")
 	}
 	return nil
+}
+
+// HasPhaseEnded() returns true if the current phase is over
+func (g *Game) HasPhaseEnded() (hasEnded bool) {
+	// if the game has not started yet return false
+	if g.Phase < 1 {
+		return false
+	}
+	now := time.Now()
+	timestamp, err := strconv.ParseInt(g.PhaseEnd, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	phaseEndTime := time.Unix(timestamp, 0)
+	hasEnded = phaseEndTime.Before(now)
+
+	return hasEnded
 }
