@@ -8,7 +8,7 @@ type GameInput struct {
 	Id                int64     `json: "id"`
 	Title             string    `json: "title"`
 	StartedAt         time.Time `json: "started_at"`
-	GameYear          time.Time `json: "game_year"`
+	GameYear          string    `json: "game_year"`
 	Phase             int       `json: "phase"`
 	PhaseEnd          string    `json: "phase_end"`
 	OrdersInterval    int       `json: "orders_interval"`
