@@ -2,7 +2,7 @@
 
 { 
   "id": 1, 
-  "phase": 4, // fall retreat can be implied from phase 
+  "phase": 4, 
   "year":"1903",
   "phase_will_end": 1550820285, 
   "map": { 
@@ -19,24 +19,9 @@
 // 3 - fall orders
 // 4 - fall retreat
 // 5 - fall build
+// fall retreat can be implied from phase 
+
 
 // phase_will_end
 // ISO 8601 UTC to Unix time stamp
 
-// goal for tomorrow:
-// initalize a new game, setting the pieces for each country
-// determin how to persist the state of the map
-// determine if pieces model even makes sense 
-// determine if unit should always be an array
-
-
-// Option 1: loop over pieces and territories to build map
-
-
-// Response GET game/<id> endpoint, waiting for players:
-{ 
-  "id": 2, 
-  "phase": 0, // waiting for players can be implied from phase 
-  "year":"1901",
-  "phase_will_end": null,
-}
