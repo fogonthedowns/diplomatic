@@ -238,6 +238,8 @@ func (e *Engine) getGameByIdWithoutBoard(ctx context.Context, id int64) (*model.
 	return game, nil
 }
 
+// This endpoint is used to Join an existing Game
+// Therefore it is an Update action
 // Create Piece records, setting the user.id
 // Create Territory records, setting the user.id
 func (e *Engine) Update(ctx context.Context, in *model.GameInput) (*model.GameInput, int, error) {
