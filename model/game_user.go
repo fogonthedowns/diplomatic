@@ -8,7 +8,7 @@ type GameUser struct {
 	Country Country `json:"country"`
 }
 
-func Validate(gameusers []GameUser, c Country) error {
+func ValidateCountryAndGameIsOpen(gameusers []GameUser, c Country) error {
 	if len(gameusers) == 7 {
 		return errors.New("The Selected Game is Full")
 	}
