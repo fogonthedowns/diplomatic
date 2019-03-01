@@ -275,6 +275,8 @@ func (e *Engine) Update(ctx context.Context, in *model.GameInput) (*model.GameIn
 	// The last user was added to the game with success of ExecContext()
 	// and a user count of 6, update the phase!
 	// TODO(:2/28) updateGamePhase should depend on interval
+	// TODO(:2/28) these insert/updates need to be in a transaction
+	// see https://pseudomuto.com/2018/01/clean-sql-transactions-in-golang/
 	if len(gameusers) == 6 {
 		err := e.updateGamePhase(ctx, in.Id, 1)
 		return nil, 500, err
