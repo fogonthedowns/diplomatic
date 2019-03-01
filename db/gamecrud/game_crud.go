@@ -217,7 +217,7 @@ func (e *Engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 	return game, nil
 }
 
-func (e *Engine) getGameByIdWithoutBoard(ctx context.Context, id int64) (*model.Game, error) {
+func (e *Engine) getGameByIdOnly(ctx context.Context, id int64) (*model.Game, error) {
 	query := "Select id, game_year, phase, phase_end, title From games where id=?"
 	// fetch the Game
 	rows, err := e.fetch(ctx, query, id)
@@ -252,7 +252,7 @@ func (e *Engine) Update(ctx context.Context, in *model.GameInput) (*model.GameIn
 
 	gameusers, err := e.getGameUsers(ctx, in.Id)
 
-	err = model.Validate(gameusers, in.Country)
+	err = model.ValidateCountryAndGameIsOpen(gameusers, in.Country)
 
 	if err != nil {
 		fmt.Printf("err1: %v\n", err)
@@ -275,8 +275,6 @@ func (e *Engine) Update(ctx context.Context, in *model.GameInput) (*model.GameIn
 	// The last user was added to the game with success of ExecContext()
 	// and a user count of 6, update the phase!
 	// TODO(:2/28) updateGamePhase should depend on interval
-	// TODO(:2/28) these insert/updates need to be in a transaction
-	// see https://pseudomuto.com/2018/01/clean-sql-transactions-in-golang/
 	if len(gameusers) == 6 {
 		err := e.updateGamePhase(ctx, in.Id, 1)
 		return nil, 500, err
@@ -288,9 +286,9 @@ func (e *Engine) Update(ctx context.Context, in *model.GameInput) (*model.GameIn
 // Create Piece records, setting the user.id
 // Create Territory records, setting the user.id
 func (e *Engine) updateGamePhase(ctx context.Context, game_id int64, phase int) error {
-	game, err := e.getGameByIdWithoutBoard(ctx, game_id)
+	game, err := e.getGameByIdOnly(ctx, game_id)
 	if err != nil {
-		fmt.Printf("**** getGameByIdWithoutBoard %v\n", err)
+		fmt.Printf("**** getGameByIdOnly %v\n", err)
 		return err
 	}
 	err = game.ValidatePhaseUpdate(phase)

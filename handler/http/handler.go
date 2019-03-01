@@ -72,7 +72,12 @@ func (g *GameHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	// id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 	data := model.GameInput{Id: int64(id)}
-	json.NewDecoder(r.Body).Decode(&data)
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&data)
+	if err != nil {
+		respondwithJSON(w, http.StatusInternalServerError, model.ErrorMessage{Message: fmt.Sprintf("%v\n", err)})
+		return
+	}
 
 	payload, code, err := g.db.Update(r.Context(), &data)
 
