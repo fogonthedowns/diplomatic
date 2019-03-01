@@ -274,6 +274,7 @@ func (e *Engine) Update(ctx context.Context, in *model.GameInput) (*model.GameIn
 
 	// The last user was added to the game with success of ExecContext()
 	// and a user count of 6, update the phase!
+	// TODO(:2/28) updateGamePhase should depend on interval
 	if len(gameusers) == 6 {
 		err := e.updateGamePhase(ctx, in.Id, 1)
 		return nil, 500, err
