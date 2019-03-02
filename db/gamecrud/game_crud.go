@@ -150,8 +150,10 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 	moves, err := e.GetMovesByIdAndPhase(ctx, gameId, phase)
 
 	for _, move := range moves {
-		log := move.LocationStart.ValidMovement(move.LocationSubmitted)
-		fmt.Printf("********%v \n", log)
+		moveType := move.LocationStart.ValidMovement(move.LocationSubmitted)
+		if moveType == model.INVALID {
+			move.OrderType = model.HOLD
+		}
 	}
 
 	return err

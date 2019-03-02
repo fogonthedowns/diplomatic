@@ -278,17 +278,17 @@ func (t *Territory) ValidLandMovement(check Territory) bool {
 // ValidMovement will return true if the checked territory
 // is included inside of the mapOfBorders map
 // uses the origional terriotry as they key
-func (t *Territory) ValidMovement(check Territory) string {
+func (t *Territory) ValidMovement(check Territory) MoveType {
 	sea := t.ValidSeaMovement(check)
 	land := t.ValidLandMovement(check)
 	if sea && land {
-		return "both"
+		return BOTH
 	} else if sea {
-		return "sea"
+		return SEA
 	} else if land {
-		return "land"
+		return LAND
 	} else {
-		return "invalid"
+		return INVALID
 	}
 
 }
