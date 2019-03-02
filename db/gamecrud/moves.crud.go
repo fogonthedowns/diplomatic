@@ -36,8 +36,8 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 	query := "Select user_id, game_id, country from users_games where user_id=? and game_id=?"
 	gameQuery := "Select id, game_year, phase, phase_end, title From games where id=?"
 	doesPieceMoveExist := "select id from moves where game_id=? AND phase=? AND piece_id=?"
-	pieceMoveInsert := "Insert moves SET location_start=?, location_submitted=?, phase=?, game_id=?, type=?, piece_id=?"
-	pieceMoveUpdate := "Update moves SET location_start=?, location_submitted=?, phase=?, game_id=?, type=? WHERE piece_id=?"
+	pieceMoveInsert := "Insert moves SET location_start=?, location_submitted=?, phase=?, game_id=?, type=?, piece_owner=?, game_year=?, piece_id=?"
+	pieceMoveUpdate := "Update moves SET location_start=?, location_submitted=?, phase=?, game_id=?, type=?, piece_owner=?, game_year=? WHERE piece_id=?"
 
 	gameUser, err := e.fetchGameUser(ctx, query, in.UserId, in.GameId)
 	fmt.Printf("GAME ID? %+v", in)
@@ -94,7 +94,7 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 	if err != nil {
 		return -1, err
 	}
-	_, err = stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, game.Phase, in.GameId, in.OrderType, in.PieceId)
+	_, err = stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, in.Phase, in.GameId, in.OrderType, in.PieceOwner, in.GameYear, in.PieceId)
 	defer stmt.Close()
 	if err != nil {
 		return -1, err
