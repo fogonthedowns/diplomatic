@@ -97,6 +97,7 @@ const (
 // mapOfLandOrSea
 
 type Territory string
+type TerritoryCounter map[Territory]int
 
 // validSeaMoves defines a map of Valid moves for Navy Units
 var validSeaMoves = map[Territory][]Territory{

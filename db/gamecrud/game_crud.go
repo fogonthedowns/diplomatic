@@ -148,14 +148,17 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 
 func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) error {
 	moves, err := e.GetMovesByIdAndPhase(ctx, gameId, phase)
-
+	tc := make(model.TerritoryCounter)
 	for _, move := range moves {
 		moveType := move.LocationStart.ValidMovement(move.LocationSubmitted)
+		// NOTE Do not save these modifications - keep these changes in memory
 		if moveType == model.INVALID {
 			move.OrderType = model.HOLD
+			move.LocationSubmitted = move.LocationStart
 		}
+		tc[move.LocationSubmitted] += 1
+		fmt.Printf("************ %v \n", tc)
 	}
-
 	return err
 }
 
