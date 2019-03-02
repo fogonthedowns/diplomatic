@@ -156,6 +156,7 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 			move.OrderType = model.HOLD
 			move.LocationSubmitted = move.LocationStart
 		}
+		// Count LocationSubmitted to determine if the destination is contested
 		tc[move.LocationSubmitted] += 1
 		fmt.Printf("************ %v \n", tc)
 	}
