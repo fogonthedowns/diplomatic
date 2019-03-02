@@ -90,7 +90,8 @@ func (e *Engine) fetch(ctx context.Context, query string, args ...interface{}) (
 	return payload, nil
 }
 
-func (e *Engine) fetchTerritories(ctx context.Context, query string, args ...interface{}) ([]*model.TerritoryRow, error) {
+func (e *Engine) fetchTerritories(ctx context.Context, args ...interface{}) ([]*model.TerritoryRow, error) {
+	query := "select id, game_id, owner, country from territory where game_id=?"
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -116,7 +117,8 @@ func (e *Engine) fetchTerritories(ctx context.Context, query string, args ...int
 	return payload, nil
 }
 
-func (e *Engine) fetchPieces(ctx context.Context, query string, args ...interface{}) ([]*model.PieceRow, error) {
+func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model.PieceRow, error) {
+	query := "select id, game_id, owner, type, is_active, location from pieces where game_id=?"
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -144,6 +146,11 @@ func (e *Engine) fetchPieces(ctx context.Context, query string, args ...interfac
 	return payload, nil
 }
 
+func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) {
+	// query := "select id, location_start, location_submitted, type, piece_id from moves where game_id=? and phase=?"
+
+}
+
 // TODO SORT BY DATE
 // WHERE game phase is 0
 // Search by user_games
@@ -154,14 +161,12 @@ func (m *Engine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
 }
 
 // TODO add game.IsActive; modify game query.
-// TODO if the phase has ended, calculate moves
-func (e *Engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
+// TODO(:3/1) if the phase has ended, calculate moves
+func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error) {
 	query := "Select id, game_year, phase, phase_end, title From games where id=?"
-	secondQuery := "select id, game_id, owner, country from territory where game_id=?"
-	thirdQuery := "select id, game_id, owner, type, is_active, location from pieces where game_id=?"
 
-	// Get the Game by id
-	rows, err := e.fetch(ctx, query, id)
+	// Get the Game by gameId
+	rows, err := e.fetch(ctx, query, gameId)
 
 	if err != nil {
 		fmt.Printf("err %v \n", err)
@@ -176,21 +181,27 @@ func (e *Engine) GetByID(ctx context.Context, id int64) (*model.Game, error) {
 		return nil, nil //model.ErrNotFound
 	}
 
-	// if the Phase is over
-	// process the moves
-	// update the phase and update PhaseEnd
+	// Has the current phase ended?
+	//   yes: process the moves
+	//   yes: update the game.Phase and update game.PhaseEnd
 	phaseOver := game.HasPhaseEnded()
 	fmt.Printf("has this phase ended? %v\n", phaseOver)
 
+	// TODO(:3/1) Should this be on moves.ProcessMoves()?
+	// It could return piecesRows and we could switch on PhaseOver
+	if phaseOver {
+		e.ProcessMoves(ctx, gameId, game.Phase)
+	}
+
 	// Get the Pieces of this game
-	piecesRows, err := e.fetchPieces(ctx, thirdQuery, id)
+	piecesRows, err := e.fetchPieces(ctx, gameId)
 	if err != nil {
 		fmt.Printf("err %v \n", err)
 		return nil, err
 	}
 
 	// Get the Territories of this game
-	territoryRows, err := e.fetchTerritories(ctx, secondQuery, id)
+	territoryRows, err := e.fetchTerritories(ctx, gameId)
 	if err != nil {
 		fmt.Printf("err %v \n", err)
 		return nil, err

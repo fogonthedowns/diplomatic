@@ -49,7 +49,7 @@ func (g *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respondwithJSON(w, http.StatusInternalServerError, model.ErrorMessage{Message: fmt.Sprintf("%v", err)})
 	} else {
-		respondwithJSON(w, http.StatusCreated, map[string]string{"message": fmt.Sprintf("%v created", id)})
+		respondwithJSON(w, http.StatusCreated, map[string]int64{"id": id})
 	}
 }
 
@@ -62,6 +62,7 @@ func (g *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 // Create Piece records, setting the user.id
 // Create Territory records, setting the user.id
+// TODO(:3/1) Go over every controller and ensure validations are set up correctly
 func (g *GameHandler) Update(w http.ResponseWriter, r *http.Request) {
 	p := strings.Split(r.URL.Path, "/")
 
