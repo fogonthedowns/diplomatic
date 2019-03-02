@@ -1,0 +1,26 @@
+0) Loop through moves and determine if the destination is contested
+
+1) Resolve all uncontested moves
+   a) is the move possible? If so Update the move.ResolvedMove
+   b) if not? Hold 
+
+2) Collect all support orders
+   a) determine if the support has been cut.
+
+3) Collect all convoy orders
+   a) determine if the path has been disrupted
+   b) determine if the path is complete
+
+4) resolve all contested moves
+   a) will the piece move out of the way?
+   b) is there support?
+
+
+final) loop through all moves:
+    a) update the pieces.Location by move.piece_id
+    b) update the territory.Owner by move.PieceOwner 
+
+design considerations:
+
+you can not attack your own territory
+you must be able to issue support and convoy orders for others
