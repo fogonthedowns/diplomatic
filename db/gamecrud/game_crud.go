@@ -146,9 +146,39 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 	return payload, nil
 }
 
-func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) {
-	// query := "select id, location_start, location_submitted, type, piece_id from moves where game_id=? and phase=?"
+func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) error {
+	moves, err := e.GetMovesByIdAndPhase(ctx, gameId, phase)
+	fmt.Printf("******* %v \n", moves)
+	return err
+}
 
+func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase int) ([]*model.Move, error) {
+	query := "select id, location_start, location_submitted, type, piece_id from moves where game_id=? and phase=?"
+	rows, err := e.Conn.QueryContext(ctx, query, gameId, phase)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	payload := make([]*model.Move, 0)
+	for rows.Next() {
+		data := new(model.Move)
+
+		err := rows.Scan(
+			&data.Id,
+			&data.LocationStart,
+			&data.LocationSubmitted,
+			&data.OrderType,
+			&data.PieceId,
+		)
+
+		if err != nil {
+			fmt.Printf("error \n", err)
+			return nil, err
+		}
+		payload = append(payload, data)
+	}
+	return payload, nil
 }
 
 // TODO SORT BY DATE
