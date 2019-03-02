@@ -149,6 +149,7 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) error {
 	moves, err := e.GetMovesByIdAndPhase(ctx, gameId, phase)
 	tc := make(model.TerritoryCounter)
+
 	for _, move := range moves {
 		moveType := move.LocationStart.ValidMovement(move.LocationSubmitted)
 		// NOTE Do not save these modifications - keep these changes in memory
@@ -158,8 +159,19 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 		}
 		// Count LocationSubmitted to determine if the destination is contested
 		tc[move.LocationSubmitted] += 1
-		fmt.Printf("************ %v \n", tc)
 	}
+
+	// need a second loop bc TerritoryCounter needs to be complete
+	// before moves can be calculated
+	for _, move := range moves {
+		// if uncontested resolve the move
+		// remember above LocationSubmitted was edited in the case of invalid moves in memory
+		if tc[move.LocationSubmitted] <= 1 {
+			move.LocationResolved = move.LocationSubmitted
+		}
+		fmt.Printf("************ %+v \n", move.LocationResolved)
+	}
+
 	return err
 }
 
