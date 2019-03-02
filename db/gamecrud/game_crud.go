@@ -148,7 +148,12 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 
 func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) error {
 	moves, err := e.GetMovesByIdAndPhase(ctx, gameId, phase)
-	fmt.Printf("******* %v \n", moves)
+
+	for _, move := range moves {
+		log := move.LocationStart.ValidMovement(move.LocationSubmitted)
+		fmt.Printf("********%v \n", log)
+	}
+
 	return err
 }
 
