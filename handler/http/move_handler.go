@@ -29,7 +29,7 @@ type MovesHandler struct {
 // Count the pieces_moves table, when the records are complete or when time expires update the pieces_moves.location_resolved
 // Update the game phase, year and phase_end based on the orders_interval
 func (g *MovesHandler) CreateOrUpdate(w http.ResponseWriter, r *http.Request) {
-	moveInput := model.MoveInput{}
+	moveInput := model.Move{}
 
 	decoder := json.NewDecoder(r.Body)
 
