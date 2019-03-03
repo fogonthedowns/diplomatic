@@ -191,6 +191,7 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 		}
 	}
 
+	losers := make([]*model.Move, 0)
 	// resolve a conflict using MovePower
 	for key, value := range tm {
 		var winner *model.Move
@@ -201,15 +202,18 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 					best = mm.MovePower
 					winner = mm
 					mm.MovePieceForward()
+				} else {
+					losers = append(losers, mm)
 				}
 			}
 			fmt.Printf("******** current battle winner %+v\n", winner)
 		}
 	}
 
-	for _, move := range moves {
-		fmt.Printf("******** resolved moves: %+v \n", move)
+	for _, loser := range losers {
+		loser.BouncePiece()
 	}
+
 	return err
 }
 
