@@ -110,7 +110,6 @@ func (tm TerritoryMoves) Uncontested(key Territory) bool {
 // Resolves a conflict using move.MovePower
 func (tm TerritoryMoves) ResolveConflicts() {
 	for key, value := range tm {
-		losers := make([]*Move, 0)
 		var lastSeen = 0
 		var lastSeenMove *Move
 
@@ -119,21 +118,29 @@ func (tm TerritoryMoves) ResolveConflicts() {
 				if mm.MovePower > 0 && mm.MovePower > lastSeen {
 					mm.MovePieceForward()
 				}
-
+				fmt.Printf("******************lastSeen %v: %v: %+v\n\n", lastSeen, mm.MovePower, mm)
 				if mm.MovePower == lastSeen {
-					losers = append(losers, lastSeenMove)
-					losers = append(losers, mm)
+					if lastSeenMove != nil {
+						lastSeenMove.BouncePiece()
+						fmt.Printf("LOSER: %v\n", lastSeenMove)
+					}
+					mm.BouncePiece()
+					fmt.Print("******************\n\n")
+					fmt.Printf("LOSER: %v\n", mm)
+					fmt.Print("******************\n\n")
+				}
+
+				if mm.MovePower < lastSeen {
+					mm.BouncePiece()
+					fmt.Print("******************\n\n")
+					fmt.Printf("LOSER: %v\n", mm)
+					fmt.Print("******************\n\n")
 				}
 
 				lastSeen = mm.MovePower
 				lastSeenMove = mm
 			}
 		}
-		for _, loser := range losers {
-			fmt.Printf("LOSER: %v\n", loser)
-			loser.BouncePiece()
-		}
-
 	}
 }
 

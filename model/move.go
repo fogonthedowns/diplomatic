@@ -1,7 +1,5 @@
 package model
 
-import "fmt"
-
 type Move struct {
 	Id                      int64     `json:"id"`
 	GameId                  int64     `json:"game_id"`
@@ -45,12 +43,8 @@ func (move *Move) BouncePiece() {
 // from the user perspective so The key depends on the order type
 func (moves Moves) CategorizeMovesByTerritory() TerritoryMoves {
 	tm := make(TerritoryMoves, 0)
-	for idx, move := range moves {
-		if idx == 8 {
-			fmt.Printf("***%v\n", move)
-		}
+	for _, move := range moves {
 		moveType := move.LocationStart.ValidMovement(move.LocationSubmitted)
-		fmt.Printf("***%v\n", moveType)
 		// NOTE Do not save these modifications - keep these changes in memory
 		if moveType == INVALID {
 			move.OrderType = HOLD

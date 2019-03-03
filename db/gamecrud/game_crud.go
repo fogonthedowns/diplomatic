@@ -167,7 +167,7 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 	tm.ResolveConflicts()
 
 	for _, move := range moves {
-		fmt.Printf("******** resolved: %+v\n", move)
+		fmt.Printf("******** %v (%v -> %v):%v resolved: %+v\n", move.OrderType, move.LocationStart, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationResolved)
 	}
 	return err
 }
