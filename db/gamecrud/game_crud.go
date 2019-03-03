@@ -160,33 +160,16 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 
 		// calculate support
 		if move.OrderType == model.SUPPORT {
-			addSupportPointsToMove(move.LocationSubmitted, move.SecondLocationSubmitted, moves)
+			moves.AddSupportPointsToMove(move.LocationSubmitted, move.SecondLocationSubmitted)
 		}
 	}
 
 	tm.ResolveConflicts()
 
-	return err
-}
-
-// TODO before this determine if support is cut
-// This may require a function to -+ the MovePower
-// addSupportPointsToMove() This will add up the number of times a unit is supported
-func addSupportPointsToMove(from model.Territory, to model.Territory, moves []*model.Move) {
 	for _, move := range moves {
-		// if uncontested resolve the move
-		// remember above LocationSubmitted was edited in the case of invalid moves in memory
-		if move.OrderType == model.MOVE {
-			fmt.Printf("%+v \n", move.LocationStart)
-			fmt.Printf("%+v \n", from)
-			fmt.Printf("%+v \n", move.LocationSubmitted)
-			fmt.Printf("%+v \n", to)
-			// if the support order matches the order increment the move power counter
-			if move.LocationStart == from && move.LocationSubmitted == to {
-				move.MovePower += 1
-			}
-		}
+		fmt.Printf("******** resolved: %+v\n", move)
 	}
+	return err
 }
 
 func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase int) (model.Moves, error) {
