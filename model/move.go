@@ -69,3 +69,19 @@ func (moves Moves) CategorizeMovesByTerritory() TerritoryMoves {
 	}
 	return tm
 }
+
+// TODO before this determine if support is cut
+// This may require a function to -+ the MovePower
+// addSupportPointsToMove() This will add up the number of times a unit is supported
+func (moves Moves) AddSupportPointsToMove(from Territory, to Territory) {
+	for _, move := range moves {
+		// if uncontested resolve the move
+		// remember above LocationSubmitted was edited in the case of invalid moves in memory
+		if move.OrderType == MOVE {
+			// if the support order matches the order increment the move power counter
+			if move.LocationStart == from && move.LocationSubmitted == to {
+				move.MovePower += 1
+			}
+		}
+	}
+}
