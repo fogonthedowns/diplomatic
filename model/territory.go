@@ -90,6 +90,7 @@ const (
 	BERLIN                    = Territory("BER")
 	MUNICH                    = Territory("MUN")
 	RUHR                      = Territory("RUH")
+	BLANK                     = Territory("NONE")
 )
 
 // TODO
@@ -98,6 +99,10 @@ const (
 
 type Territory string
 type TerritoryCounter map[Territory]int
+
+func (tc TerritoryCounter) Uncontested(key Territory) bool {
+	return tc[key] <= 1
+}
 
 // validSeaMoves defines a map of Valid moves for Navy Units
 var validSeaMoves = map[Territory][]Territory{
@@ -294,7 +299,7 @@ func (t *Territory) ValidMovement(check Territory) MoveType {
 
 }
 
-var reTerritory = regexp.MustCompile(`^(|AEG|CLY|NAO|IHS|ENC|EDB|YRK|LON|WLS|LIV|NHS|NOS|MAO|BST|PIC|PRS|BGM|HOL|GAS|BRG|MAR|SPA|SNC|SSC||PRT|GOL|WMD|NAK|TUN|TYR|ION|PDT|VEN|TUS|ROM|APU|NAP|ADR|TYA|BOH|VNA|TTE|BUD|SBA|ALB|GRC|RMA|BUL|BUE|BUS|AGS|EMD|CON|ANK|SMY|ARM|SYR|BLA|SEV|MOS|UKR|STP|SPN|SPS|LVA|WAR|FIN|SWE|NOR|GOB|BAS|BAL|PRU|SIL|GAL|DEN|SKA|HEL|KIE|BER|MUN|RUH)$`)
+var reTerritory = regexp.MustCompile(`^(|AEG|CLY|NAO|IHS|ENC|EDB|YRK|LON|WLS|LIV|NHS|NOS|MAO|BST|PIC|PRS|BGM|HOL|GAS|BRG|MAR|SPA|SNC|SSC||PRT|GOL|WMD|NAK|TUN|TYR|ION|PDT|VEN|TUS|ROM|APU|NAP|ADR|TYA|BOH|VNA|TTE|BUD|SBA|ALB|GRC|RMA|BUL|BUE|BUS|AGS|EMD|CON|ANK|SMY|ARM|SYR|BLA|SEV|MOS|UKR|STP|SPN|SPS|LVA|WAR|FIN|SWE|NOR|GOB|BAS|BAL|PRU|SIL|GAL|DEN|SKA|HEL|KIE|BER|MUN|RUH|NONE)$`)
 
 func (d *Territory) validate(s string) error {
 	if matched := reTerritory.MatchString(s); matched == false {

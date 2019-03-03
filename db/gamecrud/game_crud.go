@@ -178,22 +178,48 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 	for _, move := range moves {
 		// if uncontested resolve the move
 		// remember above LocationSubmitted was edited in the case of invalid moves in memory
-		if tc[move.LocationSubmitted] <= 1 {
+		if tc.Uncontested(move.LocationSubmitted) {
 			if move.OrderType == model.MOVE || move.OrderType == model.HOLD {
 				move.LocationResolved = move.LocationSubmitted
 			} else if move.OrderType == model.SUPPORT {
 				move.LocationResolved = move.LocationStart
 			}
 		}
-		fmt.Print("************")
-		fmt.Printf("%+v \n", move.LocationResolved)
 	}
-	fmt.Printf("************ %v \n", tc)
+
+	for _, move := range moves {
+		// if uncontested resolve the move
+		// remember above LocationSubmitted was edited in the case of invalid moves in memory
+		if move.OrderType == model.SUPPORT {
+			addSupportPointsToMove(move.LocationSubmitted, move.SecondLocationSubmitted, moves)
+		}
+
+	}
+
 	return err
 }
 
+// TODO before this determine if support is cut
+// This may require a function to -+ the MovePower
+// addSupportPointsToMove() This will add up the number of times a unit is supported
+func addSupportPointsToMove(from model.Territory, to model.Territory, moves []*model.Move) {
+	for _, move := range moves {
+		// if uncontested resolve the move
+		// remember above LocationSubmitted was edited in the case of invalid moves in memory
+		if move.OrderType == model.MOVE {
+			fmt.Printf("%+v \n", move.LocationStart)
+			fmt.Printf("%+v \n", from)
+			fmt.Printf("%+v \n", move.LocationSubmitted)
+			fmt.Printf("%+v \n", to)
+			if move.LocationStart == from && move.LocationSubmitted == to {
+				move.MovePower += 1
+			}
+		}
+	}
+}
+
 func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase int) ([]*model.Move, error) {
-	query := "select id, location_start, location_submitted, type, piece_id from moves where game_id=? and phase=?"
+	query := "select id, location_start, location_submitted, second_location_submitted, type, piece_owner, piece_id from moves where game_id=? and phase=?"
 	rows, err := e.Conn.QueryContext(ctx, query, gameId, phase)
 	if err != nil {
 		return nil, err
@@ -208,7 +234,9 @@ func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase i
 			&data.Id,
 			&data.LocationStart,
 			&data.LocationSubmitted,
+			&data.SecondLocationSubmitted,
 			&data.OrderType,
+			&data.PieceOwner,
 			&data.PieceId,
 		)
 
