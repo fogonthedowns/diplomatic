@@ -100,8 +100,6 @@ type ErrorMessage struct {
 
 // respondwithJSON write json response format
 func respondwithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	fmt.Printf("payload %v\n", payload)
-
 	response, err := json.Marshal(payload)
 	if err != nil {
 		fmt.Printf("error: %v \n", err)
