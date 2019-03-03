@@ -104,11 +104,11 @@ func (tc TerritoryCounter) Uncontested(key Territory) bool {
 	return tc[key] <= 1
 }
 
-// type TerritoryCollection map[model.Territory][]*model.Move
+type TerritoryCollection map[Territory][]*Move
 
-// func (tc TerritoryCollection) Uncontested(key Territory) bool {
-// 	return len(tc[key]) <= 1
-// }
+func (tc TerritoryCollection) Uncontested(key Territory) bool {
+	return len(tc[key]) <= 1
+}
 
 // validSeaMoves defines a map of Valid moves for Navy Units
 var validSeaMoves = map[Territory][]Territory{

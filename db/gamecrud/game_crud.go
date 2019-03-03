@@ -148,8 +148,8 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 
 func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) error {
 	moves, err := e.GetMovesByIdAndPhase(ctx, gameId, phase)
-	tc := make(model.TerritoryCounter)
-	tm := make(map[model.Territory][]*model.Move, 0)
+	// tc := make(model.TerritoryCounter)
+	tm := make(model.TerritoryCollection, 0)
 
 	// this first block could become a function
 	for _, move := range moves {
@@ -165,17 +165,14 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 		// this is done by counting either LocationSubmitted or
 		// LocationStart
 		if move.OrderType == model.MOVE {
-			tc[move.LocationSubmitted] += 1
 			tm[move.LocationSubmitted] = append(tm[move.LocationSubmitted], move)
 		}
 
 		if move.OrderType == model.SUPPORT {
-			tc[move.LocationStart] += 1
 			tm[move.LocationStart] = append(tm[move.LocationStart], move)
 		}
 
 		if move.OrderType == model.HOLD {
-			tc[move.LocationStart] += 1
 			tm[move.LocationStart] = append(tm[move.LocationStart], move)
 		}
 	}
@@ -184,12 +181,8 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 	for _, move := range moves {
 		// if uncontested resolve the move
 		// remember above LocationSubmitted was edited in the case of invalid moves in memory
-		if tc.Uncontested(move.LocationSubmitted) {
-			if move.OrderType == model.MOVE || move.OrderType == model.HOLD {
-				move.LocationResolved = move.LocationSubmitted
-			} else if move.OrderType == model.SUPPORT {
-				move.LocationResolved = move.LocationStart
-			}
+		if tm.Uncontested(move.LocationSubmitted) {
+			move.MovePieceForward()
 		}
 
 		// calculate support
@@ -207,12 +200,16 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 				if best < mm.MovePower {
 					best = mm.MovePower
 					winner = mm
+					mm.MovePieceForward()
 				}
 			}
 			fmt.Printf("******** current battle winner %+v\n", winner)
 		}
 	}
 
+	for _, move := range moves {
+		fmt.Printf("******** resolved moves: %+v \n", move)
+	}
 	return err
 }
 
