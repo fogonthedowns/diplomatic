@@ -149,7 +149,9 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) error {
 	moves, err := e.GetMovesByIdAndPhase(ctx, gameId, phase)
 	tc := make(model.TerritoryCounter)
+	tm := make(map[model.Territory][]*model.Move, 0)
 
+	// this first block could become a function
 	for _, move := range moves {
 		moveType := move.LocationStart.ValidMovement(move.LocationSubmitted)
 		// NOTE Do not save these modifications - keep these changes in memory
@@ -158,23 +160,27 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 			move.LocationSubmitted = move.LocationStart
 		}
 
-		// Count LocationSubmitted to determine if the destination is contested
+		// Determine if the destination is contested.
 		// The contested territory depends on the type of Order
+		// this is done by counting either LocationSubmitted or
+		// LocationStart
 		if move.OrderType == model.MOVE {
 			tc[move.LocationSubmitted] += 1
+			tm[move.LocationSubmitted] = append(tm[move.LocationSubmitted], move)
 		}
 
 		if move.OrderType == model.SUPPORT {
 			tc[move.LocationStart] += 1
+			tm[move.LocationStart] = append(tm[move.LocationStart], move)
 		}
 
 		if move.OrderType == model.HOLD {
 			tc[move.LocationStart] += 1
+			tm[move.LocationStart] = append(tm[move.LocationStart], move)
 		}
 	}
 
-	// need a second loop bc TerritoryCounter needs to be complete
-	// before moves can be calculated
+	// Resolve Moves
 	for _, move := range moves {
 		// if uncontested resolve the move
 		// remember above LocationSubmitted was edited in the case of invalid moves in memory
@@ -185,15 +191,26 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 				move.LocationResolved = move.LocationStart
 			}
 		}
-	}
 
-	for _, move := range moves {
-		// if uncontested resolve the move
-		// remember above LocationSubmitted was edited in the case of invalid moves in memory
+		// calculate support
 		if move.OrderType == model.SUPPORT {
 			addSupportPointsToMove(move.LocationSubmitted, move.SecondLocationSubmitted, moves)
 		}
+	}
 
+	// resolve a conflict using MovePower
+	for key, value := range tm {
+		var winner *model.Move
+		best := 0
+		if len(tm[key]) >= 2 {
+			for _, mm := range value {
+				if best < mm.MovePower {
+					best = mm.MovePower
+					winner = mm
+				}
+			}
+			fmt.Printf("******** current battle winner %+v\n", winner)
+		}
 	}
 
 	return err
@@ -211,6 +228,7 @@ func addSupportPointsToMove(from model.Territory, to model.Territory, moves []*m
 			fmt.Printf("%+v \n", from)
 			fmt.Printf("%+v \n", move.LocationSubmitted)
 			fmt.Printf("%+v \n", to)
+			// if the support order matches the order increment the move power counter
 			if move.LocationStart == from && move.LocationSubmitted == to {
 				move.MovePower += 1
 			}
