@@ -148,34 +148,7 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 
 func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) error {
 	moves, err := e.GetMovesByIdAndPhase(ctx, gameId, phase)
-	// tc := make(model.TerritoryCounter)
-	tm := make(model.TerritoryCollection, 0)
-
-	// this first block could become a function
-	for _, move := range moves {
-		moveType := move.LocationStart.ValidMovement(move.LocationSubmitted)
-		// NOTE Do not save these modifications - keep these changes in memory
-		if moveType == model.INVALID {
-			move.OrderType = model.HOLD
-			move.LocationSubmitted = move.LocationStart
-		}
-
-		// Determine if the destination is contested.
-		// The contested territory depends on the type of Order
-		// this is done by counting either LocationSubmitted or
-		// LocationStart
-		if move.OrderType == model.MOVE {
-			tm[move.LocationSubmitted] = append(tm[move.LocationSubmitted], move)
-		}
-
-		if move.OrderType == model.SUPPORT {
-			tm[move.LocationStart] = append(tm[move.LocationStart], move)
-		}
-
-		if move.OrderType == model.HOLD {
-			tm[move.LocationStart] = append(tm[move.LocationStart], move)
-		}
-	}
+	tm := moves.CategorizeMovesByTerritory()
 
 	// Resolve Moves
 	for _, move := range moves {
@@ -191,28 +164,7 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 		}
 	}
 
-	losers := make([]*model.Move, 0)
-	// resolve a conflict using MovePower
-	for key, value := range tm {
-		var winner *model.Move
-		best := 0
-		if len(tm[key]) >= 2 {
-			for _, mm := range value {
-				if best < mm.MovePower {
-					best = mm.MovePower
-					winner = mm
-					mm.MovePieceForward()
-				} else {
-					losers = append(losers, mm)
-				}
-			}
-			fmt.Printf("******** current battle winner %+v\n", winner)
-		}
-	}
-
-	for _, loser := range losers {
-		loser.BouncePiece()
-	}
+	tm.ResolveConflicts()
 
 	return err
 }
@@ -237,7 +189,7 @@ func addSupportPointsToMove(from model.Territory, to model.Territory, moves []*m
 	}
 }
 
-func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase int) ([]*model.Move, error) {
+func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase int) (model.Moves, error) {
 	query := "select id, location_start, location_submitted, second_location_submitted, type, piece_owner, piece_id from moves where game_id=? and phase=?"
 	rows, err := e.Conn.QueryContext(ctx, query, gameId, phase)
 	if err != nil {
