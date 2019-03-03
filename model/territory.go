@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 )
 
@@ -110,20 +111,29 @@ func (tm TerritoryMoves) Uncontested(key Territory) bool {
 func (tm TerritoryMoves) ResolveConflicts() {
 	for key, value := range tm {
 		losers := make([]*Move, 0)
-		best := 0
+		var lastSeen = 0
+		var lastSeenMove *Move
+
 		if len(tm[key]) >= 2 {
 			for _, mm := range value {
-				if best < mm.MovePower {
-					best = mm.MovePower
+				if mm.MovePower > 0 && mm.MovePower > lastSeen {
 					mm.MovePieceForward()
-				} else {
+				}
+
+				if mm.MovePower == lastSeen {
+					losers = append(losers, lastSeenMove)
 					losers = append(losers, mm)
 				}
+
+				lastSeen = mm.MovePower
+				lastSeenMove = mm
 			}
 		}
 		for _, loser := range losers {
+			fmt.Printf("LOSER: %v\n", loser)
 			loser.BouncePiece()
 		}
+
 	}
 }
 
