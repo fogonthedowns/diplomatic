@@ -98,16 +98,33 @@ const (
 // mapOfLandOrSea
 
 type Territory string
-type TerritoryCounter map[Territory]int
+type TerritoryMoves map[Territory][]*Move
 
-func (tc TerritoryCounter) Uncontested(key Territory) bool {
-	return tc[key] <= 1
+func (tm TerritoryMoves) Uncontested(key Territory) bool {
+	return len(tm[key]) <= 1
 }
 
-type TerritoryCollection map[Territory][]*Move
-
-func (tc TerritoryCollection) Uncontested(key Territory) bool {
-	return len(tc[key]) <= 1
+// ResolveConflicts() inspects any territory that has two move objects
+// These objects represent a move conflict.
+// Resolves a conflict using move.MovePower
+func (tm TerritoryMoves) ResolveConflicts() {
+	for key, value := range tm {
+		losers := make([]*Move, 0)
+		best := 0
+		if len(tm[key]) >= 2 {
+			for _, mm := range value {
+				if best < mm.MovePower {
+					best = mm.MovePower
+					mm.MovePieceForward()
+				} else {
+					losers = append(losers, mm)
+				}
+			}
+		}
+		for _, loser := range losers {
+			loser.BouncePiece()
+		}
+	}
 }
 
 // validSeaMoves defines a map of Valid moves for Navy Units
