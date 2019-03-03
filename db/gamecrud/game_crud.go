@@ -157,8 +157,20 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 			move.OrderType = model.HOLD
 			move.LocationSubmitted = move.LocationStart
 		}
+
 		// Count LocationSubmitted to determine if the destination is contested
-		tc[move.LocationSubmitted] += 1
+		// The contested territory depends on the type of Order
+		if move.OrderType == model.MOVE {
+			tc[move.LocationSubmitted] += 1
+		}
+
+		if move.OrderType == model.SUPPORT {
+			tc[move.LocationStart] += 1
+		}
+
+		if move.OrderType == model.HOLD {
+			tc[move.LocationStart] += 1
+		}
 	}
 
 	// need a second loop bc TerritoryCounter needs to be complete
@@ -167,11 +179,16 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 		// if uncontested resolve the move
 		// remember above LocationSubmitted was edited in the case of invalid moves in memory
 		if tc[move.LocationSubmitted] <= 1 {
-			move.LocationResolved = move.LocationSubmitted
+			if move.OrderType == model.MOVE || move.OrderType == model.HOLD {
+				move.LocationResolved = move.LocationSubmitted
+			} else if move.OrderType == model.SUPPORT {
+				move.LocationResolved = move.LocationStart
+			}
 		}
-		fmt.Printf("************ %+v \n", move.LocationResolved)
+		fmt.Print("************")
+		fmt.Printf("%+v \n", move.LocationResolved)
 	}
-
+	fmt.Printf("************ %v \n", tc)
 	return err
 }
 
