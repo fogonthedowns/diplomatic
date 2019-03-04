@@ -60,3 +60,28 @@ func TestResolveConflictsSupport(t *testing.T) {
 	assert.Equal(t, APULIA, tm[APULIA][0].LocationResolved)
 	assert.Equal(t, NAPLES, tm[APULIA][1].LocationResolved)
 }
+
+func TestResolveConflictsTie(t *testing.T) {
+	tm := make(TerritoryMoves, 0)
+	tm = TerritoryMoves{
+		APULIA: []*Move{
+			{
+				OrderType:               MOVE,
+				LocationStart:           VENICE,
+				LocationSubmitted:       APULIA,
+				SecondLocationSubmitted: BLANK,
+				MovePower:               2,
+			},
+			{
+				OrderType:               MOVE,
+				LocationStart:           NAPLES,
+				LocationSubmitted:       APULIA,
+				SecondLocationSubmitted: BLANK,
+				MovePower:               2,
+			},
+		},
+	}
+	tm.ResolveConflicts()
+	assert.Equal(t, VENICE, tm[APULIA][0].LocationResolved)
+	assert.Equal(t, NAPLES, tm[APULIA][1].LocationResolved)
+}
