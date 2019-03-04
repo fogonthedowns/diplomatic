@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"regexp"
 )
 
@@ -105,36 +104,29 @@ func (tm TerritoryMoves) Uncontested(key Territory) bool {
 	return len(tm[key]) <= 1
 }
 
-// ResolveConflicts() inspects any territory that has two move objects
+// ResolveConflicts() resolves conflicts of any territory that has two Move objects assoicated with it.
 // These objects represent a move conflict.
 // Resolves a conflict using move.MovePower
 func (tm TerritoryMoves) ResolveConflicts() {
 	for key, value := range tm {
 		var lastSeen = 0
 		var lastSeenMove *Move
-
 		if len(tm[key]) >= 2 {
 			for _, mm := range value {
 				if mm.MovePower > 0 && mm.MovePower > lastSeen {
 					mm.MovePieceForward()
 				}
-				fmt.Printf("******************lastSeen %v: %v: %+v\n\n", lastSeen, mm.MovePower, mm)
+				// fmt.Printf("******************lastSeen %v: %v: %+v\n\n", lastSeen, mm.MovePower, mm)
+
 				if mm.MovePower == lastSeen {
 					if lastSeenMove != nil {
 						lastSeenMove.BouncePiece()
-						fmt.Printf("LOSER: %v\n", lastSeenMove)
 					}
 					mm.BouncePiece()
-					fmt.Print("******************\n\n")
-					fmt.Printf("LOSER: %v\n", mm)
-					fmt.Print("******************\n\n")
 				}
 
 				if mm.MovePower < lastSeen {
 					mm.BouncePiece()
-					fmt.Print("******************\n\n")
-					fmt.Printf("LOSER: %v\n", mm)
-					fmt.Print("******************\n\n")
 				}
 
 				lastSeen = mm.MovePower
