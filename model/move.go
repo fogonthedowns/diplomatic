@@ -43,8 +43,15 @@ func (move *Move) BouncePiece() {
 // from the user perspective so The key depends on the order type
 func (moves Moves) CategorizeMovesByTerritory() TerritoryMoves {
 	tm := make(TerritoryMoves, 0)
+
 	for _, move := range moves {
-		moveType := move.LocationStart.ValidMovement(move.LocationSubmitted)
+		var moveType MoveType
+		// Vallid support moves are determined by the start location bordering the end location
+		if move.OrderType == SUPPORT {
+			moveType = move.LocationStart.ValidMovement(move.SecondLocationSubmitted)
+		} else {
+			moveType = move.LocationStart.ValidMovement(move.LocationSubmitted)
+		}
 		// NOTE Do not save these modifications - keep these changes in memory
 		if moveType == INVALID {
 			move.OrderType = HOLD
