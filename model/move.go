@@ -44,9 +44,18 @@ func (move *Move) BouncePiece() {
 func (moves Moves) CategorizeMovesByTerritory() TerritoryMoves {
 	tm := make(TerritoryMoves, 0)
 
+	// convoy rules:
+	// use movement of land unit follows ValidMovement()
+	// do not ever resolve uncontested convoy rules unless
+	// there is a valid path.
+
 	for _, move := range moves {
 		var moveType MoveType
 		// Vallid support moves are determined by the start location bordering the end location
+		// TODO(:3/4/19) pass unit type to ValidMovement() return bool
+		// Serious confusing fleets and army units
+		// TODO(:3/14/19) Switch on move.OrderType, implement valid movements for Convoy
+		// Explore introducing a new type MOVEVIACONVY
 		if move.OrderType == SUPPORT {
 			moveType = move.LocationStart.ValidMovement(move.SecondLocationSubmitted)
 		} else {
@@ -58,6 +67,7 @@ func (moves Moves) CategorizeMovesByTerritory() TerritoryMoves {
 			move.LocationSubmitted = move.LocationStart
 		}
 
+		// Map Contested Territory to Units moving into Contested Territory
 		// Determine if the destination is contested.
 		// The contested territory depends on the type of Order
 		// this is done by counting either LocationSubmitted or
