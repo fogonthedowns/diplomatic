@@ -14,6 +14,7 @@ type Move struct {
 	PieceId                 int       `json:"piece_id"`
 	OrderType               OrderType `json:"move_type"`
 	MovePower               int
+	UnitType                UnitType
 }
 
 const (
