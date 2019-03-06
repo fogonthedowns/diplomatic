@@ -148,6 +148,9 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 
 func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) error {
 	moves, err := e.GetMovesByIdAndPhase(ctx, gameId, phase)
+	if err != nil {
+		return err
+	}
 	tm := moves.CategorizeMovesByTerritory()
 
 	// Resolve Moves
@@ -181,7 +184,9 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 }
 
 func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase int) (model.Moves, error) {
-	query := "select id, location_start, location_submitted, second_location_submitted, type, piece_owner, piece_id from moves where game_id=? and phase=?"
+
+	query := "select moves.id, moves.location_start, moves.location_submitted, moves.second_location_submitted, moves.type, moves.piece_owner, pieces.type from moves INNER JOIN pieces ON pieces.id=moves.id where moves.game_id=? and moves.phase=?"
+
 	rows, err := e.Conn.QueryContext(ctx, query, gameId, phase)
 	if err != nil {
 		return nil, err
@@ -199,7 +204,7 @@ func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase i
 			&data.SecondLocationSubmitted,
 			&data.OrderType,
 			&data.PieceOwner,
-			&data.PieceId,
+			&data.UnitType,
 		)
 
 		if err != nil {
@@ -221,7 +226,6 @@ func (m *Engine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
 }
 
 // TODO add game.IsActive; modify game query.
-// TODO(:3/1) if the phase has ended, calculate moves
 func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error) {
 	query := "Select id, game_year, phase, phase_end, title From games where id=?"
 
