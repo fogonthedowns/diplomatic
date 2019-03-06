@@ -53,15 +53,17 @@ func (moves Moves) CategorizeMovesByTerritory() TerritoryMoves {
 	for _, move := range moves {
 		var valid bool
 		// Vallid support moves are determined by the start location bordering the end location
-		// TODO(:3/4/19) pass unit type to ValidMovement() return bool
-		// Serious confusing fleets and army units
-		// TODO(:3/14/19) Switch on move.OrderType, implement valid movements for Convoy
-		// Explore introducing a new type MOVEVIACONVY
+		// TODO(:3/5/19) Implement valid movements for Convoy
 		switch move.OrderType {
 		case SUPPORT:
 			valid = move.LocationStart.ValidMovement(move.SecondLocationSubmitted, move.UnitType)
 		case MOVE:
 			valid = move.LocationStart.ValidMovement(move.LocationSubmitted, move.UnitType)
+		case MOVEVIACONVOY:
+			valid = move.LocationStart.ValidConvoyBeginAndEnd(move.LocationSubmitted)
+		// case CONVOY:
+		// TODO ensure convoy is not disrupted
+		// validate path of continous convoy
 		default:
 			valid = move.LocationStart.ValidMovement(move.LocationSubmitted, move.UnitType)
 

@@ -313,6 +313,18 @@ func (t *Territory) ValidLandMovement(check Territory) bool {
 	return false
 }
 
+// ValidConvoyBeginAndEnd will return true if the initial territory
+// and the destination territory are both included as
+// keys in validSeaMoves
+func (t *Territory) ValidConvoyBeginAndEnd(check Territory) bool {
+	if _, ok := validSeaMoves[*t]; ok {
+		if _, endOk := validSeaMoves[check]; endOk {
+			return true
+		}
+	}
+	return false
+}
+
 // ValidMovement will return true if the checked territory
 // is included inside of the mapOfBorders map
 // uses the origional terriotry as they key
