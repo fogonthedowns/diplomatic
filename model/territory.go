@@ -316,19 +316,15 @@ func (t *Territory) ValidLandMovement(check Territory) bool {
 // ValidMovement will return true if the checked territory
 // is included inside of the mapOfBorders map
 // uses the origional terriotry as they key
-func (t *Territory) ValidMovement(check Territory) MoveType {
-	sea := t.ValidSeaMovement(check)
-	land := t.ValidLandMovement(check)
-	if sea && land {
-		return BOTH
-	} else if sea {
-		return SEA
-	} else if land {
-		return LAND
-	} else {
-		return INVALID
+func (t *Territory) ValidMovement(check Territory, unit UnitType) bool {
+	switch unit {
+	case ARMY:
+		return t.ValidLandMovement(check)
+	case NAVY:
+		return t.ValidSeaMovement(check)
+	default:
+		return false
 	}
-
 }
 
 var reTerritory = regexp.MustCompile(`^(|AEG|CLY|NAO|IHS|ENC|EDB|YRK|LON|WLS|LIV|NHS|NOS|MAO|BST|PIC|PRS|BGM|HOL|GAS|BRG|MAR|SPA|SNC|SSC||PRT|GOL|WMD|NAK|TUN|TYR|ION|PDT|VEN|TUS|ROM|APU|NAP|ADR|TYA|BOH|VNA|TTE|BUD|SBA|ALB|GRC|RMA|BUL|BUE|BUS|AGS|EMD|CON|ANK|SMY|ARM|SYR|BLA|SEV|MOS|UKR|STP|SPN|SPS|LVA|WAR|FIN|SWE|NOR|GOB|BAS|BAL|PRU|SIL|GAL|DEN|SKA|HEL|KIE|BER|MUN|RUH|NONE)$`)

@@ -1,9 +1,11 @@
 package model
 
 const (
-	HOLD    = OrderType("Hold")
-	SUPPORT = OrderType("Support")
-	MOVE    = OrderType("Move")
+	CONVOY        = OrderType("Convoy")
+	HOLD          = OrderType("Hold")
+	MOVE          = OrderType("Move")
+	MOVEVIACONVOY = OrderType("MoveViaConvoy")
+	SUPPORT       = OrderType("Support")
 )
 
 type OrderType string

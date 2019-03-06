@@ -51,19 +51,27 @@ func (moves Moves) CategorizeMovesByTerritory() TerritoryMoves {
 	// there is a valid path.
 
 	for _, move := range moves {
-		var moveType MoveType
+		var valid bool
 		// Vallid support moves are determined by the start location bordering the end location
 		// TODO(:3/4/19) pass unit type to ValidMovement() return bool
 		// Serious confusing fleets and army units
 		// TODO(:3/14/19) Switch on move.OrderType, implement valid movements for Convoy
 		// Explore introducing a new type MOVEVIACONVY
+		switch move.OrderType {
+		case SUPPORT:
+			valid = move.LocationStart.ValidMovement(move.SecondLocationSubmitted, move.UnitType)
+		case MOVE:
+			valid = move.LocationStart.ValidMovement(move.LocationSubmitted, move.UnitType)
+		default:
+			valid = move.LocationStart.ValidMovement(move.LocationSubmitted, move.UnitType)
+
+		}
+
 		if move.OrderType == SUPPORT {
-			moveType = move.LocationStart.ValidMovement(move.SecondLocationSubmitted)
 		} else {
-			moveType = move.LocationStart.ValidMovement(move.LocationSubmitted)
 		}
 		// NOTE Do not save these modifications - keep these changes in memory
-		if moveType == INVALID {
+		if !valid {
 			move.OrderType = HOLD
 			move.LocationSubmitted = move.LocationStart
 		}
@@ -98,7 +106,7 @@ func (moves Moves) AddSupportPointsToMove(supportedFrom Territory, supportedTo T
 		if move.OrderType == MOVE {
 			// if the support order matches the order increment the move power counter
 			if move.LocationStart == supportedFrom && move.LocationSubmitted == supportedTo {
-				if !moves.CalculateIfSupportIsCut(supportedFrom) {
+				if !moves.CalculateIfSupportIsCut(supportedFrom, move.UnitType) {
 					move.MovePower += 1
 				}
 			}
@@ -108,9 +116,9 @@ func (moves Moves) AddSupportPointsToMove(supportedFrom Territory, supportedTo T
 
 // Loop through all moves to determine if there is a Valid attack that cuts support
 // Determined by any move - successful or not - to the origin of the support order
-func (moves Moves) CalculateIfSupportIsCut(supportedFrom Territory) bool {
+func (moves Moves) CalculateIfSupportIsCut(supportedFrom Territory, unit UnitType) bool {
 	for _, move := range moves {
-		if move.OrderType == MOVE && move.LocationStart.ValidMovement(supportedFrom) != INVALID {
+		if move.OrderType == MOVE && move.LocationStart.ValidMovement(supportedFrom, unit) {
 			return true
 		}
 	}
