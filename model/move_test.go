@@ -153,3 +153,47 @@ func TestProcessMovesDislodge(t *testing.T) {
 	assert.Equal(t, true, moves[2].Dislodged)
 	assert.Equal(t, false, moves[3].Dislodged)
 }
+
+func TestProcessMovesDislodgeReorderMoves(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:         HOLD,
+			LocationStart:     APULIA,
+			LocationSubmitted: APULIA,
+			UnitType:          NAVY,
+		},
+		{
+			OrderType:               MOVE,
+			LocationStart:           VENICE,
+			LocationSubmitted:       APULIA,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                ARMY,
+		},
+		{
+			OrderType:               SUPPORT,
+			LocationStart:           ROME,
+			LocationSubmitted:       VENICE,
+			SecondLocationSubmitted: APULIA,
+			UnitType:                ARMY,
+		},
+
+		{
+			OrderType:         MOVE,
+			LocationStart:     ADRIATIC_SEA,
+			LocationSubmitted: IONIAN_SEA,
+			UnitType:          NAVY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, APULIA, moves[0].LocationResolved)
+	assert.Equal(t, APULIA, moves[1].LocationResolved)
+	assert.Equal(t, ROME, moves[2].LocationResolved)
+	assert.Equal(t, IONIAN_SEA, moves[3].LocationResolved)
+
+	assert.Equal(t, true, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+	assert.Equal(t, false, moves[2].Dislodged)
+	assert.Equal(t, false, moves[3].Dislodged)
+}
