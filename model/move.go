@@ -17,6 +17,7 @@ type Move struct {
 	OrderType               OrderType `json:"move_type"`
 	MovePower               int
 	UnitType                UnitType
+	Dislodged               bool `json:"dislodged"`
 }
 
 const (
@@ -30,10 +31,18 @@ type MoveType string
 type Moves []*Move
 
 func (move *Move) MovePieceForward() {
-	if move.OrderType == MOVE || move.OrderType == HOLD {
+	if move.OrderType == MOVE {
+		move.LocationResolved = move.LocationSubmitted
+	} else if move.OrderType == HOLD {
 		move.LocationResolved = move.LocationSubmitted
 	} else if move.OrderType == SUPPORT {
 		move.LocationResolved = move.LocationStart
+	}
+}
+
+func (move *Move) DislodgeIfHold() {
+	if move.OrderType == HOLD || move.OrderType == SUPPORT {
+		move.Dislodged = true
 	}
 }
 
