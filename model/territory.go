@@ -108,6 +108,7 @@ func (tm TerritoryMoves) Uncontested(key Territory) bool {
 // These objects represent a move conflict.
 // Resolves a conflict using move.MovePower
 func (tm TerritoryMoves) ResolveConflicts() {
+
 	for key, value := range tm {
 		var lastSeen = 0
 		var lastSeenMove *Move
