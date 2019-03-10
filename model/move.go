@@ -101,15 +101,23 @@ func (moves Moves) CategorizeMovesByTerritory() TerritoryMoves {
 // TODO before this determine if support is cut
 // This may require a function to -+ the MovePower
 // addSupportPointsToMove() This will add up the number of times a unit is supported
-func (moves Moves) AddSupportPointsToMove(supportedFrom Territory, supportedTo Territory) {
+func (moves Moves) CalculateSupport() {
 	for _, move := range moves {
-		// if uncontested resolve the move
-		// remember above LocationSubmitted was edited in the case of invalid moves in memory
+		if move.OrderType == SUPPORT {
+			moves.AddSupportPointsToMove(*move)
+		}
+	}
+}
+
+func (moves Moves) AddSupportPointsToMove(supportMove Move) {
+	// if uncontested resolve the move
+	// remember above LocationSubmitted was edited in the case of invalid moves in memory
+	for idx, move := range moves {
 		if move.OrderType == MOVE {
 			// if the support order matches the order increment the move power counter
-			if move.LocationStart == supportedFrom && move.LocationSubmitted == supportedTo {
-				if !moves.CalculateIfSupportIsCut(supportedFrom, move.UnitType) {
-					move.MovePower += 1
+			if move.LocationStart == supportMove.LocationSubmitted && move.LocationSubmitted == supportMove.SecondLocationSubmitted {
+				if !moves.CalculateIfSupportIsCut(supportMove.LocationStart, supportMove.UnitType) {
+					moves[idx].MovePower += 1
 				}
 			}
 		}
@@ -118,11 +126,12 @@ func (moves Moves) AddSupportPointsToMove(supportedFrom Territory, supportedTo T
 
 // Loop through all moves to determine if there is a Valid attack that cuts support
 // Determined by any move - successful or not - to the origin of the support order
-func (moves Moves) CalculateIfSupportIsCut(supportedFrom Territory, unit UnitType) bool {
+func (moves Moves) CalculateIfSupportIsCut(originOfSupportOrder Territory, unit UnitType) (cut bool) {
+	cut = false
 	for _, move := range moves {
-		if move.OrderType == MOVE && move.LocationStart.ValidMovement(supportedFrom, unit) {
-			return true
+		if move.OrderType == MOVE && move.LocationSubmitted == originOfSupportOrder {
+			cut = move.LocationStart.ValidMovement(originOfSupportOrder, unit)
 		}
 	}
-	return false
+	return cut
 }
