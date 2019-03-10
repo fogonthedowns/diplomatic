@@ -163,7 +163,7 @@ func (moves Moves) AddSupportPointsToMove(supportMove Move) {
 		if move.OrderType == MOVE || move.OrderType == HOLD {
 			// if the support order matches the order increment the move power counter
 			if move.LocationStart == supportMove.LocationSubmitted && move.LocationSubmitted == supportMove.SecondLocationSubmitted {
-				if !moves.CalculateIfSupportIsCut(supportMove.LocationStart, supportMove.UnitType) {
+				if !moves.CalculateIfSupportIsCut(supportMove) {
 					moves[idx].MovePower += 1
 				}
 			}
@@ -173,13 +173,13 @@ func (moves Moves) AddSupportPointsToMove(supportMove Move) {
 
 // Loop through all moves to determine if there is a Valid attack that cuts support
 // Determined by any move - successful or not - to the origin of the support order
-func (moves Moves) CalculateIfSupportIsCut(originOfSupportOrder Territory, unit UnitType) (cut bool) {
+func (moves Moves) CalculateIfSupportIsCut(originOfSupportOrder Move) (cut bool) {
 	cut = false
 	for _, move := range moves {
 		// loop through moves, if the submitted move matches originOfSupportOrder
 		// check the submitted moves Validity (from its LocationStart)
-		if move.OrderType == MOVE && move.LocationSubmitted == originOfSupportOrder {
-			cut = move.LocationStart.ValidMovement(originOfSupportOrder, unit)
+		if move.OrderType == MOVE && move.LocationSubmitted == originOfSupportOrder.LocationStart {
+			cut = move.LocationStart.ValidMovement(originOfSupportOrder.LocationStart, originOfSupportOrder.UnitType)
 		}
 	}
 	return cut
