@@ -48,7 +48,12 @@ func (moves *Moves) ProcessMoves() {
 	tm.ResolveConflicts()
 
 	for _, move := range *moves {
-		fmt.Printf("******** %v (%v -> %v):%v resolved: %+v (%v)\n", move.OrderType, move.LocationStart, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationResolved, move.MovePower)
+		if move.OrderType == SUPPORT {
+			fmt.Printf("******** %vs  %v -> %v from %v. resolved: %+v (%v)\n", move.OrderType, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationStart, move.LocationResolved, move.MovePower)
+
+		} else {
+			fmt.Printf("******** %v (%v -> %v) resolved: %+v (%v)\n", move.OrderType, move.LocationStart, move.LocationSubmitted, move.LocationResolved, move.MovePower)
+		}
 	}
 }
 
