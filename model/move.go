@@ -1,5 +1,7 @@
 package model
 
+import "fmt"
+
 type Move struct {
 	Id                      int64     `json:"id"`
 	GameId                  int64     `json:"game_id"`
@@ -39,10 +41,21 @@ func (move *Move) BouncePiece() {
 	move.LocationResolved = move.LocationStart
 }
 
+func (moves *Moves) ProcessMoves() {
+	tm := moves.CategorizeMovesByTerritory()
+	moves.ResolveUncontestedMoves(tm)
+	moves.CalculateSupport()
+	tm.ResolveConflicts()
+
+	for _, move := range *moves {
+		fmt.Printf("******** %v (%v -> %v):%v resolved: %+v (%v)\n", move.OrderType, move.LocationStart, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationResolved, move.MovePower)
+	}
+}
+
 // Maps The Turn End Location Territory to each move
 // The Key represents where the piece is ordered to, when the turn resolves.
 // from the user perspective so The key depends on the order type
-func (moves Moves) CategorizeMovesByTerritory() TerritoryMoves {
+func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 	tm := make(TerritoryMoves, 0)
 
 	// convoy rules:
@@ -50,7 +63,7 @@ func (moves Moves) CategorizeMovesByTerritory() TerritoryMoves {
 	// do not ever resolve uncontested convoy rules unless
 	// there is a valid path.
 
-	for _, move := range moves {
+	for _, move := range *moves {
 		var valid bool
 		// Vallid support moves are determined by the start location bordering the end location
 		// TODO(:3/5/19) Implement valid movements for Convoy
@@ -102,14 +115,15 @@ func (moves Moves) CategorizeMovesByTerritory() TerritoryMoves {
 // This may require a function to -+ the MovePower
 // addSupportPointsToMove() This will add up the number of times a unit is supported
 func (moves Moves) CalculateSupport() {
-	for _, move := range moves {
+	for index, move := range moves {
 		if move.OrderType == SUPPORT {
 			moves.AddSupportPointsToMove(*move)
+			moves[index].MovePieceForward()
 		}
 	}
 }
 
-func (moves Moves) ResolveMoves(tm TerritoryMoves) {
+func (moves Moves) ResolveUncontestedMoves(tm TerritoryMoves) {
 	// Resolve Moves
 	for index, move := range moves {
 		// if uncontested resolve the move

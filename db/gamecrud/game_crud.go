@@ -151,17 +151,8 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 	if err != nil {
 		return err
 	}
+	moves.ProcessMoves()
 
-	tm := moves.CategorizeMovesByTerritory()
-
-	moves.ResolveMoves(tm)
-	// Calculate Support
-	moves.CalculateSupport()
-	tm.ResolveConflicts()
-
-	for _, move := range moves {
-		fmt.Printf("******** %v (%v -> %v):%v resolved: %+v (%v)\n", move.OrderType, move.LocationStart, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationResolved, move.MovePower)
-	}
 	return err
 }
 

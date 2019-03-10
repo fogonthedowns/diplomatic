@@ -112,9 +112,9 @@ func (tm TerritoryMoves) ResolveConflicts() {
 		var lastSeen = 0
 		var lastSeenMove *Move
 		if len(tm[key]) >= 2 {
-			for _, mm := range value {
+			for index, mm := range value {
 				if mm.MovePower > 0 && mm.MovePower > lastSeen {
-					mm.MovePieceForward()
+					value[index].MovePieceForward()
 				}
 				// fmt.Printf("******************lastSeen %v: %v: %+v\n\n", lastSeen, mm.MovePower, mm)
 
@@ -122,15 +122,15 @@ func (tm TerritoryMoves) ResolveConflicts() {
 					if lastSeenMove != nil {
 						lastSeenMove.BouncePiece()
 					}
-					mm.BouncePiece()
+					value[index].BouncePiece()
 				}
 
 				if mm.MovePower < lastSeen {
-					mm.BouncePiece()
+					value[index].BouncePiece()
 				}
 
 				lastSeen = mm.MovePower
-				lastSeenMove = mm
+				lastSeenMove = value[index]
 			}
 		}
 	}
