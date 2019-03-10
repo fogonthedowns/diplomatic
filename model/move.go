@@ -81,24 +81,7 @@ func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 		var valid bool
 		// Vallid support moves are determined by the start location bordering the end location
 		// TODO(:3/5/19) Implement valid movements for Convoy
-		switch move.OrderType {
-		case SUPPORT:
-			valid = move.LocationStart.ValidMovement(move.SecondLocationSubmitted, move.UnitType)
-		case MOVE:
-			valid = move.LocationStart.ValidMovement(move.LocationSubmitted, move.UnitType)
-		case MOVEVIACONVOY:
-			valid = move.LocationStart.ValidConvoyBeginAndEnd(move.LocationSubmitted)
-		// case CONVOY:
-		// TODO ensure convoy is not disrupted
-		// validate path of continous convoy
-		default:
-			valid = move.LocationStart.ValidMovement(move.LocationSubmitted, move.UnitType)
-
-		}
-
-		if move.OrderType == SUPPORT {
-		} else {
-		}
+		valid = move.LocationStart.ValidMovement(*move)
 		// NOTE Do not save these modifications - keep these changes in memory
 		if !valid {
 			move.OrderType = HOLD
@@ -179,7 +162,8 @@ func (moves Moves) CalculateIfSupportIsCut(originOfSupportOrder Move) (cut bool)
 		// loop through moves, if the submitted move matches originOfSupportOrder
 		// check the submitted moves Validity (from its LocationStart)
 		if move.OrderType == MOVE && move.LocationSubmitted == originOfSupportOrder.LocationStart {
-			cut = move.LocationStart.ValidMovement(originOfSupportOrder.LocationStart, originOfSupportOrder.UnitType)
+			// originOfSupportOrder.LocationStart, originOfSupportOrder.UnitType
+			cut = move.LocationStart.ValidMovement(originOfSupportOrder)
 		}
 	}
 	return cut

@@ -333,10 +333,29 @@ func (t *Territory) ValidConvoyBeginAndEnd(check Territory) bool {
 // ValidMovement will return true if the checked territory
 // is included inside of the mapOfBorders map
 // uses the origional terriotry as they key
-func (t *Territory) ValidMovement(check Territory, unit UnitType) bool {
-	switch unit {
+// func (t *Territory) ValidMovement(check Territory, unit UnitType) bool {
+func (t *Territory) ValidMovement(move Move) bool {
+
+	var check Territory
+	switch move.OrderType {
+	case SUPPORT:
+		check = move.SecondLocationSubmitted
+	case MOVE:
+		check = move.LocationSubmitted
+	case MOVEVIACONVOY:
+		check = move.LocationSubmitted
+	default:
+		check = move.LocationSubmitted
+	}
+
+	switch move.UnitType {
 	case ARMY:
-		return t.ValidLandMovement(check)
+
+		if move.OrderType == MOVEVIACONVOY {
+			return t.ValidConvoyBeginAndEnd(check)
+		} else {
+			return t.ValidLandMovement(check)
+		}
 	case NAVY:
 		return t.ValidSeaMovement(check)
 	default:
