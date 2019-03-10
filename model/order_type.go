@@ -4,7 +4,7 @@ const (
 	CONVOY        = OrderType("Convoy")
 	HOLD          = OrderType("Hold")
 	MOVE          = OrderType("Move")
-	MOVEVIACONVOY = OrderType("MoveViaConvoy")
+	MOVEVIACONVOY = OrderType("MoveConvoy")
 	SUPPORT       = OrderType("Support")
 )
 

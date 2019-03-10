@@ -153,6 +153,8 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 	}
 	tm := moves.CategorizeMovesByTerritory()
 
+	// Calculate Support
+	moves.CalculateSupport()
 	// Resolve Moves
 	for _, move := range moves {
 		// if uncontested resolve the move
@@ -169,16 +171,12 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 			move.MovePieceForward()
 		}
 
-		// calculate support
-		if move.OrderType == model.SUPPORT {
-			moves.AddSupportPointsToMove(move.LocationSubmitted, move.SecondLocationSubmitted)
-		}
 	}
 
 	tm.ResolveConflicts()
 
 	for _, move := range moves {
-		fmt.Printf("******** %v (%v -> %v):%v resolved: %+v\n", move.OrderType, move.LocationStart, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationResolved)
+		fmt.Printf("******** %v (%v -> %v):%v resolved: %+v (%v)\n", move.OrderType, move.LocationStart, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationResolved, move.MovePower)
 	}
 	return err
 }
