@@ -50,6 +50,12 @@ func TestProcessMovesBounce(t *testing.T) {
 	assert.Equal(t, ROME, moves[2].LocationResolved)
 	assert.Equal(t, IONIAN_SEA, moves[3].LocationResolved)
 	assert.Equal(t, NORTH_SEA, moves[4].LocationResolved)
+
+	assert.Equal(t, false, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+	assert.Equal(t, false, moves[2].Dislodged)
+	assert.Equal(t, false, moves[3].Dislodged)
+	assert.Equal(t, false, moves[4].Dislodged)
 }
 
 func TestProcessMovesCutSupport(t *testing.T) {
@@ -97,4 +103,53 @@ func TestProcessMovesCutSupport(t *testing.T) {
 	assert.Equal(t, ROME, moves[2].LocationResolved)
 	assert.Equal(t, IONIAN_SEA, moves[3].LocationResolved)
 	assert.Equal(t, ADRIATIC_SEA, moves[4].LocationResolved)
+
+	assert.Equal(t, false, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+	assert.Equal(t, false, moves[2].Dislodged)
+	assert.Equal(t, false, moves[3].Dislodged)
+	assert.Equal(t, false, moves[4].Dislodged)
+}
+
+func TestProcessMovesDislodge(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:               MOVE,
+			LocationStart:           VENICE,
+			LocationSubmitted:       APULIA,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                ARMY,
+		},
+		{
+			OrderType:               SUPPORT,
+			LocationStart:           ROME,
+			LocationSubmitted:       VENICE,
+			SecondLocationSubmitted: APULIA,
+			UnitType:                ARMY,
+		},
+		{
+			OrderType:         HOLD,
+			LocationStart:     APULIA,
+			LocationSubmitted: APULIA,
+			UnitType:          NAVY,
+		},
+		{
+			OrderType:         MOVE,
+			LocationStart:     ADRIATIC_SEA,
+			LocationSubmitted: IONIAN_SEA,
+			UnitType:          NAVY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, APULIA, moves[0].LocationResolved)
+	assert.Equal(t, ROME, moves[1].LocationResolved)
+	assert.Equal(t, APULIA, moves[2].LocationResolved)
+	assert.Equal(t, IONIAN_SEA, moves[3].LocationResolved)
+
+	assert.Equal(t, false, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+	assert.Equal(t, true, moves[2].Dislodged)
+	assert.Equal(t, false, moves[3].Dislodged)
 }
