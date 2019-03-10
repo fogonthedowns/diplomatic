@@ -109,6 +109,25 @@ func (moves Moves) CalculateSupport() {
 	}
 }
 
+func (moves Moves) ResolveMoves(tm TerritoryMoves) {
+	// Resolve Moves
+	for index, move := range moves {
+		// if uncontested resolve the move
+		// remember above LocationSubmitted was edited in the case of invalid moves in memory
+
+		// convoy rules:
+		// use movement of land unit follows ValidMovement()
+		// do not ever resolve uncontested convoy rules unless
+		// there is a valid path.
+
+		// TODO (3/4/19) Uncontested should return false in the case of convoy
+		// TODO (3/4/19) Implement a seperate fun to check convoy path and if it is uncontested.
+		if tm.Uncontested(move.LocationSubmitted) {
+			moves[index].MovePieceForward()
+		}
+	}
+}
+
 func (moves Moves) AddSupportPointsToMove(supportMove Move) {
 	// if uncontested resolve the move
 	// remember above LocationSubmitted was edited in the case of invalid moves in memory
