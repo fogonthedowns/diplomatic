@@ -160,7 +160,7 @@ func (moves Moves) AddSupportPointsToMove(supportMove Move) {
 	// if uncontested resolve the move
 	// remember above LocationSubmitted was edited in the case of invalid moves in memory
 	for idx, move := range moves {
-		if move.OrderType == MOVE {
+		if move.OrderType == MOVE || move.OrderType == HOLD {
 			// if the support order matches the order increment the move power counter
 			if move.LocationStart == supportMove.LocationSubmitted && move.LocationSubmitted == supportMove.SecondLocationSubmitted {
 				if !moves.CalculateIfSupportIsCut(supportMove.LocationStart, supportMove.UnitType) {
