@@ -129,6 +129,8 @@ func (moves Moves) AddSupportPointsToMove(supportMove Move) {
 func (moves Moves) CalculateIfSupportIsCut(originOfSupportOrder Territory, unit UnitType) (cut bool) {
 	cut = false
 	for _, move := range moves {
+		// loop through moves, if the submitted move matches originOfSupportOrder
+		// check the submitted moves Validity (from its LocationStart)
 		if move.OrderType == MOVE && move.LocationSubmitted == originOfSupportOrder {
 			cut = move.LocationStart.ValidMovement(originOfSupportOrder, unit)
 		}
