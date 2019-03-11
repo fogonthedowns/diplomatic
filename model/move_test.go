@@ -241,3 +241,29 @@ func TestProcessSupportHold(t *testing.T) {
 	assert.Equal(t, false, moves[2].Dislodged)
 	assert.Equal(t, false, moves[3].Dislodged)
 }
+
+func TestProcessMovesMoveViaConvoy(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:         MOVEVIACONVOY,
+			LocationStart:     LONDON,
+			LocationSubmitted: PICARDY,
+			UnitType:          ARMY,
+		},
+		{
+			OrderType:               CONVOY,
+			LocationStart:           ENGLISH_CHANNEL,
+			LocationSubmitted:       LONDON,
+			SecondLocationSubmitted: PICARDY,
+			UnitType:                NAVY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, PICARDY, moves[0].LocationResolved)
+	assert.Equal(t, ENGLISH_CHANNEL, moves[1].LocationResolved)
+
+	assert.Equal(t, false, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+}

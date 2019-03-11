@@ -37,6 +37,10 @@ func (move *Move) MovePieceForward() {
 		move.LocationResolved = move.LocationSubmitted
 	} else if move.OrderType == SUPPORT {
 		move.LocationResolved = move.LocationStart
+	} else if move.OrderType == MOVEVIACONVOY {
+		move.LocationResolved = move.LocationSubmitted
+	} else if move.OrderType == CONVOY {
+		move.LocationResolved = move.LocationStart
 	}
 }
 
@@ -104,6 +108,15 @@ func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 		if move.OrderType == HOLD {
 			tm[move.LocationStart] = append(tm[move.LocationStart], move)
 		}
+
+		if move.OrderType == MOVEVIACONVOY && moves.ConvoyPathDoesExist(move.LocationStart, move.LocationSubmitted) {
+			tm[move.LocationStart] = append(tm[move.LocationSubmitted], move)
+		}
+
+		if move.OrderType == CONVOY {
+			tm[move.LocationStart] = append(tm[move.LocationStart], move)
+		}
+
 	}
 	return tm
 }
@@ -118,6 +131,37 @@ func (moves Moves) CalculateSupport() {
 			moves[index].MovePieceForward()
 		}
 	}
+}
+
+// ConvoyPathDoesExist() loops through all the moves if the move is a Convoy then check the begining and end move
+// sent by the Army which is being convoyed. Build up a slice of Territories, and then
+// build up a slice of Neighbor Territory's determine if the path
+// from begining to end exists from that slice.
+func (moves Moves) ConvoyPathDoesExist(begin Territory, end Territory) bool {
+	convoyPathTerritories := make([]Territory, 0)
+	allConnections := make([]Territory, 0)
+	for _, move := range moves {
+		if move.OrderType == CONVOY && move.LocationSubmitted == begin && move.SecondLocationSubmitted == end {
+			convoyPathTerritories = append(convoyPathTerritories, move.LocationStart)
+		}
+	}
+
+	for _, t := range convoyPathTerritories {
+		for _, neighborTerritory := range validSeaMoves[t] {
+			allConnections = append(allConnections, neighborTerritory)
+		}
+	}
+	var beginValid, endValid bool
+	for _, check := range allConnections {
+		if check == begin {
+			beginValid = true
+		}
+		if check == end {
+			endValid = true
+		}
+	}
+
+	return beginValid && endValid
 }
 
 func (moves Moves) ResolveUncontestedMoves(tm TerritoryMoves) {
