@@ -350,7 +350,6 @@ func (t *Territory) ValidMovement(move Move) bool {
 
 	switch move.UnitType {
 	case ARMY:
-
 		if move.OrderType == MOVEVIACONVOY {
 			return t.ValidConvoyBeginAndEnd(check)
 		} else {
