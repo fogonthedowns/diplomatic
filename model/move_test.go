@@ -267,3 +267,40 @@ func TestProcessMovesMoveViaConvoy(t *testing.T) {
 	assert.Equal(t, false, moves[0].Dislodged)
 	assert.Equal(t, false, moves[1].Dislodged)
 }
+
+func TestInvalidProcessMovesMoveViaConvoy(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:         MOVEVIACONVOY,
+			LocationStart:     LONDON,
+			LocationSubmitted: TUNIS,
+			UnitType:          ARMY,
+		},
+		{
+			OrderType:               CONVOY,
+			LocationStart:           ENGLISH_CHANNEL,
+			LocationSubmitted:       LONDON,
+			SecondLocationSubmitted: TUNIS,
+			UnitType:                NAVY,
+		},
+		{
+			OrderType:               CONVOY,
+			LocationStart:           WESTERN_MEDITERRANEAN,
+			LocationSubmitted:       LONDON,
+			SecondLocationSubmitted: TUNIS,
+			UnitType:                NAVY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, LONDON, moves[0].LocationResolved)
+	assert.Equal(t, ENGLISH_CHANNEL, moves[1].LocationResolved)
+	assert.Equal(t, WESTERN_MEDITERRANEAN, moves[2].LocationResolved)
+
+	assert.Equal(t, false, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+	assert.Equal(t, false, moves[2].Dislodged)
+}
+
+// TODO write test from LON to TUN, with support only in Western Med and Eng channel missing north atlantic.

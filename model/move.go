@@ -18,6 +18,7 @@ type Move struct {
 	MovePower               int
 	UnitType                UnitType
 	Dislodged               bool `json:"dislodged"`
+	Valid                   bool `json:"dislodged"`
 }
 
 const (
@@ -31,6 +32,9 @@ type MoveType string
 type Moves []*Move
 
 func (move *Move) MovePieceForward() {
+	if !move.Valid {
+		return
+	}
 	if move.OrderType == MOVE {
 		move.LocationResolved = move.LocationSubmitted
 	} else if move.OrderType == HOLD {
@@ -85,7 +89,13 @@ func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 		var valid bool
 		// Vallid support moves are determined by the start location bordering the end location
 		// TODO(:3/5/19) Implement valid movements for Convoy
-		valid = move.LocationStart.ValidMovement(*move)
+
+		if move.OrderType == MOVEVIACONVOY {
+			valid = moves.ConvoyPathDoesExist(move.LocationStart, move.LocationSubmitted)
+		} else {
+			valid = move.LocationStart.ValidMovement(*move)
+		}
+		move.Valid = valid
 		// NOTE Do not save these modifications - keep these changes in memory
 		if !valid {
 			move.OrderType = HOLD
@@ -109,7 +119,7 @@ func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 			tm[move.LocationStart] = append(tm[move.LocationStart], move)
 		}
 
-		if move.OrderType == MOVEVIACONVOY && moves.ConvoyPathDoesExist(move.LocationStart, move.LocationSubmitted) {
+		if move.OrderType == MOVEVIACONVOY {
 			tm[move.LocationStart] = append(tm[move.LocationSubmitted], move)
 		}
 
@@ -138,30 +148,71 @@ func (moves Moves) CalculateSupport() {
 // build up a slice of Neighbor Territory's determine if the path
 // from begining to end exists from that slice.
 func (moves Moves) ConvoyPathDoesExist(begin Territory, end Territory) bool {
+	fmt.Printf("****** %v :: %v \n", begin, end)
 	convoyPathTerritories := make([]Territory, 0)
-	allConnections := make([]Territory, 0)
+	allConnections := make(map[Territory][]Territory)
+	// TODO this does not support multiple convoys
 	for _, move := range moves {
 		if move.OrderType == CONVOY && move.LocationSubmitted == begin && move.SecondLocationSubmitted == end {
 			convoyPathTerritories = append(convoyPathTerritories, move.LocationStart)
 		}
 	}
 
-	for _, t := range convoyPathTerritories {
-		for _, neighborTerritory := range validSeaMoves[t] {
-			allConnections = append(allConnections, neighborTerritory)
-		}
-	}
-	var beginValid, endValid bool
-	for _, check := range allConnections {
-		if check == begin {
-			beginValid = true
-		}
-		if check == end {
-			endValid = true
-		}
+	for _, orderTerritory := range convoyPathTerritories {
+		allConnections[orderTerritory] = validSeaMoves[orderTerritory]
 	}
 
-	return beginValid && endValid
+	var beginingConnection, endConnection Territory
+	// fmt.Printf("%+v\n", convoyPathTerritories)
+	//var beginValid, endValid bool
+	for _, convoyTerritory := range convoyPathTerritories {
+		for _, t := range allConnections[convoyTerritory] {
+			if begin == t {
+				//beginValid = true
+				beginingConnection = convoyTerritory
+			}
+			if end == t {
+				//endValid = true
+				endConnection = convoyTerritory
+
+			}
+		}
+
+	}
+
+	// fmt.Printf("%+v\n", beginValid)
+	// fmt.Printf("%+v\n", endValid)
+	// fmt.Printf("%+v\n", beginingConnection)
+	// fmt.Printf("%+v\n", endConnection)
+
+	var path bool
+	if len(convoyPathTerritories) > 1 {
+		path = DoesBeginToEndPathExist(beginingConnection, endConnection, allConnections)
+		fmt.Printf("%v\n", path)
+	} else {
+		path = DoesBeginToEndPathExist(beginingConnection, end, allConnections)
+	}
+	fmt.Printf("path %v \n", path)
+	return path
+}
+
+func DoesBeginToEndPathExist(begin Territory, end Territory, allConnections map[Territory][]Territory) bool {
+	// if begin != nil && end != nil {
+	fmt.Printf("begin %v \n", begin)
+	fmt.Printf("end %v \n", end)
+	fmt.Printf("connections %v \n", allConnections)
+	for _, territoriesConnectedToBegin := range allConnections[begin] {
+		fmt.Printf("territoriesConnectedToBegin %v \n", territoriesConnectedToBegin)
+
+		// TODO why is this a rune?
+		// fmt.Printf("%v : %v \n", Territory(territory), end)
+		if territoriesConnectedToBegin == end {
+			return true
+		}
+
+	}
+	// }
+	return false
 }
 
 func (moves Moves) ResolveUncontestedMoves(tm TerritoryMoves) {
