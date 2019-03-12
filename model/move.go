@@ -18,7 +18,6 @@ type Move struct {
 	MovePower               int
 	UnitType                UnitType
 	Dislodged               bool `json:"dislodged"`
-	Valid                   bool `json:"dislodged"`
 }
 
 const (
@@ -32,9 +31,6 @@ type MoveType string
 type Moves []*Move
 
 func (move *Move) MovePieceForward() {
-	if !move.Valid {
-		return
-	}
 	if move.OrderType == MOVE {
 		move.LocationResolved = move.LocationSubmitted
 	} else if move.OrderType == HOLD {
@@ -80,23 +76,20 @@ func (moves *Moves) ProcessMoves() {
 func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 	tm := make(TerritoryMoves, 0)
 
-	// convoy rules:
-	// use movement of land unit follows ValidMovement()
-	// do not ever resolve uncontested convoy rules unless
-	// there is a valid path.
-
 	for _, move := range *moves {
 		var valid bool
 		// Vallid support moves are determined by the start location bordering the end location
-		// TODO(:3/5/19) Implement valid movements for Convoy
+		// TODO(:3/12/19) Refactor ValidMovement to include ConvoyPathDoesExist()
 
 		if move.OrderType == MOVEVIACONVOY {
 			valid = moves.ConvoyPathDoesExist(move.LocationStart, move.LocationSubmitted)
 		} else {
 			valid = move.LocationStart.ValidMovement(*move)
 		}
-		move.Valid = valid
-		// NOTE Do not save these modifications - keep these changes in memory
+
+		// TODO(:3/12/19)
+		// Message concept to indicate move coerced to Move
+		// Consider Historical move.HistoricalOrder to show past moves
 		if !valid {
 			move.OrderType = HOLD
 			move.LocationSubmitted = move.LocationStart
