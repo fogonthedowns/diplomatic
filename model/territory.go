@@ -356,7 +356,11 @@ func (t *Territory) ValidMovement(move Move) bool {
 			return t.ValidLandMovement(check)
 		}
 	case NAVY:
-		return t.ValidSeaMovement(check)
+		if move.OrderType == CONVOY {
+			return t.ValidConvoyBeginAndEnd(check)
+		} else {
+			return t.ValidSeaMovement(check)
+		}
 	default:
 		return false
 	}

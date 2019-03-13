@@ -68,6 +68,7 @@ func (moves *Moves) ProcessMoves() {
 			fmt.Printf("******** %v (%v -> %v) resolved: %+v (%v)\n", move.OrderType, move.LocationStart, move.LocationSubmitted, move.LocationResolved, move.MovePower)
 		}
 	}
+	fmt.Print("\n\nOrders:\n")
 }
 
 // Maps The Turn End Location Territory to each move
@@ -141,10 +142,9 @@ func (moves Moves) CalculateSupport() {
 // build up a slice of Neighbor Territory's determine if the path
 // from begining to end exists from that slice.
 func (moves Moves) ConvoyPathDoesExist(begin Territory, end Territory) bool {
-	fmt.Printf("****** %v :: %v \n", begin, end)
 	convoyPathTerritories := make([]Territory, 0)
 	allConnections := make(map[Territory][]Territory)
-	// TODO this does not support multiple convoys
+	// TODO Check if this supports multiple convoys, it could bc this is kicked off by a single move.
 	for _, move := range moves {
 		if move.OrderType == CONVOY && move.LocationSubmitted == begin && move.SecondLocationSubmitted == end {
 			convoyPathTerritories = append(convoyPathTerritories, move.LocationStart)
@@ -155,57 +155,97 @@ func (moves Moves) ConvoyPathDoesExist(begin Territory, end Territory) bool {
 		allConnections[orderTerritory] = validSeaMoves[orderTerritory]
 	}
 
-	var beginingConnection, endConnection Territory
-	// fmt.Printf("%+v\n", convoyPathTerritories)
-	//var beginValid, endValid bool
+	var beginingConnection, endConnection *Territory
+
+	// Check to see if the Convoy Begin and End order (the Move issued by Army)
+	// exists in the Map of allConnections
 	for _, convoyTerritory := range convoyPathTerritories {
 		for _, t := range allConnections[convoyTerritory] {
 			if begin == t {
 				//beginValid = true
-				beginingConnection = convoyTerritory
+				beginingConnection = &convoyTerritory
 			}
 			if end == t {
 				//endValid = true
-				endConnection = convoyTerritory
+				endConnection = &convoyTerritory
 
 			}
 		}
 
 	}
 
-	// fmt.Printf("%+v\n", beginValid)
-	// fmt.Printf("%+v\n", endValid)
-	// fmt.Printf("%+v\n", beginingConnection)
-	// fmt.Printf("%+v\n", endConnection)
+	// Not Valid if there is no connection to the Begin and End
+	if beginingConnection == nil {
+		return false
+	}
+	if endConnection == nil {
+		return false
+	}
 
 	var path bool
 	if len(convoyPathTerritories) > 1 {
-		path = DoesBeginToEndPathExist(beginingConnection, endConnection, allConnections)
-		fmt.Printf("%v\n", path)
+		// first clean up allConnections, to only relevant info
+		// then determine if the path exists
+		reducedConnections := reduceAllConnectionsToRelevant(allConnections, convoyPathTerritories)
+		path = doesPathExist(reducedConnections)
 	} else {
-		path = DoesBeginToEndPathExist(beginingConnection, end, allConnections)
+		// since there is already a connection to begin and end from this territory
+		return true
 	}
-	fmt.Printf("path %v \n", path)
 	return path
 }
 
-func DoesBeginToEndPathExist(begin Territory, end Territory, allConnections map[Territory][]Territory) bool {
-	// if begin != nil && end != nil {
-	fmt.Printf("begin %v \n", begin)
-	fmt.Printf("end %v \n", end)
-	fmt.Printf("connections %v \n", allConnections)
-	for _, territoriesConnectedToBegin := range allConnections[begin] {
-		fmt.Printf("territoriesConnectedToBegin %v \n", territoriesConnectedToBegin)
-
-		// TODO why is this a rune?
-		// fmt.Printf("%v : %v \n", Territory(territory), end)
-		if territoriesConnectedToBegin == end {
-			return true
+// reduceAllConnectionsToRelevant()
+// Eliminates useless information in allConnections Terristory map.
+// e.g.
+// 1 : [2,3,4,5]
+// 2 : [12, 3, 45, 1, 8, 11]
+// is reduced to:
+// 1: [2]
+// 2: [1]
+// where the Numbers are Territory elements
+func reduceAllConnectionsToRelevant(allConnections map[Territory][]Territory, convoyList []Territory) map[Territory][]Territory {
+	// Reduce
+	reducedConnections := make(map[Territory][]Territory)
+	for key, tArray := range allConnections {
+		list := make([]Territory, 0)
+		for _, territoryElement := range tArray {
+			for _, convoyTerritory := range convoyList {
+				if territoryElement == convoyTerritory {
+					list = append(list, territoryElement)
+				}
+			}
 		}
-
+		reducedConnections[key] = list
 	}
-	// }
-	return false
+
+	return reducedConnections
+}
+
+// Determins if a valid path exists
+func doesPathExist(rc map[Territory][]Territory) bool {
+	// Path
+	seen := make([]Territory, 0)
+	for key, list := range rc {
+		if len(list) == 0 {
+			return false
+		}
+		seen = appendIfMissing(seen, key)
+		for _, t := range list {
+			seen = appendIfMissing(seen, t)
+		}
+	}
+	return len(seen) == len(rc)
+}
+
+// appendIfMissing() Appends to Territory Slice, if the element is missing
+func appendIfMissing(slice []Territory, i Territory) []Territory {
+	for _, ele := range slice {
+		if ele == i {
+			return slice
+		}
+	}
+	return append(slice, i)
 }
 
 func (moves Moves) ResolveUncontestedMoves(tm TerritoryMoves) {
