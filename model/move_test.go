@@ -268,7 +268,7 @@ func TestProcessMovesMoveViaConvoy(t *testing.T) {
 	assert.Equal(t, false, moves[1].Dislodged)
 }
 
-func TestInvalidProcessMovesMoveViaConvoy(t *testing.T) {
+func TestInvalidProcessMovesInvalidMoveViaConvoy(t *testing.T) {
 	moves := make(Moves, 0)
 	moves = []*Move{
 		{
@@ -303,7 +303,7 @@ func TestInvalidProcessMovesMoveViaConvoy(t *testing.T) {
 	assert.Equal(t, false, moves[2].Dislodged)
 }
 
-func TestLongPathProcessMovesMoveViaConvoy(t *testing.T) {
+func TestInvalidProcessMovesMoveViaConvoy(t *testing.T) {
 	moves := make(Moves, 0)
 	moves = []*Move{
 		{
@@ -343,6 +343,71 @@ func TestLongPathProcessMovesMoveViaConvoy(t *testing.T) {
 
 	assert.Equal(t, false, moves[0].Dislodged)
 	assert.Equal(t, false, moves[1].Dislodged)
+	assert.Equal(t, false, moves[2].Dislodged)
+	assert.Equal(t, false, moves[3].Dislodged)
+}
+
+func TestLongPathProcessTwoConvoys(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:               CONVOY,
+			LocationStart:           MID_ATLANTIC_OCEAN,
+			LocationSubmitted:       LONDON,
+			SecondLocationSubmitted: TUNIS,
+			UnitType:                NAVY,
+		},
+		{
+			OrderType:         MOVEVIACONVOY,
+			LocationStart:     LONDON,
+			LocationSubmitted: TUNIS,
+			UnitType:          ARMY,
+		},
+
+		{
+			OrderType:               CONVOY,
+			LocationStart:           ADRIATIC_SEA,
+			LocationSubmitted:       ALBANIA,
+			SecondLocationSubmitted: APULIA,
+			UnitType:                NAVY,
+		},
+		{
+			OrderType:         MOVEVIACONVOY,
+			LocationStart:     ALBANIA,
+			LocationSubmitted: APULIA,
+			UnitType:          ARMY,
+		},
+
+		{
+			OrderType:               CONVOY,
+			LocationStart:           ENGLISH_CHANNEL,
+			LocationSubmitted:       LONDON,
+			SecondLocationSubmitted: TUNIS,
+			UnitType:                NAVY,
+		},
+		{
+			OrderType:               CONVOY,
+			LocationStart:           WESTERN_MEDITERRANEAN,
+			LocationSubmitted:       LONDON,
+			SecondLocationSubmitted: TUNIS,
+			UnitType:                NAVY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, MID_ATLANTIC_OCEAN, moves[0].LocationResolved)
+	assert.Equal(t, TUNIS, moves[1].LocationResolved)
+	assert.Equal(t, ENGLISH_CHANNEL, moves[4].LocationResolved)
+	assert.Equal(t, WESTERN_MEDITERRANEAN, moves[5].LocationResolved)
+
+	assert.Equal(t, false, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+	assert.Equal(t, false, moves[4].Dislodged)
+	assert.Equal(t, false, moves[5].Dislodged)
+
+	assert.Equal(t, ADRIATIC_SEA, moves[2].LocationResolved)
+	assert.Equal(t, APULIA, moves[3].LocationResolved)
+
 	assert.Equal(t, false, moves[2].Dislodged)
 	assert.Equal(t, false, moves[3].Dislodged)
 }
