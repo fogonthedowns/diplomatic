@@ -31,6 +31,29 @@ const (
 type MoveType string
 type Moves []*Move
 
+// This is the Starting Point.
+func (moves *Moves) ProcessMoves() {
+	tm := moves.CategorizeMovesByTerritory()
+	moves.ResolveUncontestedMoves(tm)
+	moves.CalculateSupport()
+	tm.ResolveConflicts(moves)
+	moves.MoveConvoysForward()
+	moves.logProgress()
+
+}
+
+func (moves *Moves) logProgress() {
+	for _, move := range *moves {
+		if move.OrderType == SUPPORT {
+			fmt.Printf("******** %vs  %v -> %v from %v. resolved: %+v (%v)\n", move.OrderType, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationStart, move.LocationResolved, move.MovePower)
+
+		} else {
+			fmt.Printf("******** %v (%v -> %v) resolved: %+v (%v)\n", move.OrderType, move.LocationStart, move.LocationSubmitted, move.LocationResolved, move.MovePower)
+		}
+	}
+	fmt.Print("\n\nOrders:\n")
+}
+
 func (move *Move) MovePieceForward() {
 	if move.OrderType == MOVE {
 		move.LocationResolved = move.LocationSubmitted
@@ -104,24 +127,6 @@ func (move *Move) ProcessConvoyDislodge(moves *Moves) {
 
 func (move *Move) BouncePiece() {
 	move.LocationResolved = move.LocationStart
-}
-
-func (moves *Moves) ProcessMoves() {
-	tm := moves.CategorizeMovesByTerritory()
-	moves.ResolveUncontestedMoves(tm)
-	moves.CalculateSupport()
-	tm.ResolveConflicts(moves)
-	moves.MoveConvoysForward()
-
-	for _, move := range *moves {
-		if move.OrderType == SUPPORT {
-			fmt.Printf("******** %vs  %v -> %v from %v. resolved: %+v (%v)\n", move.OrderType, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationStart, move.LocationResolved, move.MovePower)
-
-		} else {
-			fmt.Printf("******** %v (%v -> %v) resolved: %+v (%v)\n", move.OrderType, move.LocationStart, move.LocationSubmitted, move.LocationResolved, move.MovePower)
-		}
-	}
-	fmt.Print("\n\nOrders:\n")
 }
 
 // Maps The Turn End Location Territory to each move
