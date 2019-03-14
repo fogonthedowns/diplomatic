@@ -107,8 +107,7 @@ func (tm TerritoryMoves) Uncontested(key Territory) bool {
 // ResolveConflicts() resolves conflicts of any territory that has two Move objects assoicated with it.
 // These objects represent a move conflict.
 // Resolves a conflict using move.MovePower
-func (tm TerritoryMoves) ResolveConflicts() {
-
+func (tm TerritoryMoves) ResolveConflicts(moves *Moves) {
 	for key, value := range tm {
 		var lastSeen = 0
 		var lastSeenMove *Move
@@ -116,7 +115,7 @@ func (tm TerritoryMoves) ResolveConflicts() {
 			for index, mm := range value {
 				if mm.MovePower > 0 && mm.MovePower > lastSeen {
 					if lastSeenMove != nil {
-						lastSeenMove.DislodgeIfHold()
+						lastSeenMove.DislodgeIfHold(moves)
 					}
 					value[index].MovePieceForward()
 
@@ -131,7 +130,7 @@ func (tm TerritoryMoves) ResolveConflicts() {
 
 				if mm.MovePower < lastSeen {
 					value[index].BouncePiece()
-					value[index].DislodgeIfHold()
+					value[index].DislodgeIfHold(moves)
 				}
 
 				lastSeen = mm.MovePower
