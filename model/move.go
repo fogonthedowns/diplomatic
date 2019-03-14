@@ -18,6 +18,7 @@ type Move struct {
 	MovePower               int
 	UnitType                UnitType
 	Dislodged               bool `json:"dislodged"`
+	ConvoyPathMoveIds       []int64
 }
 
 const (
@@ -37,16 +38,67 @@ func (move *Move) MovePieceForward() {
 		move.LocationResolved = move.LocationSubmitted
 	} else if move.OrderType == SUPPORT {
 		move.LocationResolved = move.LocationStart
-	} else if move.OrderType == MOVEVIACONVOY {
-		move.LocationResolved = move.LocationSubmitted
 	} else if move.OrderType == CONVOY {
 		move.LocationResolved = move.LocationStart
 	}
 }
 
-func (move *Move) DislodgeIfHold() {
+// I like the way this works better than the above MovePieceForward()
+// because it happens last based on Dislodged concept
+func (moves *Moves) MoveConvoysForward() {
+	for _, move := range *moves {
+		if move.OrderType == MOVEVIACONVOY {
+			fmt.Printf("move %v \n", move)
+			if move.Dislodged {
+				move.LocationResolved = move.LocationStart
+			} else {
+				move.LocationResolved = move.LocationSubmitted
+			}
+		}
+	}
+}
+
+func (move *Move) DislodgeIfHold(moves *Moves) {
 	if move.OrderType == HOLD || move.OrderType == SUPPORT {
 		move.Dislodged = true
+
+	}
+	if move.OrderType == CONVOY {
+		move.Dislodged = true
+		move.ProcessConvoyDislodge(moves)
+	}
+}
+
+// this is complex as fuck. And won't support a double convoy attack. fuck.
+// first loop finds the move ids of the Convoy
+// the second ranges over the move id and if the move is dislodged dislodges the entire convoy
+// the third sets the Unit being convoy as dislodged, if the convoy is dislodged
+func (move *Move) ProcessConvoyDislodge(moves *Moves) {
+	var moveIds []int64
+	var convoyDislodged bool
+	for _, m := range *moves {
+		if m.OrderType == MOVEVIACONVOY {
+			moveIds = m.ConvoyPathMoveIds
+		}
+	}
+
+	for _, m := range *moves {
+		for _, id := range moveIds {
+			if id == m.Id {
+				if m.Dislodged {
+					convoyDislodged = true
+				}
+
+			}
+		}
+	}
+
+	for _, m := range *moves {
+		if m.OrderType == MOVEVIACONVOY {
+			if convoyDislodged {
+				m.Dislodged = true
+			}
+		}
 	}
 }
 
@@ -58,7 +110,8 @@ func (moves *Moves) ProcessMoves() {
 	tm := moves.CategorizeMovesByTerritory()
 	moves.ResolveUncontestedMoves(tm)
 	moves.CalculateSupport()
-	tm.ResolveConflicts()
+	tm.ResolveConflicts(moves)
+	moves.MoveConvoysForward()
 
 	for _, move := range *moves {
 		if move.OrderType == SUPPORT {
@@ -143,11 +196,19 @@ func (moves Moves) CalculateSupport() {
 // from begining to end exists from that slice.
 func (moves Moves) ConvoyPathDoesExist(begin Territory, end Territory) bool {
 	convoyPathTerritories := make([]Territory, 0)
+	convoyPathMoveIds := make([]int64, 0)
 	allConnections := make(map[Territory][]Territory)
 	// TODO Check if this supports multiple convoys, it could bc this is kicked off by a single move.
 	for _, move := range moves {
 		if move.OrderType == CONVOY && move.LocationSubmitted == begin && move.SecondLocationSubmitted == end {
 			convoyPathTerritories = append(convoyPathTerritories, move.LocationStart)
+			convoyPathMoveIds = append(convoyPathMoveIds, move.Id)
+		}
+	}
+
+	for _, move := range moves {
+		if move.OrderType == MOVEVIACONVOY {
+			move.ConvoyPathMoveIds = convoyPathMoveIds
 		}
 	}
 

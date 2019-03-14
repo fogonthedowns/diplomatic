@@ -412,4 +412,47 @@ func TestLongPathProcessTwoConvoys(t *testing.T) {
 	assert.Equal(t, false, moves[3].Dislodged)
 }
 
-// TODO write test from LON to TUN, with support only in Western Med and Eng channel missing north atlantic.
+func TestProcessDislodgeConvoy(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			Id:                1,
+			OrderType:         MOVEVIACONVOY,
+			LocationStart:     LONDON,
+			LocationSubmitted: PICARDY,
+			UnitType:          ARMY,
+		},
+		{
+			Id:                      2,
+			OrderType:               CONVOY,
+			LocationStart:           ENGLISH_CHANNEL,
+			LocationSubmitted:       LONDON,
+			SecondLocationSubmitted: PICARDY,
+			UnitType:                NAVY,
+		},
+		{
+			Id:                3,
+			OrderType:         MOVE,
+			LocationStart:     NORTH_SEA,
+			LocationSubmitted: ENGLISH_CHANNEL,
+			UnitType:          NAVY,
+		},
+		{
+			Id:                      4,
+			OrderType:               SUPPORT,
+			LocationStart:           IRISH_SEA,
+			LocationSubmitted:       NORTH_SEA,
+			SecondLocationSubmitted: ENGLISH_CHANNEL,
+			UnitType:                NAVY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, LONDON, moves[0].LocationResolved)
+	assert.Equal(t, ENGLISH_CHANNEL, moves[1].LocationResolved)
+
+	assert.Equal(t, true, moves[0].Dislodged)
+	assert.Equal(t, true, moves[1].Dislodged)
+	assert.Equal(t, false, moves[2].Dislodged)
+	assert.Equal(t, false, moves[3].Dislodged)
+}
