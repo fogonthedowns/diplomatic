@@ -567,7 +567,7 @@ func TestLongPathProcessTwoDislodgedConvoys(t *testing.T) {
 	assert.Equal(t, true, moves[5].Dislodged)
 
 	assert.Equal(t, ADRIATIC_SEA, moves[2].LocationResolved)
-	assert.Equal(t, APULIA, moves[3])
+	assert.Equal(t, ALBANIA, moves[3].LocationResolved)
 
 	assert.Equal(t, true, moves[2].Dislodged)
 	assert.Equal(t, true, moves[3].Dislodged)
