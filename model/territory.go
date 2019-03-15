@@ -329,42 +329,6 @@ func (t *Territory) ValidConvoyBeginAndEnd(check Territory) bool {
 	return false
 }
 
-// ValidMovement will return true if the checked territory
-// is included inside of the mapOfBorders map
-// uses the origional terriotry as they key
-// func (t *Territory) ValidMovement(check Territory, unit UnitType) bool {
-func (t *Territory) ValidMovement(move Move) bool {
-
-	var check Territory
-	switch move.OrderType {
-	case SUPPORT:
-		check = move.SecondLocationSubmitted
-	case MOVE:
-		check = move.LocationSubmitted
-	case MOVEVIACONVOY:
-		check = move.LocationSubmitted
-	default:
-		check = move.LocationSubmitted
-	}
-
-	switch move.UnitType {
-	case ARMY:
-		if move.OrderType == MOVEVIACONVOY {
-			return t.ValidConvoyBeginAndEnd(check)
-		} else {
-			return t.ValidLandMovement(check)
-		}
-	case NAVY:
-		if move.OrderType == CONVOY {
-			return t.ValidConvoyBeginAndEnd(check)
-		} else {
-			return t.ValidSeaMovement(check)
-		}
-	default:
-		return false
-	}
-}
-
 var reTerritory = regexp.MustCompile(`^(|AEG|CLY|NAO|IHS|ENC|EDB|YRK|LON|WLS|LIV|NHS|NOS|MAO|BST|PIC|PRS|BGM|HOL|GAS|BRG|MAR|SPA|SNC|SSC||PRT|GOL|WMD|NAK|TUN|TYR|ION|PDT|VEN|TUS|ROM|APU|NAP|ADR|TYA|BOH|VNA|TTE|BUD|SBA|ALB|GRC|RMA|BUL|BUE|BUS|AGS|EMD|CON|ANK|SMY|ARM|SYR|BLA|SEV|MOS|UKR|STP|SPN|SPS|LVA|WAR|FIN|SWE|NOR|GOB|BAS|BAL|PRU|SIL|GAL|DEN|SKA|HEL|KIE|BER|MUN|RUH|NONE)$`)
 
 func (d *Territory) validate(s string) error {

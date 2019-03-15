@@ -123,18 +123,21 @@ func TestAddSupportPointsToMoveDoubleSupport(t *testing.T) {
 			LocationStart:           VENICE,
 			LocationSubmitted:       APULIA,
 			SecondLocationSubmitted: BLANK,
+			UnitType:                ARMY,
 		},
 		{
 			OrderType:               MOVE,
 			LocationStart:           NAPLES,
 			LocationSubmitted:       APULIA,
 			SecondLocationSubmitted: BLANK,
+			UnitType:                ARMY,
 		},
 		{
 			OrderType:               SUPPORT,
 			LocationStart:           ROME,
 			LocationSubmitted:       VENICE,
 			SecondLocationSubmitted: APULIA,
+			UnitType:                ARMY,
 		},
 		{
 			OrderType:               SUPPORT,
