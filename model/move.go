@@ -92,30 +92,23 @@ func (move *Move) DislodgeIfHold(moves *Moves) {
 	}
 }
 
-// this is complex as fuck. And won't support a double convoy attack. fuck.
-// first loop finds the move ids of the Convoy
-// the second ranges over the move id and if the move is dislodged dislodges the entire convoy
+// this is complex as fuck. It accepts a Dislodged Convoy move and all moves.
+// first loop finds the Convoy move ids from the Army being convoy.
+// the second ranges over the Convoy move ids and if the convoy is dislodged it sets convoyDislodged true
 // the third sets the Unit being convoy as dislodged, if the convoy is dislodged
-func (move *Move) ProcessConvoyDislodge(moves *Moves) {
+// Example input:
+// Move info:Convoy ALB : [2]
+// Move info:Convoy LON : [0 4 5]
+// Move info:Convoy LON : [0 4 5]
+func (dislodgedConvoyMove *Move) ProcessConvoyDislodge(moves *Moves) {
 	var moveIds []int64
 	var convoyDislodged bool
 
-	// test has 3 dislodged convoys
-	//fmt.Printf("ProcessConvoyDislodge %v \n", *move)
-
 	for _, m := range *moves {
-		//fmt.Printf("range %v \n", *m)
-		if m.OrderType == MOVEVIACONVOY && move.SecondLocationSubmitted == m.LocationSubmitted {
+		if m.OrderType == MOVEVIACONVOY && dislodgedConvoyMove.SecondLocationSubmitted == m.LocationSubmitted {
 			moveIds = m.ConvoyPathMoveIds
 		}
 	}
-
-	// WE ARE DEALING WITH A DISPLACED CONVOY
-	// TODO rename move to displacedConvoyMove
-	fmt.Printf("Move info:%v %v : %v \n", move.OrderType, move.LocationSubmitted, moveIds)
-	// Move info:Convoy ALB : [2]
-	// Move info:Convoy LON : [0 4 5]
-	// Move info:Convoy LON : [0 4 5]
 
 	for _, m := range *moves {
 		for _, id := range moveIds {
