@@ -144,11 +144,7 @@ func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 		// Vallid support moves are determined by the start location bordering the end location
 		// TODO(:3/12/19) Refactor ValidMovement to include ConvoyPathDoesExist()
 
-		if move.OrderType == MOVEVIACONVOY {
-			valid = moves.ConvoyPathDoesExist(move.LocationStart, move.LocationSubmitted)
-		} else {
-			valid = move.LocationStart.ValidMovement(*move)
-		}
+		valid = moves.ValidMovement(*move)
 
 		// TODO(:3/12/19)
 		// Message concept to indicate move coerced to Move
@@ -185,6 +181,40 @@ func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 
 	}
 	return tm
+}
+
+// ValidMovement() will return true if the checked territory
+// is included inside ValidLandMovement(), ValidSeaMovement(), or [ValidConvoyBeginAndEnd(), ConvoyPathDoesExist()]
+func (m *Moves) ValidMovement(move Move) bool {
+	t := move.LocationStart
+	var check Territory
+	switch move.OrderType {
+	case SUPPORT:
+		check = move.SecondLocationSubmitted
+	case MOVE:
+		check = move.LocationSubmitted
+	case MOVEVIACONVOY:
+		check = move.LocationSubmitted
+	default:
+		check = move.LocationSubmitted
+	}
+
+	switch move.UnitType {
+	case ARMY:
+		if move.OrderType == MOVEVIACONVOY {
+			return t.ValidConvoyBeginAndEnd(check) && m.ConvoyPathDoesExist(move.LocationStart, move.LocationSubmitted)
+		} else {
+			return t.ValidLandMovement(check)
+		}
+	case NAVY:
+		if move.OrderType == CONVOY {
+			return t.ValidConvoyBeginAndEnd(check)
+		} else {
+			return t.ValidSeaMovement(check)
+		}
+	default:
+		return false
+	}
 }
 
 // TODO before this determine if support is cut
@@ -361,7 +391,7 @@ func (moves Moves) CalculateIfSupportIsCut(originOfSupportOrder Move) (cut bool)
 		// check the submitted moves Validity (from its LocationStart)
 		if move.OrderType == MOVE && move.LocationSubmitted == originOfSupportOrder.LocationStart {
 			// originOfSupportOrder.LocationStart, originOfSupportOrder.UnitType
-			cut = move.LocationStart.ValidMovement(originOfSupportOrder)
+			cut = moves.ValidMovement(*move)
 		}
 	}
 	return cut
