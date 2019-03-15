@@ -456,3 +456,119 @@ func TestProcessDislodgeConvoy(t *testing.T) {
 	assert.Equal(t, false, moves[2].Dislodged)
 	assert.Equal(t, false, moves[3].Dislodged)
 }
+
+func TestLongPathProcessTwoDislodgedConvoys(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			Id:                      0,
+			OrderType:               CONVOY,
+			LocationStart:           MID_ATLANTIC_OCEAN,
+			LocationSubmitted:       LONDON,
+			SecondLocationSubmitted: TUNIS,
+			UnitType:                NAVY,
+		},
+		{
+			Id:                1,
+			OrderType:         MOVEVIACONVOY,
+			LocationStart:     LONDON,
+			LocationSubmitted: TUNIS,
+			UnitType:          ARMY,
+		},
+
+		{
+			Id:                      2,
+			OrderType:               CONVOY,
+			LocationStart:           ADRIATIC_SEA,
+			LocationSubmitted:       ALBANIA,
+			SecondLocationSubmitted: APULIA,
+			UnitType:                NAVY,
+		},
+		{
+			Id:                3,
+			OrderType:         MOVEVIACONVOY,
+			LocationStart:     ALBANIA,
+			LocationSubmitted: APULIA,
+			UnitType:          ARMY,
+		},
+
+		{
+			Id:                      4,
+			OrderType:               CONVOY,
+			LocationStart:           ENGLISH_CHANNEL,
+			LocationSubmitted:       LONDON,
+			SecondLocationSubmitted: TUNIS,
+			UnitType:                NAVY,
+		},
+		{
+			Id:                      5,
+			OrderType:               CONVOY,
+			LocationStart:           WESTERN_MEDITERRANEAN,
+			LocationSubmitted:       LONDON,
+			SecondLocationSubmitted: TUNIS,
+			UnitType:                NAVY,
+		},
+		{
+			Id:                6,
+			OrderType:         MOVE,
+			LocationStart:     NORTH_SEA,
+			LocationSubmitted: ENGLISH_CHANNEL,
+			UnitType:          NAVY,
+		},
+		{
+			Id:                      7,
+			OrderType:               SUPPORT,
+			LocationStart:           IRISH_SEA,
+			LocationSubmitted:       NORTH_SEA,
+			SecondLocationSubmitted: ENGLISH_CHANNEL,
+			UnitType:                NAVY,
+		},
+		{
+			Id:                8,
+			OrderType:         MOVE,
+			LocationStart:     TYRRHENIAN_SEA,
+			LocationSubmitted: WESTERN_MEDITERRANEAN,
+			UnitType:          NAVY,
+		},
+		{
+			Id:                      9,
+			OrderType:               SUPPORT,
+			LocationStart:           GULF_OF_LYON,
+			LocationSubmitted:       TYRRHENIAN_SEA,
+			SecondLocationSubmitted: WESTERN_MEDITERRANEAN,
+			UnitType:                NAVY,
+		},
+		{
+			Id:                10,
+			OrderType:         MOVE,
+			LocationStart:     IONIAN_SEA,
+			LocationSubmitted: ADRIATIC_SEA,
+			UnitType:          NAVY,
+		},
+		{
+			Id:                      11,
+			OrderType:               SUPPORT,
+			LocationStart:           VENICE,
+			LocationSubmitted:       IONIAN_SEA,
+			SecondLocationSubmitted: ADRIATIC_SEA,
+			UnitType:                NAVY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, MID_ATLANTIC_OCEAN, moves[0].LocationResolved)
+	assert.Equal(t, LONDON, moves[1].LocationResolved)
+	assert.Equal(t, ENGLISH_CHANNEL, moves[4].LocationResolved)
+	assert.Equal(t, WESTERN_MEDITERRANEAN, moves[5].LocationResolved)
+
+	assert.Equal(t, false, moves[0].Dislodged)
+	assert.Equal(t, true, moves[1].Dislodged)
+	assert.Equal(t, true, moves[4].Dislodged)
+	assert.Equal(t, true, moves[5].Dislodged)
+
+	assert.Equal(t, ADRIATIC_SEA, moves[2].LocationResolved)
+	assert.Equal(t, APULIA, moves[3])
+
+	assert.Equal(t, true, moves[2].Dislodged)
+	assert.Equal(t, true, moves[3].Dislodged)
+}

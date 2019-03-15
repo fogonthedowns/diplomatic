@@ -71,7 +71,7 @@ func (move *Move) MovePieceForward() {
 func (moves *Moves) MoveConvoysForward() {
 	for _, move := range *moves {
 		if move.OrderType == MOVEVIACONVOY {
-			fmt.Printf("move %v \n", move)
+			fmt.Printf("move** %v \n", move)
 			if move.Dislodged {
 				move.LocationResolved = move.LocationStart
 			} else {
@@ -99,11 +99,23 @@ func (move *Move) DislodgeIfHold(moves *Moves) {
 func (move *Move) ProcessConvoyDislodge(moves *Moves) {
 	var moveIds []int64
 	var convoyDislodged bool
+
+	// test has 3 dislodged convoys
+	//fmt.Printf("ProcessConvoyDislodge %v \n", *move)
+
 	for _, m := range *moves {
-		if m.OrderType == MOVEVIACONVOY {
+		//fmt.Printf("range %v \n", *m)
+		if m.OrderType == MOVEVIACONVOY && move.SecondLocationSubmitted == m.LocationSubmitted {
 			moveIds = m.ConvoyPathMoveIds
 		}
 	}
+
+	// WE ARE DEALING WITH A DISPLACED CONVOY
+	// TODO rename move to displacedConvoyMove
+	fmt.Printf("Move info:%v %v : %v \n", move.OrderType, move.LocationSubmitted, moveIds)
+	// Move info:Convoy ALB : [2]
+	// Move info:Convoy LON : [0 4 5]
+	// Move info:Convoy LON : [0 4 5]
 
 	for _, m := range *moves {
 		for _, id := range moveIds {
@@ -212,7 +224,7 @@ func (moves Moves) ConvoyPathDoesExist(begin Territory, end Territory) bool {
 	}
 
 	for _, move := range moves {
-		if move.OrderType == MOVEVIACONVOY {
+		if move.OrderType == MOVEVIACONVOY && move.LocationSubmitted == end {
 			move.ConvoyPathMoveIds = convoyPathMoveIds
 		}
 	}
