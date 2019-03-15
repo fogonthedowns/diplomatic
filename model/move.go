@@ -71,7 +71,6 @@ func (move *Move) MovePieceForward() {
 func (moves *Moves) MoveConvoysForward() {
 	for _, move := range *moves {
 		if move.OrderType == MOVEVIACONVOY {
-			fmt.Printf("move** %v \n", move)
 			if move.Dislodged {
 				move.LocationResolved = move.LocationStart
 			} else {
