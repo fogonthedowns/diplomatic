@@ -32,6 +32,8 @@ type MoveType string
 type Moves []*Move
 
 // This is the Starting Point.
+// TODO moves.save()
+// TODO prevent a country from attacking itself - units will bounce, support will not be cut (verify)
 func (moves *Moves) ProcessMoves() {
 	tm := moves.CategorizeMovesByTerritory()
 	moves.ResolveUncontestedMoves(tm)
@@ -142,8 +144,6 @@ func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 	for _, move := range *moves {
 		var valid bool
 		// Vallid support moves are determined by the start location bordering the end location
-		// TODO(:3/12/19) Refactor ValidMovement to include ConvoyPathDoesExist()
-
 		valid = moves.ValidMovement(*move)
 
 		// TODO(:3/12/19)
@@ -191,6 +191,8 @@ func (m *Moves) ValidMovement(move Move) bool {
 	switch move.OrderType {
 	case SUPPORT:
 		check = move.SecondLocationSubmitted
+	case CONVOY:
+		check = move.SecondLocationSubmitted
 	case MOVE:
 		check = move.LocationSubmitted
 	case MOVEVIACONVOY:
@@ -208,7 +210,7 @@ func (m *Moves) ValidMovement(move Move) bool {
 		}
 	case NAVY:
 		if move.OrderType == CONVOY {
-			return t.ValidConvoyBeginAndEnd(check)
+			return move.LocationSubmitted.ValidConvoyBeginAndEnd(check)
 		} else {
 			return t.ValidSeaMovement(check)
 		}
