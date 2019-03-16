@@ -198,6 +198,50 @@ func TestProcessMovesDislodgeReorderMoves(t *testing.T) {
 	assert.Equal(t, false, moves[3].Dislodged)
 }
 
+func TestProcessIllegalSupportHold(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:         HOLD,
+			LocationStart:     VIENNA,
+			LocationSubmitted: VIENNA,
+			UnitType:          ARMY,
+		},
+		{
+			OrderType:               SUPPORT,
+			LocationStart:           MOSCOW,
+			LocationSubmitted:       VIENNA,
+			SecondLocationSubmitted: VIENNA,
+			UnitType:                ARMY,
+		},
+		{
+			OrderType:         MOVE,
+			LocationStart:     BOHEMIA,
+			LocationSubmitted: VIENNA,
+			UnitType:          ARMY,
+		},
+
+		{
+			OrderType:               SUPPORT,
+			LocationStart:           GALICIA,
+			LocationSubmitted:       BOHEMIA,
+			SecondLocationSubmitted: VIENNA,
+			UnitType:                ARMY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, VIENNA, moves[0].LocationResolved)
+	assert.Equal(t, MOSCOW, moves[1].LocationResolved)
+	assert.Equal(t, VIENNA, moves[2].LocationResolved)
+	assert.Equal(t, GALICIA, moves[3].LocationResolved)
+
+	assert.Equal(t, true, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+	assert.Equal(t, false, moves[2].Dislodged)
+	assert.Equal(t, false, moves[3].Dislodged)
+}
+
 func TestProcessSupportHold(t *testing.T) {
 	moves := make(Moves, 0)
 	moves = []*Move{
