@@ -57,7 +57,7 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 	}
 
 	// Does your User control the piece you are trying to move?
-	err = e.ValidateCountry(in, gameUser)
+	err = in.ValidateCountry(gameUser)
 
 	if err != nil {
 		return 403, err
@@ -100,14 +100,6 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 
 	// return 0
 	return 200, err
-}
-
-// This validation does not make sense
-func (e *MovesEngine) ValidateCountry(move *model.Move, gameUser *model.GameUser) (err error) {
-	if move.PieceOwner != gameUser.Country {
-		return errors.New("The User does not control this country")
-	}
-	return err
 }
 
 func (e *MovesEngine) fetchGame(ctx context.Context, query string, args ...interface{}) (*model.Game, error) {

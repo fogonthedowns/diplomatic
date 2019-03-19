@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -404,4 +405,11 @@ func (moves Moves) CalculateIfSupportIsCut(originOfSupportOrder Move) (cut bool)
 		}
 	}
 	return cut
+}
+
+func (move *Move) ValidateCountry(gameUser *GameUser) (err error) {
+	if move.PieceOwner != gameUser.Country {
+		return errors.New("The User does not control this country")
+	}
+	return err
 }
