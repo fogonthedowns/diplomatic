@@ -159,3 +159,24 @@ func (g *Game) HasPhaseEnded() (hasEnded bool) {
 
 	return hasEnded
 }
+
+// TODO determine when to move game from phase 0 -> phase 1
+// TODO determine where to set the phase time.Time when the above occurs
+func (game *Game) ValidPhase() (err error) {
+	// fetch the Game
+	if game.Phase < 1 {
+		return errors.New("The Game has not started yet")
+	}
+	now := time.Now()
+	timestamp, err := strconv.ParseInt(game.PhaseEnd, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	tm := time.Unix(timestamp, 0)
+	valid := now.Before(tm)
+	if !valid {
+		return errors.New("The phase has ended")
+	}
+
+	return err
+}

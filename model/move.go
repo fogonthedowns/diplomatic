@@ -1,6 +1,8 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Move struct {
 	Id                      int64     `json:"id"`
@@ -18,6 +20,7 @@ type Move struct {
 	MovePower               int
 	UnitType                UnitType
 	Dislodged               bool `json:"dislodged"`
+	DislodgedFrom           Territory
 	ConvoyPathMoveIds       []int64
 }
 
@@ -197,6 +200,8 @@ func (m *Moves) ValidMovement(move Move) bool {
 		check = move.LocationSubmitted
 	case MOVEVIACONVOY:
 		check = move.LocationSubmitted
+	case RETREAT:
+		check = move.LocationSubmitted
 	default:
 		check = move.LocationSubmitted
 	}
@@ -205,6 +210,8 @@ func (m *Moves) ValidMovement(move Move) bool {
 	case ARMY:
 		if move.OrderType == MOVEVIACONVOY {
 			return t.ValidConvoyBeginAndEnd(check) && m.ConvoyPathDoesExist(move.LocationStart, move.LocationSubmitted)
+		} else if move.OrderType == RETREAT {
+			return t.ValidLandMovement(check) && check != move.DislodgedFrom
 		} else {
 			return t.ValidLandMovement(check)
 		}
