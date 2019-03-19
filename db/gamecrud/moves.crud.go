@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strconv"
-	"time"
 
 	model "diplomacy/model"
 )
@@ -44,33 +42,33 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 
 	// Is the User part of this game?
 	if gameUser == nil {
-		return -1, errors.New("The User is not a member of this game")
+		return 403, errors.New("The User is not a member of this game")
 	}
 
 	if err != nil {
 		fmt.Printf("error fetchGameUser(): %v \n", err)
-		return -1, err
+		return 500, err
 	}
 
 	game, err := e.fetchGame(ctx, gameQuery, in.GameId)
 
 	if game == nil {
-		return -1, errors.New("The Game can not be loaded")
+		return 500, errors.New("The Game can not be loaded")
 	}
 
 	// Does your User control the piece you are trying to move?
 	err = e.ValidateCountry(in, gameUser)
 
 	if err != nil {
-		return -1, err
+		return 403, err
 	}
 
 	// Has the game started?
 	// Has the phase ended?
-	err = e.ValidPhase(in, game)
+	err = game.ValidPhase()
 
 	if err != nil {
-		return -1, err
+		return 403, err
 	}
 
 	// Does the submitted move exist for this piece?
@@ -78,7 +76,7 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 
 	if err != nil {
 		fmt.Printf("error fetchMove(): %v \n", err)
-		return -1, err
+		return 500, err
 	}
 
 	// if the submitted move does not exist (based on piece id) create it; otherwise update it
@@ -92,16 +90,16 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 	stmt, err := e.Conn.PrepareContext(ctx, insertType)
 
 	if err != nil {
-		return -1, err
+		return 500, err
 	}
 	_, err = stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, in.SecondLocationSubmitted, in.Phase, in.GameId, in.OrderType, in.PieceOwner, in.GameYear, in.PieceId)
 	defer stmt.Close()
 	if err != nil {
-		return -1, err
+		return 500, err
 	}
 
 	// return 0
-	return 0, err
+	return 200, err
 }
 
 // This validation does not make sense
@@ -109,27 +107,6 @@ func (e *MovesEngine) ValidateCountry(move *model.Move, gameUser *model.GameUser
 	if move.PieceOwner != gameUser.Country {
 		return errors.New("The User does not control this country")
 	}
-	return err
-}
-
-// TODO determine when to move game from phase 0 -> phase 1
-// TODO determine where to set the phase time.Time when the above occurs
-func (e *MovesEngine) ValidPhase(in *model.Move, game *model.Game) (err error) {
-	// fetch the Game
-	if game.Phase < 1 {
-		return errors.New("The Game has not started yet")
-	}
-	now := time.Now()
-	timestamp, err := strconv.ParseInt(game.PhaseEnd, 10, 64)
-	if err != nil {
-		panic(err)
-	}
-	tm := time.Unix(timestamp, 0)
-	valid := now.Before(tm)
-	if !valid {
-		return errors.New("The phase has ended")
-	}
-
 	return err
 }
 

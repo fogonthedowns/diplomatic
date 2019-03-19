@@ -45,15 +45,15 @@ func (g *MovesHandler) CreateOrUpdate(w http.ResponseWriter, r *http.Request) {
 	// game.AddGameSquares()
 	// fmt.Printf("****%+v \n", t.ValidSeaMovement(b))
 
-	_, err = g.db.CreateOrUpdate(r.Context(), &moveInput)
+	code, err := g.db.CreateOrUpdate(r.Context(), &moveInput)
 
-	// fmt.Printf("1 ****%+v \n", id)
-
-	if err != nil {
+	switch code {
+	case 403:
+		respondwithJSON(w, http.StatusForbidden, model.ErrorMessage{Message: fmt.Sprintf("%v\n", err)})
+	case 200:
+		respondwithJSON(w, http.StatusCreated, map[string]string{"message": "Successfully Created"})
+	default:
 		respondwithJSON(w, http.StatusInternalServerError, model.ErrorMessage{Message: fmt.Sprintf("%v\n", err)})
-		return
+
 	}
-
-	respondwithJSON(w, http.StatusCreated, map[string]string{"message": "Successfully Created"})
-
 }
