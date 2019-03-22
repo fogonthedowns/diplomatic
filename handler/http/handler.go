@@ -138,15 +138,3 @@ func (g *GameHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	respondwithJSON(w, http.StatusOK, payload)
 }
-
-// // Delete a post
-// func (p *Post) Delete(w http.ResponseWriter, r *http.Request) {
-// 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-// 	_, err := p.repo.Delete(r.Context(), int64(id))
-
-// 	if err != nil {
-// 		respondWithError(w, http.StatusInternalServerError, "Server Error")
-// 	}
-
-// 	respondwithJSON(w, http.StatusMovedPermanently, map[string]string{"message": "Delete Successfully"})
-// }
