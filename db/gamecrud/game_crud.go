@@ -81,6 +81,7 @@ func (e *Engine) fetch(ctx context.Context, query string, args ...interface{}) (
 			&data.Phase,
 			&data.PhaseEnd,
 			&data.Title,
+			&data.Processed,
 		)
 		if err != nil {
 			return nil, err
@@ -118,7 +119,7 @@ func (e *Engine) fetchTerritories(ctx context.Context, args ...interface{}) ([]*
 }
 
 func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model.PieceRow, error) {
-	query := "select id, game_id, owner, type, is_active, location from pieces where game_id=?"
+	query := "select id, game_id, owner, type, is_active, location, dislodged from pieces where game_id=?"
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -136,6 +137,7 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 			&data.UnitType,
 			&data.IsActive,
 			&data.Country,
+			&data.Dislodged,
 		)
 		if err != nil {
 			fmt.Printf("error \n", err)
@@ -146,7 +148,6 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 	return payload, nil
 }
 
-// todo save
 func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) error {
 	moves, err := e.GetMovesByIdAndPhase(ctx, gameId, phase)
 	if err != nil {
@@ -154,6 +155,7 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 	}
 	moves.ProcessMoves()
 	e.save(ctx, moves)
+	e.updateGameToProcessed(ctx, gameId)
 
 	return err
 }
@@ -180,6 +182,28 @@ func (e *Engine) save(ctx context.Context, moves model.Moves) (err error) {
 		}
 		stmt.Close()
 	}
+	return err
+}
+
+func (e *Engine) updateGameToProcessed(ctx context.Context, gameId int64) (err error) {
+	query := "UPDATE games SET processed=? WHERE id=?"
+	stmt, err := e.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		fmt.Printf("err %v \n", err)
+		return err
+	}
+
+	_, err = stmt.ExecContext(
+		ctx,
+		true,
+		gameId,
+	)
+
+	if err != nil {
+		fmt.Printf("err %v \n", err)
+		return err
+	}
+	stmt.Close()
 	return err
 }
 
@@ -228,7 +252,7 @@ func (m *Engine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
 
 // TODO add game.IsActive; modify game query.
 func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error) {
-	query := "Select id, game_year, phase, phase_end, title From games where id=?"
+	query := "Select id, game_year, phase, phase_end, title, processed From games where id=?"
 
 	// Get the Game by gameId
 	rows, err := e.fetch(ctx, query, gameId)
@@ -251,11 +275,11 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 	//   yes: update the game.Phase and update game.PhaseEnd
 	phaseOver := game.HasPhaseEnded()
 	fmt.Printf("has this phase ended? %v\n", phaseOver)
+	fmt.Printf("is this phase processed? %v\n", game.Processed)
 
 	// TODO(:3/1) Should this be on moves.ProcessMoves()?
 	// It could return piecesRows and we could switch on PhaseOver
-	// TODO once processed there should be a flag to load pieces
-	if phaseOver {
+	if phaseOver && !game.Processed {
 		e.ProcessMoves(ctx, gameId, game.Phase)
 	}
 

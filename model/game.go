@@ -15,6 +15,7 @@ type Game struct {
 	PhaseEnd       string     `json: "phase_end"`
 	OrdersInterval int        `json: "orders_interval"`
 	GameBoard      GameBoard  `json: "game_squares,omitempty"`
+	Processed      bool
 }
 
 // DrawGameBoard() Fills in an empty game.GameBoard from data loaded from territory and piece rows in the db
@@ -30,6 +31,7 @@ func (g *Game) DrawGameBoard(territoryRows []TerritoryRow, pieceRows []PieceRow)
 				unit.UnitType = pr.UnitType
 				unit.Owner = pr.Owner
 				unit.PieceId = pr.Id
+				unit.WillRetreat = pr.Dislodged
 				units = append(units, *unit)
 			}
 		}
