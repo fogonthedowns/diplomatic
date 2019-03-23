@@ -107,11 +107,13 @@ func (tm TerritoryMoves) Uncontested(key Territory) bool {
 // ResolveConflicts() resolves conflicts of any territory that has two Move objects assoicated with it.
 // These objects represent a move conflict.
 // Resolves a conflict using move.MovePower
+
 func (tm TerritoryMoves) ResolveConflicts(moves *Moves) {
 	for key, value := range tm {
 		var lastSeen = 0
 		var lastSeenMove *Move
 		if len(tm[key]) >= 2 {
+			value = Sort(value)
 			for index, mm := range value {
 				if mm.MovePower > 0 && mm.MovePower > lastSeen {
 					if lastSeenMove != nil {
@@ -138,6 +140,28 @@ func (tm TerritoryMoves) ResolveConflicts(moves *Moves) {
 			}
 		}
 	}
+}
+
+// Sort() sorts the Move Values by MovePower
+// The values are sorted to prevent a bug where
+// Disloged is never set
+// because of a mismatched comparison
+// such as 2, 0, 1 where - 1 is not disloged bc it is greater than 0.
+func Sort(v []*Move) (nv []*Move) {
+	var last *int
+	for _, value := range v {
+		if last == nil {
+			nv = append(nv, value)
+		} else {
+			if value.MovePower > *last {
+				nv = append([]*Move{value}, nv...)
+			} else {
+				nv = append(nv, value)
+			}
+		}
+		last = &value.MovePower
+	}
+	return nv
 }
 
 // validSeaMoves defines a map of Valid moves for Navy Units
