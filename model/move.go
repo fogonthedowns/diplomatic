@@ -8,7 +8,7 @@ import (
 type Move struct {
 	Id                      int64     `json:"id"`
 	GameId                  int64     `json:"game_id"`
-	UserId                  int       `json:"user_id"` // must be hard coded in request, based on logged in user_id
+	UserId                  int64     `json:"user_id"` // must be hard coded in request, based on logged in user_id
 	GameYear                string    `json:"game_year"`
 	Phase                   int       `json:"phase"`
 	LocationStart           Territory `json:"location_start"`
@@ -16,7 +16,7 @@ type Move struct {
 	SecondLocationSubmitted Territory `json:"second_location_submitted"`
 	LocationResolved        Territory `json:"location_resolved"`
 	PieceOwner              Country   `json:"piece_owner"`
-	PieceId                 int       `json:"piece_id"`
+	PieceId                 int64     `json:"piece_id"`
 	OrderType               OrderType `json:"move_type"`
 	MovePower               int
 	UnitType                UnitType

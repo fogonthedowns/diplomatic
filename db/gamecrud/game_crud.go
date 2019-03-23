@@ -153,20 +153,39 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 		return err
 	}
 	moves.ProcessMoves()
-	e.save(moves)
+	e.save(ctx, moves)
 
 	return err
 }
 
-func (e *Engine) save(moves model.Moves) {
+func (e *Engine) save(ctx context.Context, moves model.Moves) (err error) {
 	for _, move := range moves {
-		fmt.Printf("********** move: %+v \n\n", move)
+		query := "UPDATE pieces SET location=?, dislodged=? WHERE id=?"
+		stmt, err := e.Conn.PrepareContext(ctx, query)
+		if err != nil {
+			fmt.Printf("err %v \n", err)
+			return err
+		}
+
+		_, err = stmt.ExecContext(
+			ctx,
+			move.LocationResolved,
+			move.Dislodged,
+			move.PieceId,
+		)
+
+		if err != nil {
+			fmt.Printf("err %v \n", err)
+			return err
+		}
+		stmt.Close()
 	}
+	return err
 }
 
 func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase int) (model.Moves, error) {
 
-	query := "select moves.id, moves.location_start, moves.location_submitted, moves.second_location_submitted, moves.type, moves.piece_owner, pieces.type from moves INNER JOIN pieces ON pieces.id=moves.id where moves.game_id=? and moves.phase=?"
+	query := "select moves.id, moves.location_start, moves.location_submitted, moves.second_location_submitted, moves.type, moves.piece_owner, pieces.type, moves.piece_id from moves INNER JOIN pieces ON pieces.id=moves.id where moves.game_id=? and moves.phase=?"
 
 	rows, err := e.Conn.QueryContext(ctx, query, gameId, phase)
 	if err != nil {
@@ -186,6 +205,7 @@ func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase i
 			&data.OrderType,
 			&data.PieceOwner,
 			&data.UnitType,
+			&data.PieceId,
 		)
 
 		if err != nil {
@@ -234,6 +254,7 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 
 	// TODO(:3/1) Should this be on moves.ProcessMoves()?
 	// It could return piecesRows and we could switch on PhaseOver
+	// TODO once processed there should be a flag to load pieces
 	if phaseOver {
 		e.ProcessMoves(ctx, gameId, game.Phase)
 	}
