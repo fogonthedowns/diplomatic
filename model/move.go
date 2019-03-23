@@ -45,7 +45,6 @@ func (moves *Moves) ProcessMoves() {
 	tm.ResolveConflicts(moves)
 	moves.MoveConvoysForward()
 	moves.logProgress()
-
 }
 
 func (moves *Moves) logProgress() {

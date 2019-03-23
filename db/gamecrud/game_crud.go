@@ -153,8 +153,15 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 		return err
 	}
 	moves.ProcessMoves()
+	e.save(moves)
 
 	return err
+}
+
+func (e *Engine) save(moves model.Moves) {
+	for _, move := range moves {
+		fmt.Printf("********** move: %+v \n\n", move)
+	}
 }
 
 func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase int) (model.Moves, error) {
