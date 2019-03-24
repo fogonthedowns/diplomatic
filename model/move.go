@@ -50,10 +50,10 @@ func (moves *Moves) ProcessMoves() {
 func (moves *Moves) logProgress() {
 	for _, move := range *moves {
 		if move.OrderType == SUPPORT {
-			fmt.Printf("******** %vs  %v -> %v from %v. resolved: %+v (%v)\n", move.OrderType, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationStart, move.LocationResolved, move.MovePower)
+			fmt.Printf("********%v %vs  %v -> %v from %v. resolved: %+v (%v)\n", move.PieceOwner, move.OrderType, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationStart, move.LocationResolved, move.MovePower)
 
 		} else {
-			fmt.Printf("******** %v (%v -> %v) resolved: %+v (%v)\n", move.OrderType, move.LocationStart, move.LocationSubmitted, move.LocationResolved, move.MovePower)
+			fmt.Printf("********%v %v (%v -> %v) resolved: %+v (%v)\n", move.PieceOwner, move.OrderType, move.LocationStart, move.LocationSubmitted, move.LocationResolved, move.MovePower)
 		}
 	}
 	fmt.Print("\n\nOrders:\n")
@@ -188,9 +188,10 @@ func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 
 // ValidMovement() will return true if the checked territory
 // is included inside ValidLandMovement(), ValidSeaMovement(), or [ValidConvoyBeginAndEnd(), ConvoyPathDoesExist()]
-func (m *Moves) ValidMovement(move Move) bool {
+func (moves *Moves) ValidMovement(move Move) bool {
 	t := move.LocationStart
 	var check Territory
+
 	switch move.OrderType {
 	case SUPPORT:
 		check = move.SecondLocationSubmitted
@@ -206,10 +207,17 @@ func (m *Moves) ValidMovement(move Move) bool {
 		check = move.LocationSubmitted
 	}
 
+	// attacking yourself is invalid
+	// TODO return a message
+	// false, invalid move
+	if moves.attackingYourSelf(check, move) {
+		return false
+	}
+
 	switch move.UnitType {
 	case ARMY:
 		if move.OrderType == MOVEVIACONVOY {
-			return t.ValidConvoyBeginAndEnd(check) && m.ConvoyPathDoesExist(move.LocationStart, move.LocationSubmitted)
+			return t.ValidConvoyBeginAndEnd(check) && moves.ConvoyPathDoesExist(move.LocationStart, move.LocationSubmitted)
 		} else if move.OrderType == RETREAT {
 			return t.ValidLandMovement(check) && check != move.DislodgedFrom
 		} else {
@@ -224,6 +232,25 @@ func (m *Moves) ValidMovement(move Move) bool {
 	default:
 		return false
 	}
+}
+
+// attackingYourSelf determins if you are attacking your own piece
+func (moves Moves) attackingYourSelf(destinationTerritory Territory, move Move) bool {
+	// check the Piece Owner of the destination
+	// does not match the Piece Owner of the Deti
+	for _, m := range moves {
+		switch move.OrderType {
+		// SUPPORT HOLD OF YOUR SELF is valid
+		case SUPPORT:
+			return false
+		default:
+			if destinationTerritory == m.LocationStart && move.PieceOwner == m.PieceOwner {
+				return true
+			}
+		}
+
+	}
+	return false
 }
 
 // TODO before this determine if support is cut

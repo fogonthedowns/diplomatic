@@ -13,18 +13,21 @@ func TestAddSupportPointsToMove(t *testing.T) {
 			LocationStart:           VENICE,
 			LocationSubmitted:       APULIA,
 			SecondLocationSubmitted: BLANK,
+			PieceOwner:              ITALY,
 		},
 		{
 			OrderType:               MOVE,
 			LocationStart:           NAPLES,
 			LocationSubmitted:       APULIA,
 			SecondLocationSubmitted: BLANK,
+			PieceOwner:              ENGLAND,
 		},
 		{
 			OrderType:               SUPPORT,
 			LocationStart:           ROME,
 			LocationSubmitted:       VENICE,
 			SecondLocationSubmitted: APULIA,
+			PieceOwner:              ITALY,
 		},
 	}
 
@@ -33,6 +36,7 @@ func TestAddSupportPointsToMove(t *testing.T) {
 		LocationStart:           ROME,
 		LocationSubmitted:       VENICE,
 		SecondLocationSubmitted: APULIA,
+		PieceOwner:              ITALY,
 	}
 
 	moves.AddSupportPointsToMove(supportMove)
@@ -48,24 +52,28 @@ func TestAddSupportPointsToMoveTwoX(t *testing.T) {
 			LocationStart:           VENICE,
 			LocationSubmitted:       APULIA,
 			SecondLocationSubmitted: BLANK,
+			PieceOwner:              RUSSIA,
 		},
 		{
 			OrderType:               MOVE,
 			LocationStart:           NAPLES,
 			LocationSubmitted:       APULIA,
 			SecondLocationSubmitted: BLANK,
+			PieceOwner:              ITALY,
 		},
 		{
 			OrderType:               SUPPORT,
 			LocationStart:           ROME,
 			LocationSubmitted:       VENICE,
 			SecondLocationSubmitted: APULIA,
+			PieceOwner:              RUSSIA,
 		},
 		{
 			OrderType:               SUPPORT,
 			LocationStart:           ADRIATIC_SEA,
 			LocationSubmitted:       VENICE,
 			SecondLocationSubmitted: APULIA,
+			PieceOwner:              ITALY,
 		},
 	}
 
@@ -82,18 +90,21 @@ func TestAddSupportPointsToMoveCutSupport(t *testing.T) {
 			LocationStart:           VENICE,
 			LocationSubmitted:       APULIA,
 			SecondLocationSubmitted: BLANK,
+			PieceOwner:              ITALY,
 		},
 		{
 			OrderType:               MOVE,
 			LocationStart:           NAPLES,
 			LocationSubmitted:       APULIA,
 			SecondLocationSubmitted: BLANK,
+			PieceOwner:              TURKEY,
 		},
 		{
 			OrderType:               SUPPORT,
 			LocationStart:           ROME,
 			LocationSubmitted:       VENICE,
 			SecondLocationSubmitted: APULIA,
+			PieceOwner:              GERMANY,
 		},
 		{
 			OrderType:               SUPPORT,
@@ -101,17 +112,65 @@ func TestAddSupportPointsToMoveCutSupport(t *testing.T) {
 			LocationSubmitted:       VENICE,
 			SecondLocationSubmitted: APULIA,
 			UnitType:                NAVY,
+			PieceOwner:              TURKEY,
 		},
 		{
 			OrderType:         MOVE,
 			LocationStart:     IONIAN_SEA,
 			LocationSubmitted: ADRIATIC_SEA,
 			UnitType:          NAVY,
+			PieceOwner:        ITALY,
 		},
 	}
 
 	moves.CalculateSupport()
 	assert.Equal(t, 1, moves[0].MovePower)
+	assert.Equal(t, 0, moves[1].MovePower)
+}
+
+func TestCanNotCutSupportOfSelf(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:               MOVE,
+			LocationStart:           VENICE,
+			LocationSubmitted:       APULIA,
+			SecondLocationSubmitted: BLANK,
+			PieceOwner:              ITALY,
+		},
+		{
+			OrderType:               MOVE,
+			LocationStart:           NAPLES,
+			LocationSubmitted:       APULIA,
+			SecondLocationSubmitted: BLANK,
+			PieceOwner:              TURKEY,
+		},
+		{
+			OrderType:               SUPPORT,
+			LocationStart:           ROME,
+			LocationSubmitted:       VENICE,
+			SecondLocationSubmitted: APULIA,
+			PieceOwner:              GERMANY,
+		},
+		{
+			OrderType:               SUPPORT,
+			LocationStart:           ADRIATIC_SEA,
+			LocationSubmitted:       VENICE,
+			SecondLocationSubmitted: APULIA,
+			UnitType:                NAVY,
+			PieceOwner:              TURKEY,
+		},
+		{
+			OrderType:         MOVE,
+			LocationStart:     IONIAN_SEA,
+			LocationSubmitted: ADRIATIC_SEA,
+			UnitType:          NAVY,
+			PieceOwner:        TURKEY,
+		},
+	}
+
+	moves.CalculateSupport()
+	assert.Equal(t, 2, moves[0].MovePower)
 	assert.Equal(t, 0, moves[1].MovePower)
 }
 
@@ -124,6 +183,7 @@ func TestAddSupportPointsToMoveDoubleSupport(t *testing.T) {
 			LocationSubmitted:       APULIA,
 			SecondLocationSubmitted: BLANK,
 			UnitType:                ARMY,
+			PieceOwner:              TURKEY,
 		},
 		{
 			OrderType:               MOVE,
@@ -131,6 +191,7 @@ func TestAddSupportPointsToMoveDoubleSupport(t *testing.T) {
 			LocationSubmitted:       APULIA,
 			SecondLocationSubmitted: BLANK,
 			UnitType:                ARMY,
+			PieceOwner:              ITALY,
 		},
 		{
 			OrderType:               SUPPORT,
@@ -138,6 +199,7 @@ func TestAddSupportPointsToMoveDoubleSupport(t *testing.T) {
 			LocationSubmitted:       VENICE,
 			SecondLocationSubmitted: APULIA,
 			UnitType:                ARMY,
+			PieceOwner:              RUSSIA,
 		},
 		{
 			OrderType:               SUPPORT,
@@ -145,12 +207,14 @@ func TestAddSupportPointsToMoveDoubleSupport(t *testing.T) {
 			LocationSubmitted:       VENICE,
 			SecondLocationSubmitted: APULIA,
 			UnitType:                NAVY,
+			PieceOwner:              ITALY,
 		},
 		{
 			OrderType:         MOVE,
 			LocationStart:     NORTH_SEA,
 			LocationSubmitted: ADRIATIC_SEA,
 			UnitType:          NAVY,
+			PieceOwner:        ENGLAND,
 		},
 	}
 
