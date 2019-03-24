@@ -154,13 +154,14 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 		return err
 	}
 	moves.ProcessMoves()
-	e.save(ctx, moves)
+	e.updatePieces(ctx, moves)
+	// TODO e.updateGameToProcessed(ctx, gameId, phase)
 	e.updateGameToProcessed(ctx, gameId)
 
 	return err
 }
 
-func (e *Engine) save(ctx context.Context, moves model.Moves) (err error) {
+func (e *Engine) updatePieces(ctx context.Context, moves model.Moves) (err error) {
 	for _, move := range moves {
 		query := "UPDATE pieces SET location=?, dislodged=? WHERE id=?"
 		stmt, err := e.Conn.PrepareContext(ctx, query)

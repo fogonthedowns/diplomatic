@@ -39,10 +39,6 @@ func (g *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	// t := model.Territory("NOS")
-	// b := model.Territory("SYR")
-	// game.AddGameSquares()
-	// fmt.Printf("****%+v \n", t.ValidSeaMovement(b))
 
 	id, err := g.db.Create(r.Context(), &gameInput)
 
