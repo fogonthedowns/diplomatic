@@ -27,5 +27,22 @@ final) loop through all moves:
 design considerations:
 
 ✅ you can not attack your own territory
-you must be able to issue support and convoy orders for others
+✅ you must be able to issue support and convoy orders for others
 Players who have not issued moves, will issue hold orders
+
+
+Check:
+    a) verify the piece exists
+    b) Verify you own the piece.
+    c) verify the piece is at the matching start location 
+
+
+Phase change: 
+    1. update game_year on pieces
+    2. update phase on pieces 
+
+Finds the pieces that haven't moved:
+
+select pieces.id, moves.location_start, pieces.location, pieces.owner, pieces.type from pieces LEFT JOIN moves ON pieces.id=moves.piece_id where pieces.game_id=1 and pieces.game_year=1901 and moves.location_start is NULL;
+
+phase and game_year should also be on pieces, and stay on moves for historical record.
