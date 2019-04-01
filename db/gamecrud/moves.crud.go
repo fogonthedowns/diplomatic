@@ -72,6 +72,15 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 	}
 
 	// Does the submitted move exist for this piece?
+	if in.PieceId == 0 {
+		return 400, errors.New("must include piece id")
+	}
+
+	// Note, this only checks to see if the piece_id has created an order
+	// it does not verify the order is at all valid
+	// this accepts location_start where the piece.location does not match
+	// to accomindate the game design requirement to accept invalid orders
+	// TODO in ProcessMoves() add a lookup to validate piece.location == move.location_start
 	move, err := e.fetchMove(ctx, doesPieceMoveExist, in.GameId, in.Phase, in.PieceId)
 
 	if err != nil {

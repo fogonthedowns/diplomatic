@@ -45,6 +45,8 @@ func (g *MovesHandler) CreateOrUpdate(w http.ResponseWriter, r *http.Request) {
 	switch code {
 	case 403:
 		respondwithJSON(w, http.StatusForbidden, model.ErrorMessage{Message: fmt.Sprintf("%v\n", err)})
+	case 400:
+		respondwithJSON(w, http.StatusForbidden, model.ErrorMessage{Message: fmt.Sprintf("%v\n", err)})
 	case 200:
 		respondwithJSON(w, http.StatusCreated, map[string]string{"message": "Successfully Created"})
 	default:
