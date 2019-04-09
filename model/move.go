@@ -38,6 +38,7 @@ type Moves []*Move
 // This is the Starting Point.
 // TODO moves.save()
 // TODO prevent a country from attacking itself - units will bounce, support will not be cut (verify)
+// TODO location_resolved is unsaved!
 func (moves *Moves) ProcessMoves() {
 	tm := moves.CategorizeMovesByTerritory()
 	moves.ResolveUncontestedMoves(tm)
@@ -45,6 +46,33 @@ func (moves *Moves) ProcessMoves() {
 	tm.ResolveConflicts(moves)
 	moves.MoveConvoysForward()
 	moves.logProgress()
+}
+
+func (moves *Moves) HoldUnmovedPieces(pieces []*PieceRow) Moves {
+	// pices [p.1,p.2,p.3,p.4]
+	// moves [m.1, m.2]
+	m = make(map[int]bool)
+	for _, move := range *moves {
+		m[m.Id] = true
+	}
+
+	newMoves = make(Moves)
+
+	for _, row := range *pieces {
+		if m[row.Id] != true && row.IsActive == true {
+			newMove = &Move{
+				PieceId:           row.Id,
+				LocationStart:     row.Country,
+				LocationSubmitted: row.Country,
+				OrderType:         HOLD,
+				PieceOwner:        row.Owner,
+				UnitType:          row.UnitType,
+			}
+			newMoves = append(newMove, newMoves)
+			moves = append(newMove, moves)
+		}
+	}
+	return newMoves
 }
 
 func (moves *Moves) logProgress() {
