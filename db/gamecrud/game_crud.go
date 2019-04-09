@@ -153,10 +153,26 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 	if err != nil {
 		return err
 	}
+	e.ProcessPiecesNotMoved(ctx, gameId, moves)
 	moves.ProcessMoves()
 	e.updatePieces(ctx, moves)
 	// TODO e.updateGameToProcessed(ctx, gameId, phase)
 	e.updateGameToProcessed(ctx, gameId)
+
+	return err
+}
+
+// This must happen prior to process moves to create Hold moves for unmoved pieces
+func (e *Engine) ProcessPiecesNotMoved(ctx context.Context, gameId int64, moves model.Moves) error {
+	pieces, err := e.GetPiecesByGameId(ctx, gameId)
+	if err != nil {
+		return err
+	}
+	newMoves = moves.HoldUnmovedPieces(pieces)
+
+	for _, move := range newMoves {
+		// TODO SAVE NEW MOVES!
+	}
 
 	return err
 }
@@ -231,6 +247,37 @@ func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase i
 			&data.PieceOwner,
 			&data.UnitType,
 			&data.PieceId,
+		)
+
+		if err != nil {
+			fmt.Printf("error \n", err)
+			return nil, err
+		}
+		payload = append(payload, data)
+	}
+	return payload, nil
+}
+
+func (e *Engine) GetPiecesByGameId(ctx context.Context, gameId int64) ([]*model.PieceRow, error) {
+
+	query := "select id, owner, location, type, is_active from pieces where game_id=?"
+
+	rows, err := e.Conn.QueryContext(ctx, query, gameId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	payload := make([]*model.PieceRow, 0)
+	for rows.Next() {
+		data := new(model.PieceRow)
+
+		err := rows.Scan(
+			&data.Id,
+			&data.Owner,
+			&data.Country,
+			&data.UnitType,
+			&data.IsActive,
 		)
 
 		if err != nil {

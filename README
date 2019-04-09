@@ -43,6 +43,7 @@ Phase change:
 
 Finds the pieces that haven't moved:
 
-select pieces.id, moves.location_start, pieces.location, pieces.owner, pieces.type from pieces LEFT JOIN moves ON pieces.id=moves.piece_id where pieces.game_id=1 and pieces.game_year=1901 and moves.location_start is NULL;
+select id from pieces where game_id=1
+select piece_id from moves where game_id=1 and game_year=1901 and phase=1
 
 phase and game_year should also be on pieces, and stay on moves for historical record.
