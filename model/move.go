@@ -48,28 +48,33 @@ func (moves *Moves) ProcessMoves() {
 	moves.logProgress()
 }
 
+// returns Moves that do not exist in the current moves
+// This is based on a set of active pieces that are not included in moves
+// The order is set to Hold
 func (moves *Moves) HoldUnmovedPieces(pieces []*PieceRow) Moves {
 	// pices [p.1,p.2,p.3,p.4]
 	// moves [m.1, m.2]
-	m = make(map[int]bool)
+	m := make(map[int64]bool, 0)
+	var gameYear string
 	for _, move := range *moves {
-		m[m.Id] = true
+		gameYear = move.GameYear
+		m[move.PieceId] = true
 	}
 
-	newMoves = make(Moves)
+	newMoves := make(Moves, 0)
 
-	for _, row := range *pieces {
+	for _, row := range pieces {
 		if m[row.Id] != true && row.IsActive == true {
-			newMove = &Move{
+			newMove := &Move{
 				PieceId:           row.Id,
 				LocationStart:     row.Country,
 				LocationSubmitted: row.Country,
 				OrderType:         HOLD,
 				PieceOwner:        row.Owner,
 				UnitType:          row.UnitType,
+				GameYear:          gameYear,
 			}
-			newMoves = append(newMove, newMoves)
-			moves = append(newMove, moves)
+			newMoves = append(newMoves, newMove)
 		}
 	}
 	return newMoves
@@ -78,10 +83,9 @@ func (moves *Moves) HoldUnmovedPieces(pieces []*PieceRow) Moves {
 func (moves *Moves) logProgress() {
 	for _, move := range *moves {
 		if move.OrderType == SUPPORT {
-			fmt.Printf("********%v %vs  %v -> %v from %v. resolved: %+v (%v)\n", move.PieceOwner, move.OrderType, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationStart, move.LocationResolved, move.MovePower)
-
+			fmt.Printf("********%v %vs  %v -> %v from %v. resolved: %+v (%v)\n", move.PieceId, move.OrderType, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationStart, move.LocationResolved, move.MovePower)
 		} else {
-			fmt.Printf("********%v %v (%v -> %v) resolved: %+v (%v)\n", move.PieceOwner, move.OrderType, move.LocationStart, move.LocationSubmitted, move.LocationResolved, move.MovePower)
+			fmt.Printf("********%v %v (%v -> %v) resolved: %+v (%v)\n", move.PieceId, move.OrderType, move.LocationStart, move.LocationSubmitted, move.LocationResolved, move.MovePower)
 		}
 	}
 	fmt.Print("\n\nOrders:\n")

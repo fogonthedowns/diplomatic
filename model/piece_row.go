@@ -1,7 +1,7 @@
 package model
 
 type PieceRow struct {
-	Id        int       `json:"id"`
+	Id        int64     `json:"id"`
 	GameId    int64     `json:"game_id"`
 	Owner     Country   `json:"owner"`
 	UnitType  UnitType  `json:"type"`

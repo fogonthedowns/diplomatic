@@ -148,12 +148,18 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 	return payload, nil
 }
 
-func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) error {
+func (e *Engine) ProcessPhaseMoves(ctx context.Context, gameId int64, phase int) error {
 	moves, err := e.GetMovesByIdAndPhase(ctx, gameId, phase)
 	if err != nil {
 		return err
 	}
-	e.ProcessPiecesNotMoved(ctx, gameId, moves)
+
+	moves, err = e.ProcessPiecesNotMoved(ctx, moves, gameId, phase)
+
+	if err != nil {
+		return err
+	}
+
 	moves.ProcessMoves()
 	e.updatePieces(ctx, moves)
 	// TODO e.updateGameToProcessed(ctx, gameId, phase)
@@ -163,17 +169,43 @@ func (e *Engine) ProcessMoves(ctx context.Context, gameId int64, phase int) erro
 }
 
 // This must happen prior to process moves to create Hold moves for unmoved pieces
-func (e *Engine) ProcessPiecesNotMoved(ctx context.Context, gameId int64, moves model.Moves) error {
+func (e *Engine) ProcessPiecesNotMoved(ctx context.Context, moves model.Moves, gameId int64, phaseId int) (newMoves model.Moves, err error) {
 	pieces, err := e.GetPiecesByGameId(ctx, gameId)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
 	newMoves = moves.HoldUnmovedPieces(pieces)
 
 	for _, move := range newMoves {
-		// TODO SAVE NEW MOVES!
+		err = e.CreateMove(ctx, move, gameId, phaseId)
+		if err != nil {
+			return nil, err
+		}
 	}
 
+	for _, move := range moves {
+		newMoves = append(newMoves, move)
+	}
+
+	return newMoves, err
+}
+
+func (e *Engine) CreateMove(ctx context.Context, in *model.Move, gameId int64, phaseId int) error {
+	insert := "Insert moves SET location_start=?, location_submitted=?, phase=?, game_id=?, type=?, piece_owner=?, game_year=?, piece_id=?"
+
+	stmt, err := e.Conn.PrepareContext(ctx, insert)
+
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, phaseId, gameId, in.OrderType, in.PieceOwner, in.GameYear, in.PieceId)
+	defer stmt.Close()
+	if err != nil {
+		return err
+	}
+
+	// return 0
 	return err
 }
 
@@ -328,7 +360,7 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 	// TODO(:3/1) Should this be on moves.ProcessMoves()?
 	// It could return piecesRows and we could switch on PhaseOver
 	if phaseOver && !game.Processed {
-		e.ProcessMoves(ctx, gameId, game.Phase)
+		e.ProcessPhaseMoves(ctx, gameId, game.Phase)
 	}
 
 	// Get the Pieces of this game
