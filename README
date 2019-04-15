@@ -36,14 +36,7 @@ Check:
     b) Verify you own the piece.
     c) verify the piece is at the matching start location 
 
+✅ Finds the pieces that haven't moved:
 
-Phase change: 
-    1. update game_year on pieces
-    2. update phase on pieces 
+  a) ✅ issue hold order prior to move processing
 
-Finds the pieces that haven't moved:
-
-select id from pieces where game_id=1
-select piece_id from moves where game_id=1 and game_year=1901 and phase=1
-
-phase and game_year should also be on pieces, and stay on moves for historical record.
