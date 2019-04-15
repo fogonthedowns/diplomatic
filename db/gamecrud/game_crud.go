@@ -162,6 +162,7 @@ func (e *Engine) ProcessPhaseMoves(ctx context.Context, gameId int64, phase int)
 
 	moves.ProcessMoves()
 	e.updatePieces(ctx, moves)
+	e.updateResolvedMoves(ctx, moves)
 	// TODO e.updateGameToProcessed(ctx, gameId, phase)
 	e.updateGameToProcessed(ctx, gameId)
 
@@ -178,10 +179,11 @@ func (e *Engine) ProcessPiecesNotMoved(ctx context.Context, moves model.Moves, g
 	newMoves = moves.HoldUnmovedPieces(pieces)
 
 	for _, move := range newMoves {
-		err = e.CreateMove(ctx, move, gameId, phaseId)
+		id, err := e.CreateMove(ctx, move, gameId, phaseId)
 		if err != nil {
 			return nil, err
 		}
+		move.Id = id
 	}
 
 	for _, move := range moves {
@@ -191,21 +193,51 @@ func (e *Engine) ProcessPiecesNotMoved(ctx context.Context, moves model.Moves, g
 	return newMoves, err
 }
 
-func (e *Engine) CreateMove(ctx context.Context, in *model.Move, gameId int64, phaseId int) error {
+func (e *Engine) CreateMove(ctx context.Context, in *model.Move, gameId int64, phaseId int) (int64, error) {
 	insert := "Insert moves SET location_start=?, location_submitted=?, phase=?, game_id=?, type=?, piece_owner=?, game_year=?, piece_id=?"
 
 	stmt, err := e.Conn.PrepareContext(ctx, insert)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
-	_, err = stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, phaseId, gameId, in.OrderType, in.PieceOwner, in.GameYear, in.PieceId)
+	res, err := stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, phaseId, gameId, in.OrderType, in.PieceOwner, in.GameYear, in.PieceId)
 	defer stmt.Close()
+
 	if err != nil {
-		return err
+		return 0, err
 	}
 
+	id, err := res.LastInsertId()
+
+	if err != nil {
+		return 0, err
+	}
 	// return 0
+	return id, err
+}
+
+func (e *Engine) updateResolvedMoves(ctx context.Context, moves model.Moves) (err error) {
+	for _, move := range moves {
+		update := "UPDATE moves SET location_resolved=? WHERE id=?"
+		stmt, err := e.Conn.PrepareContext(ctx, update)
+		if err != nil {
+			fmt.Printf("err %v \n", err)
+			return err
+		}
+
+		_, err = stmt.ExecContext(
+			ctx,
+			move.LocationResolved,
+			move.Id,
+		)
+
+		if err != nil {
+			fmt.Printf("err %v \n", err)
+			return err
+		}
+		stmt.Close()
+	}
 	return err
 }
 
@@ -258,7 +290,7 @@ func (e *Engine) updateGameToProcessed(ctx context.Context, gameId int64) (err e
 
 func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase int) (model.Moves, error) {
 
-	query := "select moves.id, moves.location_start, moves.location_submitted, moves.second_location_submitted, moves.type, moves.piece_owner, pieces.type, moves.piece_id from moves INNER JOIN pieces ON pieces.id=moves.id where moves.game_id=? and moves.phase=?"
+	query := "select moves.id, moves.location_start, moves.location_submitted, moves.second_location_submitted, moves.type, moves.piece_owner, moves.game_year, pieces.type, moves.piece_id from moves INNER JOIN pieces ON pieces.id=moves.id where moves.game_id=? and moves.phase=?"
 
 	rows, err := e.Conn.QueryContext(ctx, query, gameId, phase)
 	if err != nil {
@@ -277,6 +309,7 @@ func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase i
 			&data.SecondLocationSubmitted,
 			&data.OrderType,
 			&data.PieceOwner,
+			&data.GameYear,
 			&data.UnitType,
 			&data.PieceId,
 		)
