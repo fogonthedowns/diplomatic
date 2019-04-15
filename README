@@ -20,23 +20,22 @@
    b) Bulgaria
    c) St. Petersburg
 
-final) loop through all moves:
-    a) ✅ update the pieces.Location by move.piece_id
-    b) update the territory.Owner by move.PieceOwner 
+6) Retreat phase:
+
+  a) Add dislodged concept to piece.
+  b) If a piece is dislodged and it is retreat phase, it must move. 
+  c) A unit can not retreat from the origin of the attack.
+  d) Non dislodged pieces may not move in retreat phase.
+  e) Update the territory.Owner by move.PieceOwner after retreat phase is adjudicated
+
+7) Validations:
+    a) verify the piece exists
+    b) Verify you own the piece.
+    c) verify the piece is at the matching start location 
+
 
 design considerations:
 
 ✅ you can not attack your own territory
 ✅ you must be able to issue support and convoy orders for others
-Players who have not issued moves, will issue hold orders
-
-
-Check:
-    a) verify the piece exists
-    b) Verify you own the piece.
-    c) verify the piece is at the matching start location 
-
-✅ Finds the pieces that haven't moved:
-
-  a) ✅ issue hold order prior to move processing
-
+✅ Players who have not issued moves, will issue hold orders
