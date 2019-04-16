@@ -7,7 +7,7 @@ import (
 )
 
 type Game struct {
-	Id             int        `json: "id"`
+	Id             int64      `json: "id"`
 	Title          string     `json: "title"`
 	StartedAt      *time.Time `json: "started_at"`
 	GameYear       string     `json: "game_year"`
@@ -15,7 +15,6 @@ type Game struct {
 	PhaseEnd       string     `json: "phase_end"`
 	OrdersInterval int        `json: "orders_interval"`
 	GameBoard      GameBoard  `json: "game_squares,omitempty"`
-	Processed      bool
 }
 
 // DrawGameBoard() Fills in an empty game.GameBoard from data loaded from territory and piece rows in the db
