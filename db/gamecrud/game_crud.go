@@ -81,7 +81,6 @@ func (e *Engine) fetch(ctx context.Context, query string, args ...interface{}) (
 			&data.Phase,
 			&data.PhaseEnd,
 			&data.Title,
-			&data.Processed,
 		)
 		if err != nil {
 			return nil, err
@@ -148,13 +147,13 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 	return payload, nil
 }
 
-func (e *Engine) ProcessPhaseMoves(ctx context.Context, gameId int64, phase int) error {
-	moves, err := e.GetMovesByIdAndPhase(ctx, gameId, phase)
+func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
+	moves, err := e.GetMovesByIdAndPhase(ctx, game.Id, game.Phase)
 	if err != nil {
 		return err
 	}
 
-	moves, err = e.ProcessPiecesNotMoved(ctx, moves, gameId, phase)
+	moves, err = e.ProcessPiecesNotMoved(ctx, moves, game.Id, game.Phase)
 
 	if err != nil {
 		return err
@@ -163,8 +162,7 @@ func (e *Engine) ProcessPhaseMoves(ctx context.Context, gameId int64, phase int)
 	moves.ProcessMoves()
 	e.updatePieces(ctx, moves)
 	e.updateResolvedMoves(ctx, moves)
-	// TODO e.updateGameToProcessed(ctx, gameId, phase)
-	e.updateGameToProcessed(ctx, gameId)
+	e.updateGameToProcessed(ctx, game)
 
 	return err
 }
@@ -266,18 +264,24 @@ func (e *Engine) updatePieces(ctx context.Context, moves model.Moves) (err error
 	return err
 }
 
-func (e *Engine) updateGameToProcessed(ctx context.Context, gameId int64) (err error) {
-	query := "UPDATE games SET processed=? WHERE id=?"
+func (e *Engine) updateGameToProcessed(ctx context.Context, game model.Game) (err error) {
+	query := "UPDATE games SET phase=?, game_year=?, phase_end=? WHERE id=?"
 	stmt, err := e.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		fmt.Printf("err %v \n", err)
 		return err
 	}
 
+	phase := newPhase(game.Phase)
+	year := newYear(game)
+	phaseOver := time.Now().Add(time.Hour * time.Duration(12)).Unix()
+
 	_, err = stmt.ExecContext(
 		ctx,
-		true,
-		gameId,
+		phase,
+		year,
+		phaseOver,
+		game.Id,
 	)
 
 	if err != nil {
@@ -286,6 +290,46 @@ func (e *Engine) updateGameToProcessed(ctx context.Context, gameId int64) (err e
 	}
 	stmt.Close()
 	return err
+}
+
+func newYear(game model.Game) string {
+	if game.Phase == 5 {
+		n, err := strconv.ParseInt(game.GameYear, 10, 64)
+		if err == nil {
+			fmt.Printf("%d of type %T", n, n)
+		}
+		n = n + 1
+		return strconv.FormatInt(n, 10)
+	} else {
+		return game.GameYear
+	}
+}
+
+// game phases
+// 0 - waiting for players
+// 1 - spring orders
+// 2 - spring retreat
+// 3 - fall orders
+// 4 - fall retreat
+// 5 - fall build
+// fall retreat can be implied from phase
+func newPhase(phase int) int {
+	switch phase {
+	case 0:
+		return 1
+	case 1:
+		return 2
+	case 2:
+		return 3
+	case 3:
+		return 4
+	case 4:
+		return 5
+	case 5:
+		return 1
+	default:
+		panic("phase not present int changePhase()")
+	}
 }
 
 func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase int) (model.Moves, error) {
@@ -365,7 +409,7 @@ func (m *Engine) Fetch(ctx context.Context, num int64) ([]*model.Game, error) {
 
 // TODO add game.IsActive; modify game query.
 func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error) {
-	query := "Select id, game_year, phase, phase_end, title, processed From games where id=?"
+	query := "Select id, game_year, phase, phase_end, title From games where id=?"
 
 	// Get the Game by gameId
 	rows, err := e.fetch(ctx, query, gameId)
@@ -388,12 +432,11 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 	//   yes: update the game.Phase and update game.PhaseEnd
 	phaseOver := game.HasPhaseEnded()
 	fmt.Printf("has this phase ended? %v\n", phaseOver)
-	fmt.Printf("is this phase processed? %v\n", game.Processed)
 
 	// TODO(:3/1) Should this be on moves.ProcessMoves()?
 	// It could return piecesRows and we could switch on PhaseOver
-	if phaseOver && !game.Processed {
-		e.ProcessPhaseMoves(ctx, gameId, game.Phase)
+	if phaseOver {
+		e.ProcessPhaseMoves(ctx, *game)
 	}
 
 	// Get the Pieces of this game

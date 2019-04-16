@@ -58,12 +58,10 @@ func (moves *Moves) HoldUnmovedPieces(pieces []*PieceRow) Moves {
 	var gameYear string
 	for _, move := range *moves {
 		gameYear = move.GameYear
-		fmt.Printf("game year: %v\n", gameYear)
 		m[move.PieceId] = true
 	}
 
 	newMoves := make(Moves, 0)
-	fmt.Printf("set game year: %v\n", gameYear)
 	for _, row := range pieces {
 		if m[row.Id] != true && row.IsActive == true {
 			newMove := &Move{
