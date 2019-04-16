@@ -149,8 +149,21 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 
 func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
 	moves, err := e.GetMovesByIdAndPhase(ctx, game.Id, game.Phase)
+	pieces, err := e.GetPiecesByGame(ctx, game.Id)
 	if err != nil {
 		return err
+	}
+
+	pieceIdToTerritory := make(map[int64]model.Territory)
+	for _, p := range pieces {
+		pieceIdToTerritory[p.Id] = p.Country
+	}
+
+	for _, m := range moves {
+		if pieceIdToTerritory[m.PieceId] != m.LocationStart {
+			// TODO DELETE ELEMENT FROM SLICE
+			// OR MARK MOVE AS INVALID AND DO NOT ADJUDICATE BC PIECE DOES NOT EXIST
+		}
 	}
 
 	moves, err = e.ProcessPiecesNotMoved(ctx, moves, game.Id, game.Phase)
@@ -356,6 +369,33 @@ func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase i
 			&data.GameYear,
 			&data.UnitType,
 			&data.PieceId,
+		)
+
+		if err != nil {
+			fmt.Printf("error \n", err)
+			return nil, err
+		}
+		payload = append(payload, data)
+	}
+	return payload, nil
+}
+
+func (e *Engine) GetPiecesByGame(ctx context.Context, gameId int64) ([]*model.PieceRow, error) {
+
+	query := "select id, location from pieces where game_id=?"
+	rows, err := e.Conn.QueryContext(ctx, query, gameId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	payload := make([]*model.PieceRow, 0)
+	for rows.Next() {
+		data := new(model.PieceRow)
+
+		err := rows.Scan(
+			&data.Id,
+			&data.Country,
 		)
 
 		if err != nil {
