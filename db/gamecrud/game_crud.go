@@ -149,21 +149,8 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 
 func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
 	moves, err := e.GetMovesByIdAndPhase(ctx, game.Id, game.Phase)
-	pieces, err := e.GetPiecesByGame(ctx, game.Id)
 	if err != nil {
 		return err
-	}
-
-	pieceIdToTerritory := make(map[int64]model.Territory)
-	for _, p := range pieces {
-		pieceIdToTerritory[p.Id] = p.Country
-	}
-
-	for _, m := range moves {
-		if pieceIdToTerritory[m.PieceId] != m.LocationStart {
-			// TODO DELETE ELEMENT FROM SLICE
-			// OR MARK MOVE AS INVALID AND DO NOT ADJUDICATE BC PIECE DOES NOT EXIST
-		}
 	}
 
 	moves, err = e.ProcessPiecesNotMoved(ctx, moves, game.Id, game.Phase)

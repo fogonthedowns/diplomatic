@@ -76,6 +76,14 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 		return 400, errors.New("must include piece id")
 	}
 
+	valid, err := e.IsPieceNotAtInitialLocation(ctx, in.PieceId, in.LocationStart, in.GameId, in.PieceOwner)
+	if err != nil {
+		return 500, err
+	}
+	if !valid {
+		return 400, errors.New("Piece is not at start location")
+	}
+
 	// Note, this only checks to see if the piece_id has created an order
 	// it does not verify the order is at all valid
 	// this accepts location_start where the piece.location does not match
@@ -157,6 +165,31 @@ func (e *MovesEngine) fetchMove(ctx context.Context, query string, args ...inter
 		payload = data
 	}
 	return payload, nil
+}
+
+func (e *MovesEngine) IsPieceNotAtInitialLocation(ctx context.Context, pieceId int64, locationStart model.Territory, gameId int64, moveCreatedByCountry model.Country) (valid bool, err error) {
+	query := "SELECT is_active, location, game_id, owner from pieces where id=?"
+	rows, err := e.Conn.QueryContext(ctx, query, pieceId)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+	var payload *model.PieceRow
+	for rows.Next() {
+		data := &model.PieceRow{}
+		err := rows.Scan(
+			&data.IsActive,
+			&data.Country,
+			&data.GameId,
+			&data.Owner,
+		)
+		if err != nil {
+			return false, err
+		}
+		payload = data
+	}
+	valid = payload.Country == locationStart && payload.GameId == gameId && payload.IsActive && payload.Owner == moveCreatedByCountry
+	return valid, nil
 }
 
 func (e *MovesEngine) fetchGameUser(ctx context.Context, query string, args ...interface{}) (*model.GameUser, error) {
