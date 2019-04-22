@@ -76,12 +76,9 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 		return 400, errors.New("must include piece id")
 	}
 
-	valid, err := e.IsPieceNotAtInitialLocation(ctx, in.PieceId, in.LocationStart, in.GameId, in.PieceOwner)
+	err = e.IsPieceNotAtInitialLocation(ctx, in.PieceId, in.LocationStart, in.GameId, in.PieceOwner)
 	if err != nil {
-		return 500, err
-	}
-	if !valid {
-		return 400, errors.New("Piece is not at start location")
+		return 400, err
 	}
 
 	// Note, this only checks to see if the piece_id has created an order
@@ -167,11 +164,11 @@ func (e *MovesEngine) fetchMove(ctx context.Context, query string, args ...inter
 	return payload, nil
 }
 
-func (e *MovesEngine) IsPieceNotAtInitialLocation(ctx context.Context, pieceId int64, locationStart model.Territory, gameId int64, moveCreatedByCountry model.Country) (valid bool, err error) {
+func (e *MovesEngine) IsPieceNotAtInitialLocation(ctx context.Context, pieceId int64, locationStart model.Territory, gameId int64, moveCreatedByCountry model.Country) (err error) {
 	query := "SELECT is_active, location, game_id, owner from pieces where id=?"
 	rows, err := e.Conn.QueryContext(ctx, query, pieceId)
 	if err != nil {
-		return false, err
+		return err
 	}
 	defer rows.Close()
 	var payload *model.PieceRow
@@ -184,12 +181,26 @@ func (e *MovesEngine) IsPieceNotAtInitialLocation(ctx context.Context, pieceId i
 			&data.Owner,
 		)
 		if err != nil {
-			return false, err
+			return err
 		}
 		payload = data
 	}
-	valid = payload.Country == locationStart && payload.GameId == gameId && payload.IsActive && payload.Owner == moveCreatedByCountry
-	return valid, nil
+	if payload == nil {
+		return errors.New("Piece could not be loaded")
+	}
+	if payload.Country != locationStart {
+		return errors.New("Piece is not at start location")
+	}
+	if payload.GameId != gameId {
+		return errors.New("Piece does not exist")
+	}
+	if !payload.IsActive {
+		return errors.New("Piece is not active")
+	}
+	if payload.Owner != moveCreatedByCountry {
+		return errors.New("Piece is not controlled by Country who issued the order")
+	}
+	return nil
 }
 
 func (e *MovesEngine) fetchGameUser(ctx context.Context, query string, args ...interface{}) (*model.GameUser, error) {
