@@ -18,6 +18,7 @@ type Move struct {
 	PieceOwner              Country   `json:"piece_owner"`
 	PieceId                 int64     `json:"piece_id"`
 	OrderType               OrderType `json:"move_type"`
+	SupportUnitType         UnitType  `json:"support_unit_type"`
 	MovePower               int
 	UnitType                UnitType
 	Dislodged               bool `json:"dislodged"`
@@ -288,8 +289,12 @@ func (moves Moves) attackingYourSelf(destinationTerritory Territory, move Move) 
 // This may require a function to -+ the MovePower
 // addSupportPointsToMove() This will add up the number of times a unit is supported
 func (moves Moves) CalculateSupport() {
+
+	fmt.Println("CaalCSUPPORT")
 	for index, move := range moves {
+		fmt.Printf("move: %+v \n", move)
 		if move.OrderType == SUPPORT {
+			fmt.Println("order type SUPPORT")
 			moves.AddSupportPointsToMove(*move)
 			moves[index].MovePieceForward()
 		}
@@ -437,11 +442,13 @@ func (moves Moves) ResolveUncontestedMoves(tm TerritoryMoves) {
 
 func (moves Moves) AddSupportPointsToMove(supportMove Move) {
 	// if uncontested resolve the move
+	fmt.Println("yo")
 	// remember above LocationSubmitted was edited in the case of invalid moves in memory
 	for idx, move := range moves {
 		if move.OrderType == MOVE || move.OrderType == HOLD {
 			// if the support order matches the order increment the move power counter
 			if ValidSupportOrder(move, supportMove) {
+				fmt.Printf("inside VALID: %+v\n", move)
 				if !moves.CalculateIfSupportIsCut(supportMove) {
 					moves[idx].MovePower += 1
 				}
@@ -451,9 +458,7 @@ func (moves Moves) AddSupportPointsToMove(supportMove Move) {
 }
 
 func ValidSupportOrder(move *Move, supportMove Move) bool {
-
 	return move.LocationStart == supportMove.LocationSubmitted && move.LocationSubmitted == supportMove.SecondLocationSubmitted
-
 }
 
 // Loop through all moves to determine if there is a Valid attack that cuts support

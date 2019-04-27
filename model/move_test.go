@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -32,6 +33,45 @@ func TestProcessMovesSpecialBounce(t *testing.T) {
 	assert.Equal(t, false, moves[1].Dislodged)
 }
 
+func TestProcessMovesSpecialSupport(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:               MOVE,
+			LocationStart:           MARSEILLES,
+			LocationSubmitted:       SPAIN_SOUTH_COAST,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                NAVY,
+		},
+		{
+			OrderType:               MOVE,
+			LocationStart:           MID_ATLANTIC_OCEAN,
+			LocationSubmitted:       SPAIN_NORTH_COAST,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                NAVY,
+		},
+		{
+			OrderType:               SUPPORT,
+			LocationStart:           PORTUGAL,
+			LocationSubmitted:       MID_ATLANTIC_OCEAN,
+			SecondLocationSubmitted: SPAIN_NORTH_COAST,
+			UnitType:                ARMY,
+			SupportUnitType:         NAVY,
+		},
+	}
+
+	moves.ProcessMoves()
+	for _, move := range moves {
+		fmt.Printf("moves: %+v \n", move)
+	}
+
+	assert.Equal(t, MARSEILLES, moves[0].LocationResolved)
+	assert.Equal(t, SPAIN_NORTH_COAST, moves[1].LocationResolved)
+
+	assert.Equal(t, false, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+}
+
 func TestProcessMovesBounce(t *testing.T) {
 	moves := make(Moves, 0)
 	moves = []*Move{
@@ -55,6 +95,7 @@ func TestProcessMovesBounce(t *testing.T) {
 			LocationSubmitted:       VENICE,
 			SecondLocationSubmitted: APULIA,
 			UnitType:                ARMY,
+			SupportUnitType:         ARMY,
 		},
 		{
 			OrderType:               SUPPORT,
@@ -62,6 +103,7 @@ func TestProcessMovesBounce(t *testing.T) {
 			LocationSubmitted:       NAPLES,
 			SecondLocationSubmitted: APULIA,
 			UnitType:                NAVY,
+			SupportUnitType:         ARMY,
 		},
 		{
 			OrderType:         MOVE,
@@ -110,6 +152,7 @@ func TestProcessMovesCutSupport(t *testing.T) {
 			LocationSubmitted:       VENICE,
 			SecondLocationSubmitted: APULIA,
 			UnitType:                ARMY,
+			SupportUnitType:         ARMY,
 			PieceOwner:              ITALY,
 		},
 		{
@@ -118,6 +161,7 @@ func TestProcessMovesCutSupport(t *testing.T) {
 			LocationSubmitted:       NAPLES,
 			SecondLocationSubmitted: APULIA,
 			UnitType:                NAVY,
+			SupportUnitType:         NAVY,
 			PieceOwner:              TURKEY,
 		},
 		{
@@ -160,6 +204,7 @@ func TestProcessMovesDislodge(t *testing.T) {
 			LocationSubmitted:       VENICE,
 			SecondLocationSubmitted: APULIA,
 			UnitType:                ARMY,
+			SupportUnitType:         ARMY,
 			PieceOwner:              GERMANY,
 		},
 		{
@@ -214,6 +259,7 @@ func TestProcessMovesDislodgeReorderMoves(t *testing.T) {
 			LocationSubmitted:       VENICE,
 			SecondLocationSubmitted: APULIA,
 			UnitType:                ARMY,
+			SupportUnitType:         ARMY,
 			PieceOwner:              RUSSIA,
 		},
 
@@ -255,6 +301,7 @@ func TestProcessIllegalSupportHold(t *testing.T) {
 			SecondLocationSubmitted: VIENNA,
 			UnitType:                ARMY,
 			PieceOwner:              ITALY,
+			SupportUnitType:         ARMY,
 		},
 		{
 			OrderType:         MOVE,
@@ -271,6 +318,7 @@ func TestProcessIllegalSupportHold(t *testing.T) {
 			SecondLocationSubmitted: VIENNA,
 			UnitType:                ARMY,
 			PieceOwner:              RUSSIA,
+			SupportUnitType:         ARMY,
 		},
 	}
 
@@ -302,6 +350,7 @@ func TestProcessSupportHold(t *testing.T) {
 			LocationSubmitted:       VIENNA,
 			SecondLocationSubmitted: VIENNA,
 			UnitType:                ARMY,
+			SupportUnitType:         ARMY,
 			PieceOwner:              RUSSIA,
 		},
 		{
@@ -318,6 +367,7 @@ func TestProcessSupportHold(t *testing.T) {
 			LocationSubmitted:       BOHEMIA,
 			SecondLocationSubmitted: VIENNA,
 			UnitType:                ARMY,
+			SupportUnitType:         ARMY,
 			PieceOwner:              TURKEY,
 		},
 	}
@@ -626,6 +676,7 @@ func TestLongPathProcessTwoDislodgedConvoys(t *testing.T) {
 			SecondLocationSubmitted: ENGLISH_CHANNEL,
 			UnitType:                NAVY,
 			PieceOwner:              FRANCE,
+			SupportUnitType:         NAVY,
 		},
 		{
 			Id:                8,
@@ -643,6 +694,7 @@ func TestLongPathProcessTwoDislodgedConvoys(t *testing.T) {
 			SecondLocationSubmitted: WESTERN_MEDITERRANEAN,
 			UnitType:                NAVY,
 			PieceOwner:              FRANCE,
+			SupportUnitType:         NAVY,
 		},
 		{
 			Id:                10,
@@ -660,6 +712,7 @@ func TestLongPathProcessTwoDislodgedConvoys(t *testing.T) {
 			SecondLocationSubmitted: ADRIATIC_SEA,
 			UnitType:                NAVY,
 			PieceOwner:              ITALY,
+			SupportUnitType:         NAVY,
 		},
 	}
 
