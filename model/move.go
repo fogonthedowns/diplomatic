@@ -428,6 +428,7 @@ func (moves Moves) ResolveUncontestedMoves(tm TerritoryMoves) {
 
 		// TODO (3/4/19) Uncontested should return false in the case of convoy
 		// TODO (3/4/19) Implement a seperate fun to check convoy path and if it is uncontested.
+		fmt.Printf("move uncontested %v: %v \n", move.LocationSubmitted, tm.Uncontested(move.LocationSubmitted))
 		if tm.Uncontested(move.LocationSubmitted) {
 			moves[index].MovePieceForward()
 		}
@@ -440,13 +441,19 @@ func (moves Moves) AddSupportPointsToMove(supportMove Move) {
 	for idx, move := range moves {
 		if move.OrderType == MOVE || move.OrderType == HOLD {
 			// if the support order matches the order increment the move power counter
-			if move.LocationStart == supportMove.LocationSubmitted && move.LocationSubmitted == supportMove.SecondLocationSubmitted {
+			if ValidSupportOrder(move, supportMove) {
 				if !moves.CalculateIfSupportIsCut(supportMove) {
 					moves[idx].MovePower += 1
 				}
 			}
 		}
 	}
+}
+
+func ValidSupportOrder(move *Move, supportMove Move) bool {
+
+	return move.LocationStart == supportMove.LocationSubmitted && move.LocationSubmitted == supportMove.SecondLocationSubmitted
+
 }
 
 // Loop through all moves to determine if there is a Valid attack that cuts support

@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 )
 
@@ -93,6 +94,10 @@ const (
 	BLANK                     = Territory("NONE")
 )
 
+var russiaEdgeCases = []Territory{ST_PETERSBURG, ST_PETERSBURG_NORTH_COAST, ST_PETERSBURG_SOUTH_COAST}
+var bulgariaEdgeCases = []Territory{BULGARIA_SOUTH_COAST, BULGARIA_EAST_COAST, BULGARIA}
+var spainEdgeCases = []Territory{SPAIN_NORTH_COAST, SPAIN_SOUTH_COAST, SPAIN}
+
 // TODO
 // mapOfCenters
 // mapOfLandOrSea
@@ -101,6 +106,25 @@ type Territory string
 type TerritoryMoves map[Territory][]*Move
 
 func (tm TerritoryMoves) Uncontested(key Territory) bool {
+	for _, c := range russiaEdgeCases {
+		if key == c {
+			return len(tm[ST_PETERSBURG])+len(tm[ST_PETERSBURG_NORTH_COAST])+len(tm[ST_PETERSBURG_SOUTH_COAST]) <= 1
+		}
+	}
+
+	for _, c := range spainEdgeCases {
+		fmt.Printf("Contested Value: %v = %v\n", key, len(tm[SPAIN_NORTH_COAST])+len(tm[SPAIN_SOUTH_COAST])+len(tm[SPAIN]))
+		if key == c {
+			fmt.Printf("calc %+v \n", tm)
+			return len(tm[SPAIN_NORTH_COAST])+len(tm[SPAIN_SOUTH_COAST])+len(tm[SPAIN]) <= 1
+		}
+	}
+
+	for _, c := range bulgariaEdgeCases {
+		if key == c {
+			return len(tm[BULGARIA_SOUTH_COAST])+len(tm[BULGARIA_EAST_COAST])+len(tm[BULGARIA]) <= 1
+		}
+	}
 	return len(tm[key]) <= 1
 }
 
