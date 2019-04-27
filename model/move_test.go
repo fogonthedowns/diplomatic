@@ -5,6 +5,33 @@ import (
 	"testing"
 )
 
+func TestProcessMovesSpecialBounce(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:               MOVE,
+			LocationStart:           MARSEILLES,
+			LocationSubmitted:       SPAIN_SOUTH_COAST,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                NAVY,
+		},
+		{
+			OrderType:               MOVE,
+			LocationStart:           MID_ATLANTIC_OCEAN,
+			LocationSubmitted:       SPAIN_NORTH_COAST,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                ARMY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, MARSEILLES, moves[0].LocationResolved)
+	assert.Equal(t, MID_ATLANTIC_OCEAN, moves[1].LocationResolved)
+
+	assert.Equal(t, false, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+}
+
 func TestProcessMovesBounce(t *testing.T) {
 	moves := make(Moves, 0)
 	moves = []*Move{
