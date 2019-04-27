@@ -20,7 +20,7 @@ func TestProcessMovesSpecialBounce(t *testing.T) {
 			LocationStart:           MID_ATLANTIC_OCEAN,
 			LocationSubmitted:       SPAIN_NORTH_COAST,
 			SecondLocationSubmitted: BLANK,
-			UnitType:                ARMY,
+			UnitType:                NAVY,
 		},
 	}
 
