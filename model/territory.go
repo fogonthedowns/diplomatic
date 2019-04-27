@@ -105,6 +105,35 @@ var spainEdgeCases = []Territory{SPAIN_NORTH_COAST, SPAIN_SOUTH_COAST, SPAIN}
 type Territory string
 type TerritoryMoves map[Territory][]*Move
 
+func (t Territory) RussiaEdgeCase() bool {
+	for _, c := range russiaEdgeCases {
+		if t == c {
+			return true
+
+		}
+	}
+	return false
+}
+
+func (t Territory) SpainEdgeCase() bool {
+
+	for _, c := range spainEdgeCases {
+		if c == t {
+			return true
+		}
+	}
+	return false
+}
+
+func (t Territory) BulgariaEdgeCase() bool {
+	for _, c := range bulgariaEdgeCases {
+		if c == t {
+			return true
+		}
+	}
+	return false
+}
+
 func (tm TerritoryMoves) Uncontested(key Territory) bool {
 	for _, c := range russiaEdgeCases {
 		if key == c {
