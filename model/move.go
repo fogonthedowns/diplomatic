@@ -291,7 +291,6 @@ func (moves Moves) attackingYourSelf(destinationTerritory Territory, move Move) 
 func (moves Moves) CalculateSupport() {
 	for index, move := range moves {
 		if move.OrderType == SUPPORT {
-			fmt.Println("order type SUPPORT")
 			moves.AddSupportPointsToMove(*move)
 			moves[index].MovePieceForward()
 		}
@@ -429,13 +428,11 @@ func (moves Moves) ResolveUncontestedMoves(tm TerritoryMoves) {
 
 func (moves Moves) AddSupportPointsToMove(supportMove Move) {
 	// if uncontested resolve the move
-	fmt.Println("yo")
 	// remember above LocationSubmitted was edited in the case of invalid moves in memory
 	for idx, move := range moves {
 		if move.OrderType == MOVE || move.OrderType == HOLD {
 			// if the support order matches the order increment the move power counter
 			if ValidSupportOrder(move, supportMove) {
-				fmt.Printf("inside VALID: %+v\n", move)
 				if !moves.CalculateIfSupportIsCut(supportMove) {
 					moves[idx].MovePower += 1
 				}
