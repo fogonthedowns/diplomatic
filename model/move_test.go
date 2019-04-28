@@ -32,6 +32,33 @@ func TestProcessMovesSpecialBounce(t *testing.T) {
 	assert.Equal(t, false, moves[1].Dislodged)
 }
 
+func TestProcessMovesRussiaBounce(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:               MOVE,
+			LocationStart:           NORWAY,
+			LocationSubmitted:       ST_PETERSBURG_NORTH_COAST,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                NAVY,
+		},
+		{
+			OrderType:               MOVE,
+			LocationStart:           MOSCOW,
+			LocationSubmitted:       ST_PETERSBURG,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                ARMY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, NORWAY, moves[0].LocationResolved)
+	assert.Equal(t, MOSCOW, moves[1].LocationResolved)
+
+	assert.Equal(t, false, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+}
+
 func TestProcessMovesSpecialSupport(t *testing.T) {
 	moves := make(Moves, 0)
 	moves = []*Move{
@@ -62,6 +89,68 @@ func TestProcessMovesSpecialSupport(t *testing.T) {
 	moves.ProcessMoves()
 	assert.Equal(t, MARSEILLES, moves[0].LocationResolved)
 	assert.Equal(t, SPAIN_NORTH_COAST, moves[1].LocationResolved)
+
+	assert.Equal(t, false, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+}
+
+func TestProcessBulgariaSupport(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:               MOVE,
+			LocationStart:           CONSTANTINOPLE,
+			LocationSubmitted:       BULGARIA_EAST_COAST,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                NAVY,
+		},
+		{
+			OrderType:               MOVE,
+			LocationStart:           GREECE,
+			LocationSubmitted:       BULGARIA_SOUTH_COAST,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                NAVY,
+		},
+		{
+			OrderType:               SUPPORT,
+			LocationStart:           BLACK_SEA,
+			LocationSubmitted:       CONSTANTINOPLE,
+			SecondLocationSubmitted: BULGARIA_EAST_COAST,
+			UnitType:                NAVY,
+			SupportUnitType:         NAVY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, BULGARIA_EAST_COAST, moves[0].LocationResolved)
+	assert.Equal(t, GREECE, moves[1].LocationResolved)
+
+	assert.Equal(t, false, moves[0].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
+}
+
+func TestProcessBulgariaBounce(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:               MOVE,
+			LocationStart:           CONSTANTINOPLE,
+			LocationSubmitted:       BULGARIA_EAST_COAST,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                NAVY,
+		},
+		{
+			OrderType:               MOVE,
+			LocationStart:           GREECE,
+			LocationSubmitted:       BULGARIA_SOUTH_COAST,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                NAVY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, CONSTANTINOPLE, moves[0].LocationResolved)
+	assert.Equal(t, GREECE, moves[1].LocationResolved)
 
 	assert.Equal(t, false, moves[0].Dislodged)
 	assert.Equal(t, false, moves[1].Dislodged)

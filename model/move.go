@@ -195,7 +195,15 @@ func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 		// this is done by counting either LocationSubmitted or
 		// LocationStart
 		if move.OrderType == MOVE {
-			tm[move.LocationSubmitted] = append(tm[move.LocationSubmitted], move)
+			if move.LocationSubmitted.SpainEdgeCase() {
+				tm[SPAIN] = append(tm[SPAIN], move)
+			} else if move.LocationSubmitted.BulgariaEdgeCase() {
+				tm[BULGARIA] = append(tm[BULGARIA], move)
+			} else if move.LocationSubmitted.RussiaEdgeCase() {
+				tm[ST_PETERSBURG] = append(tm[ST_PETERSBURG], move)
+			} else {
+				tm[move.LocationSubmitted] = append(tm[move.LocationSubmitted], move)
+			}
 		}
 
 		if move.OrderType == SUPPORT {

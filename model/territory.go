@@ -190,9 +190,6 @@ func (tm TerritoryMoves) ResolveConflicts(moves *Moves) {
 				lastSeenMove = value[index]
 			}
 		}
-		// TODO here a conflict is possible. but won't be detected. This is because of the special case consider spain north coast,
-		// spain south coast and a support unit in PORT [1],[1],[1]
-		// DETECT the type of special case, then resolve conflicts on this.
 	}
 
 }
