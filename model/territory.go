@@ -5,7 +5,6 @@ import (
 
 	"encoding/json"
 	"errors"
-	"fmt"
 	"regexp"
 )
 
@@ -164,9 +163,7 @@ func (tm TerritoryMoves) ResolveConflicts(moves *Moves) {
 	for key, value := range tm {
 		var lastSeen = 0
 		var lastSeenMove *Move
-		fmt.Printf("tm key %+v \n", len(tm[key]))
 		if len(tm[key]) >= 2 {
-			fmt.Printf("tm key %+v \n", tm[key])
 			value = Sort(value)
 			for index, mm := range value {
 				if mm.MovePower > 0 && mm.MovePower > lastSeen {
@@ -358,9 +355,9 @@ var validLandSupportMoves = map[Territory][]Territory{
 	PARIS:          []Territory{GASCONY, BREST, PICARDY, BURGUNDY},
 	BURGUNDY:       []Territory{MARSEILLES, GASCONY, PARIS, BELGIUM, RUHR, MUNICH},
 	GASCONY:        []Territory{BREST, PARIS, BURGUNDY, MARSEILLES, SPAIN},
-	MARSEILLES:     []Territory{SPAIN, GASCONY, BURGUNDY, PIEDMONT},
+	MARSEILLES:     []Territory{SPAIN, GASCONY, BURGUNDY, PIEDMONT, SPAIN_SOUTH_COAST},
 	SPAIN:          []Territory{MARSEILLES, GASCONY, PORTUGAL},
-	PORTUGAL:       []Territory{SPAIN, SPAIN_NORTH_COAST},
+	PORTUGAL:       []Territory{SPAIN, SPAIN_NORTH_COAST, SPAIN_SOUTH_COAST},
 	BELGIUM:        []Territory{PICARDY, BURGUNDY, RUHR, HOLLAND},
 	HOLLAND:        []Territory{BELGIUM, RUHR, KIEL},
 	DENMARK:        []Territory{KIEL},
@@ -370,19 +367,19 @@ var validLandSupportMoves = map[Territory][]Territory{
 	BOHEMIA:        []Territory{MUNICH, SILESIA, GALICIA, VIENNA, TYROLIA},
 	SILESIA:        []Territory{MUNICH, BOHEMIA, BERLIN, PRUSSIA, WARSAW, GALICIA},
 	PRUSSIA:        []Territory{BERLIN, LIVONIA, WARSAW, SILESIA},
-	LIVONIA:        []Territory{PRUSSIA, WARSAW, MOSCOW, ST_PETERSBURG},
+	LIVONIA:        []Territory{PRUSSIA, WARSAW, MOSCOW, ST_PETERSBURG, ST_PETERSBURG_SOUTH_COAST},
 	ST_PETERSBURG:  []Territory{LIVONIA, MOSCOW, FINLAND},
 	MOSCOW:         []Territory{ST_PETERSBURG, LIVONIA, WARSAW, UKRAINE, SEVASTOPOL},
 	WARSAW:         []Territory{LIVONIA, MOSCOW, UKRAINE, GALICIA, SILESIA, PRUSSIA},
 	UKRAINE:        []Territory{WARSAW, MOSCOW, SEVASTOPOL, ROMANIA, GALICIA},
 	SEVASTOPOL:     []Territory{UKRAINE, ARMENIA, MOSCOW, ROMANIA},
 	GALICIA:        []Territory{BOHEMIA, SILESIA, WARSAW, UKRAINE, ROMANIA, BUDAPEST, VIENNA},
-	ROMANIA:        []Territory{BUDAPEST, GALICIA, UKRAINE, SEVASTOPOL, BULGARIA, SERBIA},
+	ROMANIA:        []Territory{BUDAPEST, GALICIA, UKRAINE, SEVASTOPOL, BULGARIA, SERBIA, BULGARIA_EAST_COAST},
 	BULGARIA:       []Territory{GREECE, SERBIA, ROMANIA, CONSTANTINOPLE},
 	BUDAPEST:       []Territory{GALICIA, ROMANIA, SERBIA, TRIESTE, VIENNA},
 	SERBIA:         []Territory{ROMANIA, BULGARIA, GREECE, ALBANIA, TRIESTE, BUDAPEST},
 	ALBANIA:        []Territory{TRIESTE, SERBIA, GREECE},
-	GREECE:         []Territory{ALBANIA, SERBIA, BUDAPEST},
+	GREECE:         []Territory{ALBANIA, SERBIA, BUDAPEST, BULGARIA_SOUTH_COAST},
 	VIENNA:         []Territory{BOHEMIA, GALICIA, BUDAPEST, TRIESTE, TYROLIA},
 	TRIESTE:        []Territory{SERBIA, ALBANIA, VENICE, TYROLIA, VIENNA, BUDAPEST},
 	TYROLIA:        []Territory{MUNICH, BOHEMIA, VIENNA, TRIESTE, VENICE, PIEDMONT},
@@ -396,12 +393,12 @@ var validLandSupportMoves = map[Territory][]Territory{
 	NORTH_AFRICA:   []Territory{TUNIS},
 	SYRIA:          []Territory{ARMENIA, SMYRNA},
 	ARMENIA:        []Territory{SYRIA, SMYRNA, ANKARA, SEVASTOPOL},
-	CONSTANTINOPLE: []Territory{ANKARA, SMYRNA, BULGARIA},
+	CONSTANTINOPLE: []Territory{ANKARA, SMYRNA, BULGARIA, BULGARIA_SOUTH_COAST, BULGARIA_EAST_COAST},
 	SMYRNA:         []Territory{CONSTANTINOPLE, ANKARA, ARMENIA, SYRIA},
 	ANKARA:         []Territory{CONSTANTINOPLE, SMYRNA, ARMENIA},
 	FINLAND:        []Territory{ST_PETERSBURG, NORWAY, SWEDEN},
 	SWEDEN:         []Territory{NORWAY, FINLAND},
-	NORWAY:         []Territory{SWEDEN, FINLAND, ST_PETERSBURG},
+	NORWAY:         []Territory{SWEDEN, FINLAND, ST_PETERSBURG, ST_PETERSBURG_NORTH_COAST},
 }
 
 // exclusiveSeaTerritories defines a list of Sea Exclusive territories
