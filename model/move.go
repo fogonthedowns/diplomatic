@@ -218,8 +218,8 @@ func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 	return tm
 }
 
-// ValidMovement() will return true if the checked territory
-// is included inside ValidLandMovement(), ValidSeaMovement(), or [ValidConvoyBeginAndEnd(), ConvoyPathDoesExist()]
+// moves is only used to loop through moves to determine if this move is attacking yourself
+// and to determine if the convoy path exists.
 func (moves *Moves) ValidMovement(move Move) bool {
 	t := move.LocationStart
 	var check Territory
@@ -251,9 +251,9 @@ func (moves *Moves) ValidMovement(move Move) bool {
 		if move.OrderType == MOVEVIACONVOY {
 			return t.ValidConvoyBeginAndEnd(check) && moves.ConvoyPathDoesExist(move.LocationStart, move.LocationSubmitted)
 		} else if move.OrderType == RETREAT {
-			return t.ValidLandMovement(check) && check != move.DislodgedFrom
+			return t.ValidLandMovement(check, RETREAT) && check != move.DislodgedFrom
 		} else {
-			return t.ValidLandMovement(check)
+			return t.ValidLandMovement(check, move.OrderType)
 		}
 	case NAVY:
 		if move.OrderType == CONVOY {
@@ -289,10 +289,7 @@ func (moves Moves) attackingYourSelf(destinationTerritory Territory, move Move) 
 // This may require a function to -+ the MovePower
 // addSupportPointsToMove() This will add up the number of times a unit is supported
 func (moves Moves) CalculateSupport() {
-
-	fmt.Println("CaalCSUPPORT")
 	for index, move := range moves {
-		fmt.Printf("move: %+v \n", move)
 		if move.OrderType == SUPPORT {
 			fmt.Println("order type SUPPORT")
 			moves.AddSupportPointsToMove(*move)
@@ -424,16 +421,6 @@ func (moves Moves) ResolveUncontestedMoves(tm TerritoryMoves) {
 	// Resolve Moves
 	for index, move := range moves {
 		// if uncontested resolve the move
-		// remember above LocationSubmitted was edited in the case of invalid moves in memory
-
-		// convoy rules:
-		// use movement of land unit follows ValidMovement()
-		// do not ever resolve uncontested convoy rules unless
-		// there is a valid path.
-
-		// TODO (3/4/19) Uncontested should return false in the case of convoy
-		// TODO (3/4/19) Implement a seperate fun to check convoy path and if it is uncontested.
-		fmt.Printf("move uncontested %v: %v \n", move.LocationSubmitted, tm.Uncontested(move.LocationSubmitted))
 		if tm.Uncontested(move.LocationSubmitted) {
 			moves[index].MovePieceForward()
 		}

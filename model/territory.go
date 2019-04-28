@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql/driver"
+
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -142,9 +143,7 @@ func (tm TerritoryMoves) Uncontested(key Territory) bool {
 	}
 
 	for _, c := range spainEdgeCases {
-		fmt.Printf("Contested Value: %v = %v\n", key, len(tm[SPAIN_NORTH_COAST])+len(tm[SPAIN_SOUTH_COAST])+len(tm[SPAIN]))
 		if key == c {
-			fmt.Printf("calc %+v \n", tm)
 			return len(tm[SPAIN_NORTH_COAST])+len(tm[SPAIN_SOUTH_COAST])+len(tm[SPAIN]) <= 1
 		}
 	}
@@ -165,7 +164,9 @@ func (tm TerritoryMoves) ResolveConflicts(moves *Moves) {
 	for key, value := range tm {
 		var lastSeen = 0
 		var lastSeenMove *Move
+		fmt.Printf("tm key %+v \n", len(tm[key]))
 		if len(tm[key]) >= 2 {
+			fmt.Printf("tm key %+v \n", tm[key])
 			value = Sort(value)
 			for index, mm := range value {
 				if mm.MovePower > 0 && mm.MovePower > lastSeen {
@@ -192,7 +193,11 @@ func (tm TerritoryMoves) ResolveConflicts(moves *Moves) {
 				lastSeenMove = value[index]
 			}
 		}
+		// TODO here a conflict is possible. but won't be detected. This is because of the special case consider spain north coast,
+		// spain south coast and a support unit in PORT [1],[1],[1]
+		// DETECT the type of special case, then resolve conflicts on this.
 	}
+
 }
 
 // Sort() sorts the Move Values by MovePower
@@ -342,6 +347,63 @@ var validLandMoves = map[Territory][]Territory{
 	NORWAY:         []Territory{SWEDEN, FINLAND, ST_PETERSBURG},
 }
 
+var validLandSupportMoves = map[Territory][]Territory{
+	CLYDE:          []Territory{EDINBURGH, LIVERPOOL},
+	EDINBURGH:      []Territory{CLYDE, YORKSHIRE},
+	LIVERPOOL:      []Territory{CLYDE, EDINBURGH, YORKSHIRE, WALES},
+	WALES:          []Territory{LIVERPOOL, LONDON, YORKSHIRE},
+	YORKSHIRE:      []Territory{LIVERPOOL, LONDON, WALES, EDINBURGH},
+	BREST:          []Territory{PICARDY, PARIS, GASCONY},
+	PICARDY:        []Territory{BREST, BELGIUM, BURGUNDY, PARIS},
+	PARIS:          []Territory{GASCONY, BREST, PICARDY, BURGUNDY},
+	BURGUNDY:       []Territory{MARSEILLES, GASCONY, PARIS, BELGIUM, RUHR, MUNICH},
+	GASCONY:        []Territory{BREST, PARIS, BURGUNDY, MARSEILLES, SPAIN},
+	MARSEILLES:     []Territory{SPAIN, GASCONY, BURGUNDY, PIEDMONT},
+	SPAIN:          []Territory{MARSEILLES, GASCONY, PORTUGAL},
+	PORTUGAL:       []Territory{SPAIN, SPAIN_NORTH_COAST},
+	BELGIUM:        []Territory{PICARDY, BURGUNDY, RUHR, HOLLAND},
+	HOLLAND:        []Territory{BELGIUM, RUHR, KIEL},
+	DENMARK:        []Territory{KIEL},
+	KIEL:           []Territory{HOLLAND, DENMARK, BERLIN, MUNICH, RUHR},
+	RUHR:           []Territory{BELGIUM, HOLLAND, KIEL, MUNICH, BURGUNDY},
+	MUNICH:         []Territory{BURGUNDY, RUHR, TYROLIA, BOHEMIA, SILESIA, BERLIN, KIEL},
+	BOHEMIA:        []Territory{MUNICH, SILESIA, GALICIA, VIENNA, TYROLIA},
+	SILESIA:        []Territory{MUNICH, BOHEMIA, BERLIN, PRUSSIA, WARSAW, GALICIA},
+	PRUSSIA:        []Territory{BERLIN, LIVONIA, WARSAW, SILESIA},
+	LIVONIA:        []Territory{PRUSSIA, WARSAW, MOSCOW, ST_PETERSBURG},
+	ST_PETERSBURG:  []Territory{LIVONIA, MOSCOW, FINLAND},
+	MOSCOW:         []Territory{ST_PETERSBURG, LIVONIA, WARSAW, UKRAINE, SEVASTOPOL},
+	WARSAW:         []Territory{LIVONIA, MOSCOW, UKRAINE, GALICIA, SILESIA, PRUSSIA},
+	UKRAINE:        []Territory{WARSAW, MOSCOW, SEVASTOPOL, ROMANIA, GALICIA},
+	SEVASTOPOL:     []Territory{UKRAINE, ARMENIA, MOSCOW, ROMANIA},
+	GALICIA:        []Territory{BOHEMIA, SILESIA, WARSAW, UKRAINE, ROMANIA, BUDAPEST, VIENNA},
+	ROMANIA:        []Territory{BUDAPEST, GALICIA, UKRAINE, SEVASTOPOL, BULGARIA, SERBIA},
+	BULGARIA:       []Territory{GREECE, SERBIA, ROMANIA, CONSTANTINOPLE},
+	BUDAPEST:       []Territory{GALICIA, ROMANIA, SERBIA, TRIESTE, VIENNA},
+	SERBIA:         []Territory{ROMANIA, BULGARIA, GREECE, ALBANIA, TRIESTE, BUDAPEST},
+	ALBANIA:        []Territory{TRIESTE, SERBIA, GREECE},
+	GREECE:         []Territory{ALBANIA, SERBIA, BUDAPEST},
+	VIENNA:         []Territory{BOHEMIA, GALICIA, BUDAPEST, TRIESTE, TYROLIA},
+	TRIESTE:        []Territory{SERBIA, ALBANIA, VENICE, TYROLIA, VIENNA, BUDAPEST},
+	TYROLIA:        []Territory{MUNICH, BOHEMIA, VIENNA, TRIESTE, VENICE, PIEDMONT},
+	VENICE:         []Territory{TYROLIA, TRIESTE, PIEDMONT, TUSCANY, APULIA, ROME},
+	PIEDMONT:       []Territory{MARSEILLES, TYROLIA, VENICE, TUSCANY},
+	TUSCANY:        []Territory{PIEDMONT, VENICE, ROME},
+	ROME:           []Territory{TUSCANY, VENICE, APULIA, NAPLES},
+	APULIA:         []Territory{VENICE, ROME, NAPLES},
+	NAPLES:         []Territory{APULIA, ROME},
+	TUNIS:          []Territory{NORTH_AFRICA},
+	NORTH_AFRICA:   []Territory{TUNIS},
+	SYRIA:          []Territory{ARMENIA, SMYRNA},
+	ARMENIA:        []Territory{SYRIA, SMYRNA, ANKARA, SEVASTOPOL},
+	CONSTANTINOPLE: []Territory{ANKARA, SMYRNA, BULGARIA},
+	SMYRNA:         []Territory{CONSTANTINOPLE, ANKARA, ARMENIA, SYRIA},
+	ANKARA:         []Territory{CONSTANTINOPLE, SMYRNA, ARMENIA},
+	FINLAND:        []Territory{ST_PETERSBURG, NORWAY, SWEDEN},
+	SWEDEN:         []Territory{NORWAY, FINLAND},
+	NORWAY:         []Territory{SWEDEN, FINLAND, ST_PETERSBURG},
+}
+
 // exclusiveSeaTerritories defines a list of Sea Exclusive territories
 var exclusiveSeaTerritories = []Territory{
 	NORWEGIAN_SEA,
@@ -385,8 +447,23 @@ func (t *Territory) ValidSeaMovement(check Territory) bool {
 // ValidLandMovement will return true if the checked territory
 // is included inside of the mapOfBorders map
 // uses the origional terriotry as they key
-func (t *Territory) ValidLandMovement(check Territory) bool {
+func (t *Territory) ValidLandMovement(check Territory, mt OrderType) bool {
+	if mt == SUPPORT {
+		return validLandSupportMovement(check, *t)
+	}
 	for _, borderTerritory := range validLandMoves[*t] {
+		if borderTerritory == check {
+			return true
+		}
+	}
+	return false
+}
+
+// validLandSupportMovement will return true if the checked territory
+// is included inside of the mapOfBorders map
+// uses the origional terriotry as they key
+func validLandSupportMovement(check Territory, t Territory) bool {
+	for _, borderTerritory := range validLandSupportMoves[t] {
 		if borderTerritory == check {
 			return true
 		}
