@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -61,10 +60,6 @@ func TestProcessMovesSpecialSupport(t *testing.T) {
 	}
 
 	moves.ProcessMoves()
-	for _, move := range moves {
-		fmt.Printf("moves: %+v \n", move)
-	}
-
 	assert.Equal(t, MARSEILLES, moves[0].LocationResolved)
 	assert.Equal(t, SPAIN_NORTH_COAST, moves[1].LocationResolved)
 
