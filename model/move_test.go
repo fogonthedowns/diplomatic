@@ -59,6 +59,23 @@ func TestProcessMovesRussiaBounce(t *testing.T) {
 	assert.Equal(t, false, moves[1].Dislodged)
 }
 
+func TestSimpleMove(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:               MOVE,
+			LocationStart:           KIEL,
+			LocationSubmitted:       HOLLAND,
+			SecondLocationSubmitted: BLANK,
+			UnitType:                NAVY,
+		},
+	}
+
+	moves.ProcessMoves()
+	assert.Equal(t, HOLLAND, moves[0].LocationResolved)
+	assert.Equal(t, false, moves[0].Dislodged)
+}
+
 func TestProcessMovesSpecialSupport(t *testing.T) {
 	moves := make(Moves, 0)
 	moves = []*Move{
