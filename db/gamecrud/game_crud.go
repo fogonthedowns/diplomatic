@@ -334,7 +334,7 @@ func newPhase(phase int) int {
 
 func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase int) (model.Moves, error) {
 
-	query := "select moves.id, moves.location_start, moves.location_submitted, moves.second_location_submitted, moves.type, moves.piece_owner, moves.game_year, pieces.type, moves.piece_id, moves.support_unit_type from moves INNER JOIN pieces ON pieces.id=moves.id where moves.game_id=? and moves.phase=?"
+	query := "select moves.id, moves.location_start, moves.location_submitted, moves.second_location_submitted, moves.type, moves.piece_owner, moves.game_year, pieces.type, moves.piece_id from moves INNER JOIN pieces ON pieces.id=moves.piece_id where moves.game_id=? and moves.phase=?"
 
 	rows, err := e.Conn.QueryContext(ctx, query, gameId, phase)
 	if err != nil {
@@ -356,7 +356,6 @@ func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase i
 			&data.GameYear,
 			&data.UnitType,
 			&data.PieceId,
-			&data.SupportUnitType,
 		)
 
 		if err != nil {
