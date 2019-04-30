@@ -455,14 +455,8 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 	}
 
 	// Has the current phase ended?
-	//   yes: process the moves
-	//   yes: update the game.Phase and update game.PhaseEnd
-	phaseOver := game.HasPhaseEnded()
-	fmt.Printf("has this phase ended? %v\n", phaseOver)
-
-	// TODO(:3/1) Should this be on moves.ProcessMoves()?
-	// It could return piecesRows and we could switch on PhaseOver
-	if phaseOver {
+	//   if so: process the moves
+	if game.HasPhaseEnded() {
 		e.ProcessPhaseMoves(ctx, *game)
 	}
 
