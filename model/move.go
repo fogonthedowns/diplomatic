@@ -181,6 +181,10 @@ func (moves *Moves) CategorizeMovesByTerritory() TerritoryMoves {
 		// Vallid support moves are determined by the start location bordering the end location
 		valid = moves.ValidMovement(*move)
 
+		// TODO pass game to this func
+		// if the phase is retreat, check if unit is dislodged
+		// if not issue HOLD order
+
 		// TODO(:3/12/19)
 		// Message concept to indicate move coerced to Move
 		// Consider Historical move.HistoricalOrder to show past moves
