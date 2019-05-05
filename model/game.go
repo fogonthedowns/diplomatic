@@ -11,7 +11,7 @@ type Game struct {
 	Title          string     `json:"title"`
 	StartedAt      *time.Time `json:"started_at"`
 	GameYear       string     `json:"game_year"`
-	Phase          int        `json:"phase"`
+	Phase          GamePhase  `json:"phase"`
 	PhaseEnd       string     `json:"phase_end"`
 	OrdersInterval int        `json:"orders_interval"`
 	GameBoard      GameBoard  `json:"game_squares,omitempty"`
@@ -135,30 +135,6 @@ func (g *Game) NewGameBoard() {
 	}
 
 	g.GameBoard = gb
-}
-
-func (g *Game) ValidatePhaseUpdate(updateToPhase int) error {
-	if g.Phase >= updateToPhase {
-		return errors.New("The Phase has already been updated")
-	}
-	return nil
-}
-
-// HasPhaseEnded() returns true if the current phase is over
-func (g *Game) HasPhaseEnded() (hasEnded bool) {
-	// if the game has not started yet return false
-	if g.Phase < 1 {
-		return false
-	}
-	now := time.Now()
-	timestamp, err := strconv.ParseInt(g.PhaseEnd, 10, 64)
-	if err != nil {
-		panic(err)
-	}
-	phaseEndTime := time.Unix(timestamp, 0)
-	hasEnded = phaseEndTime.Before(now)
-
-	return hasEnded
 }
 
 // TODO determine when to move game from phase 0 -> phase 1

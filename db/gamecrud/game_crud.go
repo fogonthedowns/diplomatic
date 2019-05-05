@@ -168,7 +168,7 @@ func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
 }
 
 // This must happen prior to process moves to create Hold moves for unmoved pieces
-func (e *Engine) ProcessPiecesNotMoved(ctx context.Context, moves model.Moves, gameId int64, phaseId int) (newMoves model.Moves, err error) {
+func (e *Engine) ProcessPiecesNotMoved(ctx context.Context, moves model.Moves, gameId int64, phaseId model.GamePhase) (newMoves model.Moves, err error) {
 	pieces, err := e.GetPiecesByGameId(ctx, gameId)
 	if err != nil {
 		return nil, err
@@ -191,7 +191,7 @@ func (e *Engine) ProcessPiecesNotMoved(ctx context.Context, moves model.Moves, g
 	return newMoves, err
 }
 
-func (e *Engine) CreateMove(ctx context.Context, in *model.Move, gameId int64, phaseId int) (int64, error) {
+func (e *Engine) CreateMove(ctx context.Context, in *model.Move, gameId int64, phaseId model.GamePhase) (int64, error) {
 	insert := "Insert moves SET location_start=?, location_submitted=?, phase=?, game_id=?, type=?, piece_owner=?, game_year=?, piece_id=?"
 
 	stmt, err := e.Conn.PrepareContext(ctx, insert)
@@ -272,7 +272,7 @@ func (e *Engine) updateGameToProcessed(ctx context.Context, game model.Game) (er
 		return err
 	}
 
-	phase := newPhase(game.Phase)
+	phase := model.NewPhase(game.Phase)
 	year := newYear(game)
 	phaseOver := time.Now().Add(time.Hour * time.Duration(12)).Unix()
 
@@ -305,34 +305,7 @@ func newYear(game model.Game) string {
 	}
 }
 
-// game phases
-// 0 - waiting for players
-// 1 - spring orders
-// 2 - spring retreat
-// 3 - fall orders
-// 4 - fall retreat
-// 5 - fall build
-// fall retreat can be implied from phase
-func newPhase(phase int) int {
-	switch phase {
-	case 0:
-		return 1
-	case 1:
-		return 2
-	case 2:
-		return 3
-	case 3:
-		return 4
-	case 4:
-		return 5
-	case 5:
-		return 1
-	default:
-		panic("phase not present int changePhase()")
-	}
-}
-
-func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase int) (model.Moves, error) {
+func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase model.GamePhase) (model.Moves, error) {
 
 	query := "select moves.id, moves.location_start, moves.location_submitted, moves.second_location_submitted, moves.type, moves.piece_owner, moves.game_year, pieces.type, moves.piece_id from moves INNER JOIN pieces ON pieces.id=moves.piece_id where moves.game_id=? and moves.phase=?"
 
@@ -456,7 +429,7 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 
 	// Has the current phase ended?
 	//   if so: process the moves
-	if game.HasPhaseEnded() {
+	if game.Phase.HasPhaseEnded(game.PhaseEnd) {
 		e.ProcessPhaseMoves(ctx, *game)
 	}
 
@@ -554,7 +527,7 @@ func (e *Engine) Update(ctx context.Context, in *model.GameInput) (*model.GameIn
 	// and a user count of 6, update the phase!
 	// TODO(:2/28) updateGamePhase should depend on interval
 	if len(gameusers) == 6 {
-		err := e.updateGamePhase(ctx, in.Id, 1)
+		err := e.updateGamePhase(ctx, in.Id, model.Spring)
 		return nil, 500, err
 	}
 
@@ -563,13 +536,13 @@ func (e *Engine) Update(ctx context.Context, in *model.GameInput) (*model.GameIn
 
 // Create Piece records, setting the user.id
 // Create Territory records, setting the user.id
-func (e *Engine) updateGamePhase(ctx context.Context, game_id int64, phase int) error {
+func (e *Engine) updateGamePhase(ctx context.Context, game_id int64, phase model.GamePhase) error {
 	game, err := e.getGameByIdOnly(ctx, game_id)
 	if err != nil {
 		fmt.Printf("**** getGameByIdOnly %v\n", err)
 		return err
 	}
-	err = game.ValidatePhaseUpdate(phase)
+	err = game.Phase.ValidatePhaseUpdate(phase)
 	if err != nil {
 		fmt.Printf("**** error %v\n", err)
 		return err

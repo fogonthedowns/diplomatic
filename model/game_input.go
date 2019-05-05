@@ -9,7 +9,7 @@ type GameInput struct {
 	Title             string    `json:"title"`
 	StartedAt         time.Time `json:"started_at"`
 	GameYear          string    `json:"game_year"`
-	Phase             int       `json:"phase"`
+	Phase             GamePhase `json:"phase"`
 	PhaseEnd          string    `json:"phase_end"`
 	OrdersInterval    int       `json:"orders_interval"`
 	GameBoard         GameBoard `json:"game_squares,omitempty"`

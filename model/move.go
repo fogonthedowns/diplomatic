@@ -10,7 +10,7 @@ type Move struct {
 	GameId                  int64     `json:"game_id"`
 	UserId                  int64     `json:"user_id"` // must be hard coded in request, based on logged in user_id
 	GameYear                string    `json:"game_year"`
-	Phase                   int       `json:"phase"`
+	Phase                   GamePhase `json:"phase"`
 	LocationStart           Territory `json:"location_start"`
 	LocationSubmitted       Territory `json:"location_submitted"`
 	SecondLocationSubmitted Territory `json:"second_location_submitted"`
