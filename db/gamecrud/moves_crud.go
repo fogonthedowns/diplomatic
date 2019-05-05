@@ -39,7 +39,6 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 
 	gameUser, err := e.fetchGameUser(ctx, query, in.UserId, in.GameId)
 	fmt.Printf("GAME ID? %+v", in)
-
 	// Is the User part of this game?
 	if gameUser == nil {
 		return 403, errors.New("The User is not a member of this game")
@@ -51,14 +50,12 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 	}
 
 	game, err := e.fetchGame(ctx, gameQuery, in.GameId)
-
 	if game == nil {
 		return 500, errors.New("The Game can not be loaded")
 	}
 
 	// Does your User control the piece you are trying to move?
 	err = in.ValidateCountry(gameUser)
-
 	if err != nil {
 		return 403, err
 	}
@@ -76,7 +73,7 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 		return 400, errors.New("must include piece id")
 	}
 
-	err = e.IsPieceNotAtInitialLocation(ctx, in.PieceId, in.LocationStart, in.GameId, in.PieceOwner)
+	err = e.ValidPiece(ctx, in.PieceId, in.LocationStart, in.GameId, in.PieceOwner, game.Phase)
 	if err != nil {
 		return 400, err
 	}
@@ -86,10 +83,9 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 	// this accepts location_start where the piece.location does not match
 	// to accomindate the game design requirement to accept invalid orders
 	// TODO in ProcessMoves() add a lookup to validate piece.location == move.location_start
-	move, err := e.fetchMove(ctx, doesPieceMoveExist, in.GameId, in.Phase, in.PieceId)
+	move, err := e.fetchMove(ctx, doesPieceMoveExist, in.GameId, game.Phase, in.PieceId)
 
 	if err != nil {
-		fmt.Printf("error fetchMove(): %v \n", err)
 		return 500, err
 	}
 
@@ -164,8 +160,8 @@ func (e *MovesEngine) fetchMove(ctx context.Context, query string, args ...inter
 	return payload, nil
 }
 
-func (e *MovesEngine) IsPieceNotAtInitialLocation(ctx context.Context, pieceId int64, locationStart model.Territory, gameId int64, moveCreatedByCountry model.Country) (err error) {
-	query := "SELECT is_active, location, game_id, owner from pieces where id=?"
+func (e *MovesEngine) ValidPiece(ctx context.Context, pieceId int64, locationStart model.Territory, gameId int64, moveCreatedByCountry model.Country, phase model.GamePhase) (err error) {
+	query := "SELECT is_active, location, game_id, owner, dislodged from pieces where id=?"
 	rows, err := e.Conn.QueryContext(ctx, query, pieceId)
 	if err != nil {
 		return err
@@ -179,11 +175,18 @@ func (e *MovesEngine) IsPieceNotAtInitialLocation(ctx context.Context, pieceId i
 			&data.Country,
 			&data.GameId,
 			&data.Owner,
+			&data.Dislodged,
 		)
 		if err != nil {
 			return err
 		}
 		payload = data
+	}
+
+	if phase == model.SpringRetreat || phase == model.FallRetreat {
+		if !payload.Dislodged {
+			return errors.New("Only dislodged pieces may move in Retreat Phase")
+		}
 	}
 	if payload == nil {
 		return errors.New("Piece could not be loaded")
