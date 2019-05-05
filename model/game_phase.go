@@ -6,13 +6,6 @@ import (
 	"time"
 )
 
-// game phases
-// 0 - waiting for players
-// 1 - spring orders
-// 2 - spring retreat
-// 3 - fall orders
-// 4 - fall retreat
-// 5 - fall build
 type GamePhase int
 
 const (
