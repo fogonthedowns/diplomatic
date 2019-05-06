@@ -833,4 +833,7 @@ func TestLongPathProcessTwoDislodgedConvoys(t *testing.T) {
 
 	assert.Equal(t, true, moves[2].Dislodged)
 	assert.Equal(t, true, moves[3].Dislodged)
+	assert.Equal(t, IONIAN_SEA, moves[2].DislodgedFrom)
+	// TODO does a dislodged MOVE VIA CONVOY MAKE SENSE? This implies a retreat, which wont' happen.
+	assert.Equal(t, IONIAN_SEA, moves[3].DislodgedFrom)
 }
