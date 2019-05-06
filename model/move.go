@@ -24,6 +24,8 @@ type Move struct {
 	Dislodged               bool `json:"dislodged"`
 	DislodgedFrom           Territory
 	ConvoyPathMoveIds       []int64
+	convoyDislodged         bool // added because dislodged implies a retreat, used to determine if unit will move forward
+
 }
 
 const (
@@ -154,7 +156,7 @@ func (move *Move) MovePieceForward() {
 func (moves *Moves) MoveConvoysForward() {
 	for _, move := range *moves {
 		if move.OrderType == MOVEVIACONVOY {
-			if move.Dislodged {
+			if move.convoyDislodged {
 				move.LocationResolved = move.LocationStart
 			} else {
 				move.LocationResolved = move.LocationSubmitted
@@ -211,7 +213,7 @@ func (dislodgedConvoyMove *Move) ProcessConvoyDislodge(moves *Moves) {
 	for _, m := range *moves {
 		if m.OrderType == MOVEVIACONVOY {
 			if convoyDislodged {
-				m.Dislodged = true
+				m.convoyDislodged = true
 			}
 		}
 	}
