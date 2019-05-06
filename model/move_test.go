@@ -698,10 +698,11 @@ func TestProcessDislodgeConvoy(t *testing.T) {
 	assert.Equal(t, LONDON, moves[0].LocationResolved)
 	assert.Equal(t, ENGLISH_CHANNEL, moves[1].LocationResolved)
 
-	assert.Equal(t, true, moves[0].Dislodged)
+	assert.Equal(t, false, moves[0].Dislodged)
 	assert.Equal(t, true, moves[1].Dislodged)
 	assert.Equal(t, false, moves[2].Dislodged)
 	assert.Equal(t, false, moves[3].Dislodged)
+	assert.Equal(t, NORTH_SEA, moves[1].DislodgedFrom)
 }
 
 func TestLongPathProcessTwoDislodgedConvoys(t *testing.T) {
@@ -824,7 +825,7 @@ func TestLongPathProcessTwoDislodgedConvoys(t *testing.T) {
 	assert.Equal(t, WESTERN_MEDITERRANEAN, moves[5].LocationResolved)
 
 	assert.Equal(t, false, moves[0].Dislodged)
-	assert.Equal(t, true, moves[1].Dislodged)
+	assert.Equal(t, false, moves[1].Dislodged)
 	assert.Equal(t, true, moves[4].Dislodged)
 	assert.Equal(t, true, moves[5].Dislodged)
 
@@ -832,8 +833,6 @@ func TestLongPathProcessTwoDislodgedConvoys(t *testing.T) {
 	assert.Equal(t, ALBANIA, moves[3].LocationResolved)
 
 	assert.Equal(t, true, moves[2].Dislodged)
-	assert.Equal(t, true, moves[3].Dislodged)
+	assert.Equal(t, false, moves[3].Dislodged)
 	assert.Equal(t, IONIAN_SEA, moves[2].DislodgedFrom)
-	// TODO does a dislodged MOVE VIA CONVOY MAKE SENSE? This implies a retreat, which wont' happen.
-	assert.Equal(t, IONIAN_SEA, moves[3].DislodgedFrom)
 }
