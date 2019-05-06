@@ -168,7 +168,7 @@ func (tm TerritoryMoves) ResolveConflicts(moves *Moves) {
 			for index, mm := range value {
 				if mm.MovePower > 0 && mm.MovePower > lastSeen {
 					if lastSeenMove != nil {
-						lastSeenMove.DislodgeIfHold(moves)
+						lastSeenMove.DislodgeIfHold(moves, lastSeenMove)
 					}
 					value[index].MovePieceForward()
 
@@ -183,7 +183,7 @@ func (tm TerritoryMoves) ResolveConflicts(moves *Moves) {
 
 				if mm.MovePower < lastSeen {
 					value[index].BouncePiece()
-					value[index].DislodgeIfHold(moves)
+					value[index].DislodgeIfHold(moves, lastSeenMove)
 				}
 
 				lastSeen = mm.MovePower

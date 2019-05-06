@@ -82,15 +82,61 @@ func (moves *Moves) HoldUnmovedPieces(pieces []*PieceRow) Moves {
 
 func (moves *Moves) logProgress() {
 	for _, move := range *moves {
-		if move.OrderType == SUPPORT {
-			fmt.Printf("********%v %vs  %v -> %v from %v. resolved: %+v (%v)\n", move.PieceId, move.OrderType, move.LocationSubmitted, move.SecondLocationSubmitted, move.LocationStart, move.LocationResolved, move.MovePower)
+
+		if move.Dislodged {
+			if move.OrderType == SUPPORT {
+				fmt.Printf(
+					"********%v %vs  %v -> %v from %v. resolved: %+v (%v) dislodged from: %v \n",
+					move.PieceId,
+					move.OrderType,
+					move.LocationSubmitted,
+					move.SecondLocationSubmitted,
+					move.LocationStart,
+					move.LocationResolved,
+					move.MovePower,
+					move.DislodgedFrom,
+				)
+			} else {
+				fmt.Printf(
+					"********%v %v (%v -> %v) resolved: %+v (%v) dislodged from: %v \n",
+					move.PieceId,
+					move.OrderType,
+					move.LocationStart,
+					move.LocationSubmitted,
+					move.LocationResolved,
+					move.MovePower,
+					move.DislodgedFrom,
+				)
+			}
 		} else {
-			fmt.Printf("********%v %v (%v -> %v) resolved: %+v (%v)\n", move.PieceId, move.OrderType, move.LocationStart, move.LocationSubmitted, move.LocationResolved, move.MovePower)
+
+			if move.OrderType == SUPPORT {
+				fmt.Printf(
+					"********%v %vs  %v -> %v from %v. resolved: %+v (%v) \n",
+					move.PieceId,
+					move.OrderType,
+					move.LocationSubmitted,
+					move.SecondLocationSubmitted,
+					move.LocationStart,
+					move.LocationResolved,
+					move.MovePower,
+				)
+			} else {
+				fmt.Printf(
+					"********%v %v (%v -> %v) resolved: %+v (%v) \n",
+					move.PieceId,
+					move.OrderType,
+					move.LocationStart,
+					move.LocationSubmitted,
+					move.LocationResolved,
+					move.MovePower,
+				)
+			}
+
 		}
 	}
 	fmt.Print("\n\nOrders:\n")
 }
-
 func (move *Move) MovePieceForward() {
 	if move.OrderType == MOVE {
 		move.LocationResolved = move.LocationSubmitted
@@ -120,13 +166,15 @@ func (moves *Moves) MoveConvoysForward() {
 // This function is responsible for Setting move.Dislodged
 // The Diplomacy Rules state that rules are adjudicated simultaniously
 // A successful moving attack piece can not be dislodged
-func (move *Move) DislodgeIfHold(moves *Moves) {
+func (move *Move) DislodgeIfHold(moves *Moves, dislodgedBy *Move) {
 	if move.OrderType == HOLD || move.OrderType == SUPPORT {
 		move.Dislodged = true
+		move.DislodgedFrom = dislodgedBy.LocationStart
 
 	}
 	if move.OrderType == CONVOY {
 		move.Dislodged = true
+		move.DislodgedFrom = dislodgedBy.LocationStart
 		move.ProcessConvoyDislodge(moves)
 	}
 }
