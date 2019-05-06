@@ -117,6 +117,9 @@ func (moves *Moves) MoveConvoysForward() {
 	}
 }
 
+// This function is responsible for Setting move.Dislodged
+// The Diplomacy Rules state that rules are adjudicated simultaniously
+// A successful moving attack piece can not be dislodged
 func (move *Move) DislodgeIfHold(moves *Moves) {
 	if move.OrderType == HOLD || move.OrderType == SUPPORT {
 		move.Dislodged = true
