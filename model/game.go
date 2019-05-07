@@ -31,6 +31,7 @@ func (g *Game) DrawGameBoard(territoryRows []TerritoryRow, pieceRows []PieceRow)
 				unit.Owner = pr.Owner
 				unit.PieceId = pr.Id
 				unit.WillRetreat = pr.Dislodged
+				unit.DislodgedFrom = pr.DislodgedFrom
 				units = append(units, *unit)
 			}
 		}

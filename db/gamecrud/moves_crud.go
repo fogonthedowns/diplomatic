@@ -161,7 +161,7 @@ func (e *MovesEngine) fetchMove(ctx context.Context, query string, args ...inter
 }
 
 func (e *MovesEngine) ValidPiece(ctx context.Context, pieceId int64, locationStart model.Territory, gameId int64, moveCreatedByCountry model.Country, phase model.GamePhase) (err error) {
-	query := "SELECT is_active, location, game_id, owner, dislodged from pieces where id=?"
+	query := "SELECT is_active, location, game_id, owner, dislodged, dislodged_from from pieces where id=?"
 	rows, err := e.Conn.QueryContext(ctx, query, pieceId)
 	if err != nil {
 		return err
@@ -176,6 +176,7 @@ func (e *MovesEngine) ValidPiece(ctx context.Context, pieceId int64, locationSta
 			&data.GameId,
 			&data.Owner,
 			&data.Dislodged,
+			&data.DislodgedFrom,
 		)
 		if err != nil {
 			return err

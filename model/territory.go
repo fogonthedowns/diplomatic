@@ -2,9 +2,9 @@ package model
 
 import (
 	"database/sql/driver"
-
 	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 )
 
@@ -508,6 +508,9 @@ func (d Territory) Value() (driver.Value, error) {
 func (z *Territory) Scan(s interface{}) (err error) {
 	if z == nil {
 		return errors.New("Territory: Scan on nil pointer")
+	}
+	if s == nil {
+		return nil
 	}
 	*z = Territory(string(s.([]uint8)))
 	return nil

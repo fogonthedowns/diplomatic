@@ -118,7 +118,7 @@ func (e *Engine) fetchTerritories(ctx context.Context, args ...interface{}) ([]*
 }
 
 func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model.PieceRow, error) {
-	query := "select id, game_id, owner, type, is_active, location, dislodged from pieces where game_id=?"
+	query := "select id, game_id, owner, type, is_active, location, dislodged, dislodged_from from pieces where game_id=?"
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -137,6 +137,7 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 			&data.IsActive,
 			&data.Country,
 			&data.Dislodged,
+			&data.DislodgedFrom,
 		)
 		if err != nil {
 			fmt.Printf("error \n", err)
@@ -241,7 +242,7 @@ func (e *Engine) updateResolvedMoves(ctx context.Context, moves model.Moves) (er
 
 func (e *Engine) updatePieces(ctx context.Context, moves model.Moves) (err error) {
 	for _, move := range moves {
-		query := "UPDATE pieces SET location=?, dislodged=? WHERE id=?"
+		query := "UPDATE pieces SET location=?, dislodged=?, dislodged_from=? WHERE id=?"
 		stmt, err := e.Conn.PrepareContext(ctx, query)
 		if err != nil {
 			fmt.Printf("err %v \n", err)
@@ -252,6 +253,7 @@ func (e *Engine) updatePieces(ctx context.Context, moves model.Moves) (err error
 			ctx,
 			move.LocationResolved,
 			move.Dislodged,
+			move.DislodgedFrom,
 			move.PieceId,
 		)
 
@@ -369,7 +371,7 @@ func (e *Engine) GetPiecesByGame(ctx context.Context, gameId int64) ([]*model.Pi
 
 func (e *Engine) GetPiecesByGameId(ctx context.Context, gameId int64) ([]*model.PieceRow, error) {
 
-	query := "select id, owner, location, type, is_active from pieces where game_id=?"
+	query := "select id, owner, location, type, is_active, dislodged_from from pieces where game_id=?"
 
 	rows, err := e.Conn.QueryContext(ctx, query, gameId)
 	if err != nil {
@@ -387,6 +389,7 @@ func (e *Engine) GetPiecesByGameId(ctx context.Context, gameId int64) ([]*model.
 			&data.Country,
 			&data.UnitType,
 			&data.IsActive,
+			&data.DislodgedFrom,
 		)
 
 		if err != nil {
