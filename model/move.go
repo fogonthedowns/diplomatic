@@ -25,7 +25,7 @@ type Move struct {
 	DislodgedFrom           Territory
 	ConvoyPathMoveIds       []int64
 	convoyDislodged         bool // added because dislodged implies a retreat, used to determine if unit will move forward
-
+	IsActive                bool
 }
 
 const (
@@ -140,6 +140,15 @@ func (moves *Moves) logProgress() {
 	fmt.Print("\n\nOrders:\n")
 }
 func (move *Move) MovePieceForward() {
+
+	// Destroy the unit if move order is issued to
+	// territory where an attack originated
+	if move.DislodgedFrom == move.LocationSubmitted {
+		move.IsActive = false
+		move.LocationResolved = move.LocationStart
+		return
+	}
+
 	if move.OrderType == MOVE {
 		move.LocationResolved = move.LocationSubmitted
 	} else if move.OrderType == HOLD {
