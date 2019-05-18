@@ -26,7 +26,7 @@
   b) ✅ If a piece is dislodged and it is retreat phase, it must move or be destroyed. 
   c) ✅ A unit can not retreat from the origin of the attack.
   d) ✅ Non dislodged pieces may not move in retreat phase.
-  e) Update the territory.Owner by move.PieceOwner after retreat phase is adjudicated
+  e) ✅ Update the territory.Owner by move.PieceOwner after fall retreat phase is adjudicated
   f) ✅ make Phase a type rather than an int (see newPhase, phase and Phase)
 
 7) Validations:
