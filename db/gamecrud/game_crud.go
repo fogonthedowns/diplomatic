@@ -162,6 +162,7 @@ func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
 
 	moves.ProcessMoves()
 	e.updatePieces(ctx, moves)
+	e.updateTerritories(ctx, moves, game)
 	e.updateResolvedMoves(ctx, moves)
 	e.updateGameToProcessed(ctx, game)
 
@@ -229,6 +230,35 @@ func (e *Engine) updateResolvedMoves(ctx context.Context, moves model.Moves) (er
 			ctx,
 			move.LocationResolved,
 			move.Id,
+		)
+
+		if err != nil {
+			fmt.Printf("err %v \n", err)
+			return err
+		}
+		stmt.Close()
+	}
+	return err
+}
+
+func (e *Engine) updateTerritories(ctx context.Context, moves model.Moves, game model.Game) (err error) {
+	if game.Phase != model.FallRetreat {
+		return
+	}
+
+	for _, move := range moves {
+		query := "UPDATE territory SET owner=? WHERE country=? AND game_id=?"
+		stmt, err := e.Conn.PrepareContext(ctx, query)
+		if err != nil {
+			fmt.Printf("err %v \n", err)
+			return err
+		}
+
+		_, err = stmt.ExecContext(
+			ctx,
+			move.PieceOwner,
+			move.LocationResolved,
+			game.Id,
 		)
 
 		if err != nil {
