@@ -32,6 +32,34 @@ func TestProcessMovesSpecialBounce(t *testing.T) {
 	assert.Equal(t, false, moves[1].Dislodged)
 }
 
+func TestProcessRetreatBounceDestroy(t *testing.T) {
+	moves := make(Moves, 0)
+	moves = []*Move{
+		{
+			OrderType:         MOVE,
+			LocationStart:     MARSEILLES,
+			LocationSubmitted: SPAIN,
+			UnitType:          ARMY,
+			Dislodged:         true,
+			DislodgedFrom:     BURGUNDY,
+			IsActive:          true,
+		},
+		{
+			OrderType:         HOLD,
+			LocationStart:     SPAIN,
+			LocationSubmitted: SPAIN,
+			UnitType:          ARMY,
+			Dislodged:         false,
+			IsActive:          true,
+		},
+	}
+	moves.ProcessMoves()
+	assert.Equal(t, false, moves[0].IsActive)
+	assert.Equal(t, MARSEILLES, moves[0].LocationResolved)
+	assert.Equal(t, SPAIN, moves[1].LocationResolved)
+	assert.Equal(t, true, moves[1].IsActive)
+}
+
 func TestProcessRetreatDestroy(t *testing.T) {
 	moves := make(Moves, 0)
 	moves = []*Move{
