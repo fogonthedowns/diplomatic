@@ -158,6 +158,11 @@ func (move *Move) MovePieceForward() {
 	} else if move.OrderType == CONVOY {
 		move.LocationResolved = move.LocationStart
 	}
+
+	// if a dislodged piece fails to move, destroy it!
+	if move.Dislodged && move.LocationResolved == move.LocationStart {
+		move.IsActive = false
+	}
 }
 
 // I like the way this works better than the above MovePieceForward()
