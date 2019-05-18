@@ -431,7 +431,8 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 	}
 
 	// Has the current phase ended?
-	//   if so: process the moves
+	//   if so: process the move
+	fmt.Printf("%v over??? \n", game.Phase.HasPhaseEnded(game.PhaseEnd))
 	if game.Phase.HasPhaseEnded(game.PhaseEnd) {
 		e.ProcessPhaseMoves(ctx, *game)
 	}
