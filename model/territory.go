@@ -154,10 +154,9 @@ func (tm TerritoryMoves) Uncontested(key Territory) bool {
 	return len(tm[key]) <= 1
 }
 
-// ResolveConflicts() resolves conflicts of any territory that has two Move objects assoicated with it.
+// Resolves conflicts of any territory that has two Move objects assoicated with it.
 // These objects represent a move conflict.
 // Resolves a conflict using move.MovePower
-
 func (tm TerritoryMoves) ResolveConflicts(moves *Moves) {
 	for key, value := range tm {
 		var lastSeen = 0
