@@ -27,6 +27,7 @@
   d) ✅ Non dislodged pieces may not move in retreat phase.
   e) ✅ Update the territory.Owner by move.PieceOwner after fall retreat phase is adjudicated
   f) ✅ make Phase a type rather than an int (see newPhase, phase and Phase)
+  g) when assigning edge case Territory Save, ensure master territory is assigned ownership
 
 7) Build Phase:
   a) Add concept of Victory Center, count points

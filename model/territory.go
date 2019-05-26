@@ -425,47 +425,47 @@ var exclusiveSeaTerritories = []Territory{
 }
 
 // victoryCenterss defines a list of Victory center territories
-var victoryCenters = []Territory{
-	EDINBURGH,
-	LIVERPOOL,
-	LONDON,
-	BREST,
-	PARIS,
-	MARSEILLES,
-	SPAIN,
-	SPAIN_SOUTH_COAST,
-	SPAIN, NORTH_COAST,
-	PORTUGAL,
-	TUNIS,
-	VENICE,
-	ROME,
-	NAPLES,
-	VIENNA,
-	TRIESTE,
-	BUDAPEST,
-	BELGIUM,
-	HOLLAND,
-	DENMARK,
-	KIEL,
-	MUNICH,
-	BERLIN,
-	NORWAY,
-	SWEDEN,
-	MOSCOW,
-	WARSAW,
-	SEVASTOPOL,
-	ST_PETERSBURG,
-	ST_PETERSBURG_SOUTH_COAST,
-	ST_PETERSBURG_NORTH_COAST,
-	CONSTANTINOPLE,
-	ANKARA,
-	SMYRNA,
-	BULGARIA,
-	BULGARIA_EAST_COAST,
-	BULGARIA_SOUTH_COAST,
-	ROMANIA,
-	SERBIA,
-	GREECE,
+var victoryCenters = map[Territory]bool{
+	EDINBURGH:                 true,
+	LIVERPOOL:                 true,
+	LONDON:                    true,
+	BREST:                     true,
+	PARIS:                     true,
+	MARSEILLES:                true,
+	SPAIN:                     true,
+	SPAIN_SOUTH_COAST:         true,
+	SPAIN_NORTH_COAST:         true,
+	PORTUGAL:                  true,
+	TUNIS:                     true,
+	VENICE:                    true,
+	ROME:                      true,
+	NAPLES:                    true,
+	VIENNA:                    true,
+	TRIESTE:                   true,
+	BUDAPEST:                  true,
+	BELGIUM:                   true,
+	HOLLAND:                   true,
+	DENMARK:                   true,
+	KIEL:                      true,
+	MUNICH:                    true,
+	BERLIN:                    true,
+	NORWAY:                    true,
+	SWEDEN:                    true,
+	MOSCOW:                    true,
+	WARSAW:                    true,
+	SEVASTOPOL:                true,
+	ST_PETERSBURG:             true,
+	ST_PETERSBURG_SOUTH_COAST: true,
+	ST_PETERSBURG_NORTH_COAST: true,
+	CONSTANTINOPLE:            true,
+	ANKARA:                    true,
+	SMYRNA:                    true,
+	BULGARIA:                  true,
+	BULGARIA_EAST_COAST:       true,
+	BULGARIA_SOUTH_COAST:      true,
+	ROMANIA:                   true,
+	SERBIA:                    true,
+	GREECE:                    true,
 }
 
 // ValidSeaMovement will return true if the checked territory
@@ -515,6 +515,15 @@ func (t *Territory) ValidConvoyBeginAndEnd(check Territory) bool {
 		if _, endOk := validSeaMoves[check]; endOk {
 			return true
 		}
+	}
+	return false
+}
+
+// IsVictoryCenter returns true if the territory
+// is a victory center
+func (t Territory) IsVictoryCenter() bool {
+	if _, vc := victoryCenters[t]; vc {
+		return true
 	}
 	return false
 }
