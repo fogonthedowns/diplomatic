@@ -164,6 +164,7 @@ func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
 	e.updatePieces(ctx, moves)
 	e.updateTerritories(ctx, moves, game)
 	e.updateResolvedMoves(ctx, moves)
+	e.countVictoryCenters(ctx, moves, game)
 	e.updateGameToProcessed(ctx, game)
 
 	return err
@@ -239,6 +240,21 @@ func (e *Engine) updateResolvedMoves(ctx context.Context, moves model.Moves) (er
 		stmt.Close()
 	}
 	return err
+}
+
+func (e *Engine) countVictoryCenters(ctx context.Context, moves model.Moves, game model.Game) (err error) {
+	if game.Phase != model.FallRetreat {
+		return
+	}
+	playerIdtoVictoryCenterCount := make(map[int64]int)
+	for _, move := range moves {
+		if move.LocationResolved.IsVictoryCenter() {
+			playerIdtoVictoryCenterCount[move.UserId] += 1
+		}
+	}
+	fmt.Printf("victory center map", playerIdtoVictoryCenterCount)
+	return err
+
 }
 
 func (e *Engine) updateTerritories(ctx context.Context, moves model.Moves, game model.Game) (err error) {
