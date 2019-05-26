@@ -424,6 +424,16 @@ var exclusiveSeaTerritories = []Territory{
 	ST_PETERSBURG_NORTH_COAST,
 }
 
+// victoryCenterss defines a list of Victory center territories
+var victoryCenters = []Territory{
+	EDINBURGH,
+	LIVERPOOL,
+	LONDON,
+	ST_PETERSBURG,
+	ST_PETERSBURG_SOUTH_COAST,
+	ST_PETERSBURG_NORTH_COAST,
+}
+
 // ValidSeaMovement will return true if the checked territory
 // is included inside of the mapOfBorders map
 // uses the origional terriotry as they key
