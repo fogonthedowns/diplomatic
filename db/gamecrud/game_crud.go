@@ -243,16 +243,16 @@ func (e *Engine) updateResolvedMoves(ctx context.Context, moves model.Moves) (er
 }
 
 func (e *Engine) countVictoryCenters(ctx context.Context, moves model.Moves, game model.Game) (err error) {
-	if game.Phase != model.FallRetreat {
+	if game.Phase == model.Waiting {
 		return
 	}
-	playerIdtoVictoryCenterCount := make(map[int64]int)
+	playerIdToVictoryCenterCount := make(map[model.Country]int)
 	for _, move := range moves {
 		if move.LocationResolved.IsVictoryCenter() {
-			playerIdtoVictoryCenterCount[move.UserId] += 1
+			playerIdToVictoryCenterCount[move.PieceOwner] += 1
 		}
 	}
-	fmt.Printf("victory center map", playerIdtoVictoryCenterCount)
+	fmt.Println("victory center map:", playerIdToVictoryCenterCount)
 	return err
 
 }
