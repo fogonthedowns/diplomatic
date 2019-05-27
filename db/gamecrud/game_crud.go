@@ -190,8 +190,6 @@ func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
 	e.updatePieces(ctx, moves)
 	e.updateTerritories(ctx, moves, game)
 	e.updateResolvedMoves(ctx, moves)
-	e.countVictoryCenters(ctx, moves, game)
-	e.countActivePiecesByPlayer(ctx, game.Id)
 	e.updateGameToProcessed(ctx, game)
 
 	return err
@@ -269,18 +267,27 @@ func (e *Engine) updateResolvedMoves(ctx context.Context, moves model.Moves) (er
 	return err
 }
 
-func (e *Engine) countVictoryCenters(ctx context.Context, moves model.Moves, game model.Game) (err error) {
+// returns a map of Players mapped to a Victory Center count.
+// Measured by Territory Owner saved in db
+func (e *Engine) countVictoryCenters(ctx context.Context, territories []*model.TerritoryRow, game model.Game) (vc map[model.Country]int) {
 	if game.Phase == model.Waiting {
 		return
 	}
-	playerIdToVictoryCenterCount := make(map[model.Country]int)
-	for _, move := range moves {
-		if move.LocationResolved.IsVictoryCenter() {
-			playerIdToVictoryCenterCount[move.PieceOwner] += 1
+	vc = make(map[model.Country]int)
+	for _, t := range territories {
+		if t.Owner == "" {
+			continue
+		}
+
+		// account for edge cases
+		if t.Country == "SPN" || t.Country == "SPS" || t.Country == "SNC" || t.Country == "SSC" || t.Country == "BUE" || t.Country == "BUS" {
+			continue
+		}
+		if t.Country.IsVictoryCenter() {
+			vc[t.Owner] += 1
 		}
 	}
-	fmt.Println("victory center map:", playerIdToVictoryCenterCount)
-	return err
+	return vc
 
 }
 
@@ -524,6 +531,12 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 		return nil, err
 	}
 
+	// Count the Victory Centers
+	vc := e.countVictoryCenters(ctx, territoryRows, *game)
+
+	// Count active units by player
+	_, err = e.countActivePiecesByPlayer(ctx, game.Id)
+
 	// Make an array of Piece Models
 	pm := &model.PieceRow{}
 	pieces := make([]model.PieceRow, 0)
@@ -540,7 +553,7 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 		territories = append(territories, *tm)
 	}
 
-	game.DrawGameBoard(territories, pieces)
+	game.DrawGameBoard(territories, pieces, vc)
 	// return the Game
 	return game, nil
 }

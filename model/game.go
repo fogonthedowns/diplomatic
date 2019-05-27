@@ -15,13 +15,15 @@ type Game struct {
 	PhaseEnd       string     `json:"phase_end"`
 	OrdersInterval int        `json:"orders_interval"`
 	GameBoard      GameBoard  `json:"game_squares,omitempty"`
+	GameStats      GameStats  `json:"game_stats,omitempty"`
 }
 
 // DrawGameBoard() Fills in an empty game.GameBoard from data loaded from territory and piece rows in the db
 // Its reads from the db and can be used at any time to get the current game board state
-func (g *Game) DrawGameBoard(territoryRows []TerritoryRow, pieceRows []PieceRow) {
+func (g *Game) DrawGameBoard(territoryRows []TerritoryRow, pieceRows []PieceRow, vc map[Country]int) {
 	var gb = GameBoard{}
 	var unit = &Unit{}
+	var stats = GameStats{}
 
 	for _, row := range territoryRows {
 		units := make([]Unit, 0)
@@ -37,7 +39,14 @@ func (g *Game) DrawGameBoard(territoryRows []TerritoryRow, pieceRows []PieceRow)
 		}
 		gb[row.Country] = GameSquareData{Owner: row.Owner, Units: units, TerritoryId: row.Id}
 	}
+
+	for key, value := range vc {
+		stats[key] = Stats{VictoryCenters: value}
+	}
+
+	g.GameStats = stats
 	g.GameBoard = gb
+
 }
 
 // NewGame() creates a new Game model
