@@ -174,8 +174,13 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 	return payload, nil
 }
 
+func (e *Engine) ProcessBuildPhase(ctx context.Context, game model.Game, pr []*model.PieceRow) error {
+	_, err := e.GetMovesByIdAndPhase(ctx, game.Id, game.Phase, game.GameYear)
+	return err
+}
+
 func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
-	moves, err := e.GetMovesByIdAndPhase(ctx, game.Id, game.Phase)
+	moves, err := e.GetMovesByIdAndPhase(ctx, game.Id, game.Phase, game.GameYear)
 	if err != nil {
 		return err
 	}
@@ -386,11 +391,11 @@ func newYear(game model.Game) string {
 	}
 }
 
-func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase model.GamePhase) (model.Moves, error) {
+func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase model.GamePhase, year string) (model.Moves, error) {
 
-	query := "select moves.id, moves.location_start, moves.location_submitted, moves.second_location_submitted, moves.type, moves.piece_owner, moves.game_year, pieces.type, moves.piece_id from moves INNER JOIN pieces ON pieces.id=moves.piece_id where moves.game_id=? and moves.phase=?"
+	query := "select moves.id, moves.location_start, moves.location_submitted, moves.second_location_submitted, moves.type, moves.piece_owner, moves.game_year, pieces.type, moves.piece_id from moves INNER JOIN pieces ON pieces.id=moves.piece_id where moves.game_id=? and moves.phase=? and moves.game_year=?"
 
-	rows, err := e.Conn.QueryContext(ctx, query, gameId, phase)
+	rows, err := e.Conn.QueryContext(ctx, query, gameId, phase, year)
 	if err != nil {
 		return nil, err
 	}
@@ -512,7 +517,7 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 	// Has the current phase ended?
 	//   if so: process the move
 	fmt.Printf("%v over??? \n", game.Phase.HasPhaseEnded(game.PhaseEnd))
-	if game.Phase.HasPhaseEnded(game.PhaseEnd) {
+	if game.Phase.HasPhaseEnded(game.PhaseEnd) && game.Phase != model.FallBuild {
 		e.ProcessPhaseMoves(ctx, *game)
 		e.updateGameToProcessed(ctx, *game)
 	}
@@ -522,6 +527,12 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 	if err != nil {
 		fmt.Printf("err %v \n", err)
 		return nil, err
+	}
+
+	// Has the build phase ended?
+	if game.Phase.HasPhaseEnded(game.PhaseEnd) && game.Phase == model.FallBuild {
+		e.ProcessBuildPhase(ctx, *game, piecesRows)
+		e.updateGameToProcessed(ctx, *game)
 	}
 
 	// Get the Territories of this game
