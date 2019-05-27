@@ -33,7 +33,7 @@ type MovesEngine struct {
 func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64, error) {
 	query := "Select user_id, game_id, country from users_games where user_id=? and game_id=?"
 	gameQuery := "Select id, game_year, phase, phase_end, title From games where id=?"
-	doesPieceMoveExist := "select id from moves where game_id=? AND phase=? AND piece_id=?"
+	doesPieceMoveExist := "select id from moves where game_id=? AND phase=? AND piece_id=? AND game_year=? LIMIT 1"
 	pieceMoveInsert := "Insert moves SET location_start=?, location_submitted=?, second_location_submitted=?, phase=?, game_id=?, type=?, piece_owner=?, game_year=?, piece_id=?"
 	pieceMoveUpdate := "Update moves SET location_start=?, location_submitted=?, second_location_submitted=?, phase=?, game_id=?, type=?, piece_owner=?, game_year=? WHERE piece_id=?"
 
@@ -73,6 +73,14 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 		return 400, errors.New("must include piece id")
 	}
 
+	if in.Phase != game.Phase {
+		return 400, errors.New("The phase is invalid")
+	}
+
+	if in.GameYear != game.GameYear {
+		return 400, errors.New("The year is invalid")
+	}
+
 	err = e.ValidPiece(ctx, in.PieceId, in.LocationStart, in.GameId, in.PieceOwner, game.Phase)
 	if err != nil {
 		return 400, err
@@ -83,8 +91,7 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 	// this accepts location_start where the piece.location does not match
 	// to accomindate the game design requirement to accept invalid orders
 	// TODO in ProcessMoves() add a lookup to validate piece.location == move.location_start
-	move, err := e.fetchMove(ctx, doesPieceMoveExist, in.GameId, game.Phase, in.PieceId)
-
+	move, err := e.fetchMove(ctx, doesPieceMoveExist, in.GameId, game.Phase, in.PieceId, game.GameYear)
 	if err != nil {
 		return 500, err
 	}
