@@ -31,7 +31,7 @@
 
 7) Build Phase:
   a) ✅ Add concept of Victory Center, count points
-  b) Count active units
+  b) ✅ Count active units
      i) if active units exceeds Victory Centers a destroy must be issued
     ii) if active units is less than Victory Center count a build order can be issued - only on home centers
   c) If a Destroy must be issued and one is not issued, destroy a random unit
