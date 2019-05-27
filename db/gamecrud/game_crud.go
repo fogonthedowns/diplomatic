@@ -117,6 +117,32 @@ func (e *Engine) fetchTerritories(ctx context.Context, args ...interface{}) ([]*
 	return payload, nil
 }
 
+func (e *Engine) countActivePiecesByPlayer(ctx context.Context, args ...interface{}) (map[model.Country]int, error) {
+	query := "select count(*), owner from pieces where game_id=? and is_active=true group by owner;"
+	rows, err := e.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	data := make(map[model.Country]int)
+	for rows.Next() {
+		var country model.Country
+		var count int
+		err := rows.Scan(
+			&count,
+			&country,
+		)
+		if err != nil {
+			fmt.Printf("error \n", err)
+			return nil, err
+		}
+		data[country] = count
+	}
+	fmt.Printf("Unit counts by country: %+v \n:", data)
+	return data, nil
+}
+
 func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model.PieceRow, error) {
 	query := "select id, game_id, owner, type, is_active, location, dislodged, dislodged_from from pieces where game_id=?"
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
@@ -165,6 +191,7 @@ func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
 	e.updateTerritories(ctx, moves, game)
 	e.updateResolvedMoves(ctx, moves)
 	e.countVictoryCenters(ctx, moves, game)
+	e.countActivePiecesByPlayer(ctx, game.Id)
 	e.updateGameToProcessed(ctx, game)
 
 	return err
