@@ -190,7 +190,6 @@ func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
 	e.updatePieces(ctx, moves)
 	e.updateTerritories(ctx, moves, game)
 	e.updateResolvedMoves(ctx, moves)
-	e.updateGameToProcessed(ctx, game)
 
 	return err
 }
@@ -515,6 +514,7 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 	fmt.Printf("%v over??? \n", game.Phase.HasPhaseEnded(game.PhaseEnd))
 	if game.Phase.HasPhaseEnded(game.PhaseEnd) {
 		e.ProcessPhaseMoves(ctx, *game)
+		e.updateGameToProcessed(ctx, *game)
 	}
 
 	// Get the Pieces of this game
