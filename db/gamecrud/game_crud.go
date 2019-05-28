@@ -180,11 +180,11 @@ func (e *Engine) ProcessBuildPhase(
 	pr []*model.PieceRow,
 	countryToVictoryCenter, countryToUnitCount map[model.Country]int,
 ) error {
-
-	for key, value := range countryToVictoryCenter {
-		countryToUnitCount[key]
+	builds := make(map[model.Country]int)
+	for key, _ := range countryToVictoryCenter {
+		builds[key] = countryToVictoryCenter[key] - countryToUnitCount[key]
 	}
-
+	fmt.Printf("builds! %+v \n", builds)
 	_, err := e.GetMovesByIdAndPhase(ctx, game.Id, game.Phase, game.GameYear)
 	return err
 }

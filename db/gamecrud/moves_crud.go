@@ -68,17 +68,21 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 		return 403, err
 	}
 
-	// Does the submitted move exist for this piece?
-	if in.PieceId == 0 {
-		return 400, errors.New("must include piece id")
-	}
-
 	if in.Phase != game.Phase {
 		return 400, errors.New("The phase is invalid")
 	}
 
 	if in.GameYear != game.GameYear {
 		return 400, errors.New("The year is invalid")
+	}
+
+	if game.Phase == model.FallBuild {
+		return e.CreateOrUpdateBuildPhaseMove(ctx, in, *game)
+	}
+
+	// Does the submitted move exist for this piece?
+	if in.PieceId == 0 {
+		return 400, errors.New("must include piece id")
 	}
 
 	err = e.ValidPiece(ctx, in.PieceId, in.LocationStart, in.GameId, in.PieceOwner, game.Phase)
@@ -110,6 +114,40 @@ func (e *MovesEngine) CreateOrUpdate(ctx context.Context, in *model.Move) (int64
 		return 500, err
 	}
 	_, err = stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, in.SecondLocationSubmitted, in.Phase, in.GameId, in.OrderType, in.PieceOwner, in.GameYear, in.PieceId)
+	defer stmt.Close()
+	if err != nil {
+		return 500, err
+	}
+
+	// return 0
+	return 200, err
+}
+
+func (e *MovesEngine) CreateOrUpdateBuildPhaseMove(ctx context.Context, in *model.Move, game model.Game) (int64, error) {
+	doesPieceMoveExist := "select id from moves where game_id=? AND phase=? AND location_start=? AND game_year=? LIMIT 1"
+	// TODO piece_id was removed this could cause a problem when pieces are saved/updated
+	// TODO create a new piece when the move succeeds
+	moveInsert := "Insert moves SET location_start=?, phase=?, game_id=?, type=?, piece_owner=?, game_year=?, location_submitted=?"
+	moveUpdate := "Update moves SET location_start=?, phase=?, game_id=?, type=?, piece_owner=?, game_year=? WHERE location_submitted=?"
+	move, err := e.fetchMove(ctx, doesPieceMoveExist, in.GameId, game.Phase, in.LocationStart, game.GameYear)
+	if err != nil {
+		return 500, err
+	}
+
+	// if the submitted move does not exist (based on piece id) create it; otherwise update it
+	var insertType string
+	switch move {
+	case nil:
+		insertType = moveInsert
+	default:
+		insertType = moveUpdate
+	}
+	stmt, err := e.Conn.PrepareContext(ctx, insertType)
+
+	if err != nil {
+		return 500, err
+	}
+	_, err = stmt.ExecContext(ctx, in.LocationStart, in.Phase, in.GameId, in.OrderType, in.PieceOwner, in.GameYear, in.LocationSubmitted)
 	defer stmt.Close()
 	if err != nil {
 		return 500, err
