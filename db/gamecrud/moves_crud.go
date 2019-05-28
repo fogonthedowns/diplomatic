@@ -157,6 +157,32 @@ func (e *MovesEngine) CreateOrUpdateBuildPhaseMove(ctx context.Context, in *mode
 	return 200, err
 }
 
+func (e *MovesEngine) CreateBlankPiece(ctx context.Context, in *model.GameInput) (int64, error) {
+	query := "Insert pieces SET location?, is_active=false"
+
+	stmt, err := e.Conn.PrepareContext(ctx, query)
+
+	if err != nil {
+		fmt.Printf("**** PrepareContext %v", err)
+		return -1, err
+	}
+
+	res, err := stmt.ExecContext(ctx, in.Title, "1901")
+	defer stmt.Close()
+
+	if err != nil {
+		fmt.Printf("**** ExecContext %v", err)
+		return -1, err
+	}
+
+	game_id, err := res.LastInsertId()
+
+	if err != nil {
+		fmt.Printf("**** ExecContext %v", err)
+		return -1, err
+	}
+}
+
 func (e *MovesEngine) fetchGame(ctx context.Context, query string, args ...interface{}) (*model.Game, error) {
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
