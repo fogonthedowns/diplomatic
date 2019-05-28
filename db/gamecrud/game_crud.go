@@ -174,7 +174,17 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 	return payload, nil
 }
 
-func (e *Engine) ProcessBuildPhase(ctx context.Context, game model.Game, pr []*model.PieceRow) error {
+func (e *Engine) ProcessBuildPhase(
+	ctx context.Context,
+	game model.Game,
+	pr []*model.PieceRow,
+	countryToVictoryCenter, countryToUnitCount map[model.Country]int,
+) error {
+
+	for key, value := range countryToVictoryCenter {
+		countryToUnitCount[key]
+	}
+
 	_, err := e.GetMovesByIdAndPhase(ctx, game.Id, game.Phase, game.GameYear)
 	return err
 }
@@ -529,12 +539,6 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 		return nil, err
 	}
 
-	// Has the build phase ended?
-	if game.Phase.HasPhaseEnded(game.PhaseEnd) && game.Phase == model.FallBuild {
-		e.ProcessBuildPhase(ctx, *game, piecesRows)
-		e.updateGameToProcessed(ctx, *game)
-	}
-
 	// Get the Territories of this game
 	territoryRows, err := e.fetchTerritories(ctx, gameId)
 	if err != nil {
@@ -546,7 +550,13 @@ func (e *Engine) GetByID(ctx context.Context, gameId int64) (*model.Game, error)
 	vc := e.countVictoryCenters(ctx, territoryRows, *game)
 
 	// Count active units by player
-	_, err = e.countActivePiecesByPlayer(ctx, game.Id)
+	au, err := e.countActivePiecesByPlayer(ctx, game.Id)
+
+	// Has the build phase ended?
+	if game.Phase.HasPhaseEnded(game.PhaseEnd) && game.Phase == model.FallBuild {
+		e.ProcessBuildPhase(ctx, *game, piecesRows, vc, au)
+		e.updateGameToProcessed(ctx, *game)
+	}
 
 	// Make an array of Piece Models
 	pm := &model.PieceRow{}
