@@ -7,6 +7,8 @@ const (
 	MOVEVIACONVOY = OrderType("MoveConvoy")
 	SUPPORT       = OrderType("Support")
 	RETREAT       = OrderType("Retreat")
+	BUILD         = OrderType("Build")
+	DESTROY       = OrderType("Destroy")
 )
 
 type OrderType string
