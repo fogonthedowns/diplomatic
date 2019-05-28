@@ -1,0 +1,15 @@
+//[POST] moves/
+
+{
+  "id": 1,  // game should submit this data (optional for update)
+  "game_id": 10, // game should submit this data
+  "user_id": 1, // game should submit this data
+  "location_start": "ROM",
+  "location_submitted": "BLA",
+  "second_location_submitted":"SEV",
+  "phase": 1,
+  "piece_owner": "Russia", // game should submit this data, used to validate who created the move
+  "piece_id": 22, 
+  "move_type": "Support",
+  "game_year": "1901"
+}
