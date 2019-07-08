@@ -239,18 +239,21 @@ func (e *Engine) CreateMove(ctx context.Context, in *model.Move, gameId int64, p
 	stmt, err := e.Conn.PrepareContext(ctx, insert)
 
 	if err != nil {
+		fmt.Printf("error creating move %v \n", err)
 		return 0, err
 	}
 	res, err := stmt.ExecContext(ctx, in.LocationStart, in.LocationSubmitted, phaseId, gameId, in.OrderType, in.PieceOwner, in.GameYear, in.PieceId)
 	defer stmt.Close()
 
 	if err != nil {
+		fmt.Printf("2 error creating move %v \n", err)
 		return 0, err
 	}
 
 	id, err := res.LastInsertId()
 
 	if err != nil {
+		fmt.Printf("3 error creating move %v \n", err)
 		return 0, err
 	}
 	// return 0
