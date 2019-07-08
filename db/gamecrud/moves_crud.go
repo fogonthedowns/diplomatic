@@ -127,10 +127,12 @@ func (e *MovesEngine) CreateOrUpdateBuildPhaseMove(ctx context.Context, in *mode
 	doesPieceMoveExist := "select id from moves where game_id=? AND phase=? AND location_start=? AND game_year=? LIMIT 1"
 	// TODO piece_id was removed this could cause a problem when pieces are saved/updated
 	// TODO create a new piece when the move succeeds
+	// moveInsert will fail because moves table piece_id is NOT NULL, it must exist prior to this being set.
 	moveInsert := "Insert moves SET location_start=?, phase=?, game_id=?, type=?, piece_owner=?, game_year=?, location_submitted=?"
 	moveUpdate := "Update moves SET location_start=?, phase=?, game_id=?, type=?, piece_owner=?, game_year=? WHERE location_submitted=?"
 	move, err := e.fetchMove(ctx, doesPieceMoveExist, in.GameId, game.Phase, in.LocationStart, game.GameYear)
 	if err != nil {
+		fmt.Printf("error fetching move %v \n", err)
 		return 500, err
 	}
 
@@ -145,11 +147,13 @@ func (e *MovesEngine) CreateOrUpdateBuildPhaseMove(ctx context.Context, in *mode
 	stmt, err := e.Conn.PrepareContext(ctx, insertType)
 
 	if err != nil {
+		fmt.Printf("error inserting move %v \n", err)
 		return 500, err
 	}
 	_, err = stmt.ExecContext(ctx, in.LocationStart, in.Phase, in.GameId, in.OrderType, in.PieceOwner, in.GameYear, in.LocationSubmitted)
 	defer stmt.Close()
 	if err != nil {
+		fmt.Printf("\n error inserting move error %v with insert type: %v \n", err, insertType)
 		return 500, err
 	}
 
@@ -181,6 +185,8 @@ func (e *MovesEngine) CreateBlankPiece(ctx context.Context, in *model.GameInput)
 		fmt.Printf("**** ExecContext %v", err)
 		return -1, err
 	}
+
+	return game_id, err
 }
 
 func (e *MovesEngine) fetchGame(ctx context.Context, query string, args ...interface{}) (*model.Game, error) {
