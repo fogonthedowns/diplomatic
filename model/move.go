@@ -54,13 +54,11 @@ func (moves *Moves) ProcessMoves() {
 // returns Moves that do not exist in the current moves
 // This is based on a set of active pieces that are not included in moves
 // The order is set to Hold
-func (moves *Moves) HoldUnmovedPieces(pieces []*PieceRow) Moves {
+func (moves *Moves) HoldUnmovedPieces(pieces []*PieceRow, gameYear string) Moves {
 	// pices [p.1,p.2,p.3,p.4]
 	// moves [m.1, m.2]
 	m := make(map[int64]bool, 0)
-	var gameYear string
 	for _, move := range *moves {
-		gameYear = move.GameYear
 		m[move.PieceId] = true
 	}
 
