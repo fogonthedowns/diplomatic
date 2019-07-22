@@ -195,7 +195,7 @@ func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
 		return err
 	}
 
-	moves, err = e.ProcessPiecesNotMoved(ctx, moves, game.Id, game.Phase)
+	moves, err = e.ProcessPiecesNotMoved(ctx, moves, game.Id, game.Phase, game.GameYear)
 
 	if err != nil {
 		return err
@@ -210,13 +210,13 @@ func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
 }
 
 // This must happen prior to process moves to create Hold moves for unmoved pieces
-func (e *Engine) ProcessPiecesNotMoved(ctx context.Context, moves model.Moves, gameId int64, phaseId model.GamePhase) (newMoves model.Moves, err error) {
+func (e *Engine) ProcessPiecesNotMoved(ctx context.Context, moves model.Moves, gameId int64, phaseId model.GamePhase, gameYear string) (newMoves model.Moves, err error) {
 	pieces, err := e.GetPiecesByGameId(ctx, gameId)
 	if err != nil {
 		return nil, err
 	}
 
-	newMoves = moves.HoldUnmovedPieces(pieces)
+	newMoves = moves.HoldUnmovedPieces(pieces, gameYear)
 
 	for _, move := range newMoves {
 		id, err := e.CreateMove(ctx, move, gameId, phaseId)
