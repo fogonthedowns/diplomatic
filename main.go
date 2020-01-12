@@ -41,25 +41,21 @@ func main() {
 }
 
 // A completely separate router for posts routes
-func postRouter(handler *gameHandler.GameHandler) http.Handler {
+func postRouter(game *gameHandler.GameHandler) http.Handler {
 	r := chi.NewRouter()
-	r.Get("/", handler.Fetch)
-	r.Get("/{[0-9]+}", handler.GetByID)
-	r.Post("/", handler.Create)
-	r.Put("/{[0-9]+}", handler.Update)
+	r.Get("/", game.Fetch)
+	r.Get("/{[0-9]+}", game.GetByID)
+	r.Post("/", game.Create)
+	r.Put("/{[0-9]+}", game.Update)
 	// r.Delete("/{id:[0-9]+}", pHandler.Delete)
 
 	return r
 }
 
 // A completely separate router for game mvoes
-func movesRouter(handler *gameHandler.MovesHandler) http.Handler {
+func movesRouter(move *gameHandler.MovesHandler) http.Handler {
 	r := chi.NewRouter()
-	// r.Get("/", handler.Fetch)
-	// r.Get("/{[0-9]+}", handler.GetByID)
-	r.Post("/", handler.CreateOrUpdate)
-	// r.Put("/{[0-9]+}", handler.Update)
-	// r.Delete("/{id:[0-9]+}", pHandler.Delete)
+	r.Post("/", move.CreateOrUpdate)
 
 	return r
 }

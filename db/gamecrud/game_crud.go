@@ -185,12 +185,12 @@ func (e *Engine) ProcessBuildPhase(
 		builds[key] = countryToVictoryCenter[key] - countryToUnitCount[key]
 	}
 	fmt.Printf("builds! %+v \n", builds)
-	_, err := e.GetMovesByIdAndPhase(ctx, game.Id, game.Phase, game.GameYear)
+	_, err := e.GetMovesByTurn(ctx, game.Id, game.Phase, game.GameYear)
 	return err
 }
 
 func (e *Engine) ProcessPhaseMoves(ctx context.Context, game model.Game) error {
-	moves, err := e.GetMovesByIdAndPhase(ctx, game.Id, game.Phase, game.GameYear)
+	moves, err := e.GetMovesByTurn(ctx, game.Id, game.Phase, game.GameYear)
 	if err != nil {
 		return err
 	}
@@ -404,7 +404,7 @@ func newYear(game model.Game) string {
 	}
 }
 
-func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase model.GamePhase, year string) (model.Moves, error) {
+func (e *Engine) GetMovesByTurn(ctx context.Context, gameId int64, phase model.GamePhase, year string) (model.Moves, error) {
 
 	query := `
 SELECT moves.id,
