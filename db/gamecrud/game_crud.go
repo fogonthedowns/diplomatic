@@ -22,6 +22,7 @@ type Engine struct {
 	Conn *sql.DB
 }
 
+// TODO should acceept user_id and country, and create a users_game record for the user who created the game, also set password
 func (e *Engine) Create(ctx context.Context, in *model.GameInput) (int64, error) {
 	query := "Insert games SET title=?, game_year=?"
 
@@ -621,6 +622,7 @@ func (e *Engine) getGameByIdOnly(ctx context.Context, id int64) (*model.Game, er
 // Therefore it is an Update action
 // Create Piece records, setting the user.id
 // Create Territory records, setting the user.id
+// TODO support password protected games, this needs a guard
 func (e *Engine) Update(ctx context.Context, in *model.GameInput) (*model.GameInput, int, error) {
 	query := "Insert users_games SET user_id=?, country=?, game_id=?"
 	stmt, err := e.Conn.PrepareContext(ctx, query)
