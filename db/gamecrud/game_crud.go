@@ -3,6 +3,7 @@ package gamecrud
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -24,7 +25,11 @@ type Engine struct {
 
 // POST /games
 // JSON title (required string), password (optional string)
+// curl --header "Content-Type: application/json" --request POST --data '{"title":"name"}' localhost:8005/games
 func (e *Engine) Create(ctx context.Context, in *model.GameInput) (int64, error) {
+	if len(in.Title) == 0 {
+		return -1, errors.New("missing json title param")
+	}
 	query := "Insert games SET title=?, game_year=?, password=?"
 
 	stmt, err := e.Conn.PrepareContext(ctx, query)
