@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"os"
-
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"net/http"
+	"os"
 
 	"diplomacy/driver"
 	gameHandler "diplomacy/handler/http"
