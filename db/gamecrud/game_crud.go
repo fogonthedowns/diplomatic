@@ -22,9 +22,10 @@ type Engine struct {
 	Conn *sql.DB
 }
 
-// TODO should acceept user_id and country, and create a users_game record for the user who created the game, also set password
+// POST /games
+// JSON title (required string), password (optional string)
 func (e *Engine) Create(ctx context.Context, in *model.GameInput) (int64, error) {
-	query := "Insert games SET title=?, game_year=?"
+	query := "Insert games SET title=?, game_year=?, password=?"
 
 	stmt, err := e.Conn.PrepareContext(ctx, query)
 
@@ -33,7 +34,7 @@ func (e *Engine) Create(ctx context.Context, in *model.GameInput) (int64, error)
 		return -1, err
 	}
 
-	res, err := stmt.ExecContext(ctx, in.Title, "1901")
+	res, err := stmt.ExecContext(ctx, in.Title, "1901", in.Password)
 	defer stmt.Close()
 
 	if err != nil {

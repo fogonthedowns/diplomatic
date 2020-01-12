@@ -7,6 +7,7 @@ import (
 type GameInput struct {
 	Id                int64     `json:"id"`
 	Title             string    `json:"title"`
+	Password          string    `json:"password,omitempty"`
 	StartedAt         time.Time `json:"started_at"`
 	GameYear          string    `json:"game_year"`
 	Phase             GamePhase `json:"phase"`
