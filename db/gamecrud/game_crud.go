@@ -406,7 +406,21 @@ func newYear(game model.Game) string {
 
 func (e *Engine) GetMovesByIdAndPhase(ctx context.Context, gameId int64, phase model.GamePhase, year string) (model.Moves, error) {
 
-	query := "select moves.id, moves.location_start, moves.location_submitted, moves.second_location_submitted, moves.type, moves.piece_owner, moves.game_year, pieces.type, moves.piece_id from moves INNER JOIN pieces ON pieces.id=moves.piece_id where moves.game_id=? and moves.phase=? and moves.game_year=?"
+	query := `
+SELECT moves.id,
+       moves.location_start,
+       moves.location_submitted,
+       moves.second_location_submitted,
+       moves.type,
+       moves.piece_owner,
+       moves.game_year,
+       pieces.type,
+       moves.piece_id
+ FROM moves
+ INNER JOIN pieces ON pieces.id=moves.piece_id
+ WHERE moves.game_id=?
+ AND moves.phase=?
+ AND moves.game_year=?`
 
 	rows, err := e.Conn.QueryContext(ctx, query, gameId, phase, year)
 	if err != nil {
