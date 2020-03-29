@@ -192,7 +192,11 @@ func (e *Engine) ProcessBuildPhase(
 		builds[key] = countryToVictoryCenter[key] - countryToUnitCount[key]
 	}
 	fmt.Printf("builds! %+v \n", builds)
-	_, err := e.GetMovesByTurn(ctx, game.Id, game.Phase, game.GameYear)
+	moves, err := e.GetMovesByTurn(ctx, game.Id, game.Phase, game.GameYear)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("moves! %+v \n", moves)
 	return err
 }
 
