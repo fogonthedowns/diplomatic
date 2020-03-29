@@ -1,3 +1,6 @@
+[![Build Status](https://github.com/fogonthedowns/diplomatic/workflows/Go/badge.svg)](https://github.com/fogonthedowns/diplomatic/actions)
+
+
 0) Loop through moves and determine if the destination is contested
 
 1) ✅ Resolve all uncontested moves
