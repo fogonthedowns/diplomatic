@@ -31,7 +31,7 @@ LDFLAGS = -ldflags="$$()"
          print "  $$_->[0]$$sep$$_->[1]\n" for @{$$help{$$_}}; \
          print "\n"; }     
 
-help:           ##@miscellaneous Show this help.
+help:		##@miscellaneous Show this help.
 	@echo
 	@echo "GOPATH=$(GOPATH)"
 	@echo
@@ -48,20 +48,20 @@ bin:
 	env CGO_ENABLED=0 GOOS=$(OS) GOARCH=${GOARCH} go build -a -installsuffix cgo ${LDFLAGS} -o ${BINARY}-$(OS)-${GOARCH} . ;
 
 .PHONY: test
-test: ## Runs unit tests.
+test:		## Runs unit tests
 	$(GOTEST)
 
 .PHONY: cover
-cover: ## Generates a coverage report
+cover:		## Generates a coverage report
 	${GOCMD} test -coverprofile=coverage.out ./... && ${GOCMD} tool cover -html=coverage.out
 
 .SILENT: clean
 .PHONY: clean
-clean: ## Remove coverage report and the binary.
+clean:		## Remove coverage report and the binary
 	$(GOCLEAN)
 	@rm -f ${BINARY}-$(OS)-${GOARCH}
 	@rm -f coverage.out
 
 .PHONY: deps
-deps:  ## There are much better ways to manage deps in golang, I'm going go get just for brevity
+deps:		## There are much better ways to manage deps in golang, I'm going go get just for brevity
 	$(GOGET) github.com/gorilla/mux

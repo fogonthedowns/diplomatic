@@ -25,6 +25,18 @@
 #   unused-packages = true
 
 
+[[constraint]]
+  name = "github.com/go-chi/chi"
+  version = "4.0.4"
+
+[[constraint]]
+  name = "github.com/go-sql-driver/mysql"
+  version = "1.5.0"
+
+[[constraint]]
+  name = "github.com/stretchr/testify"
+  version = "1.5.1"
+
 [prune]
   go-tests = true
   unused-packages = true
