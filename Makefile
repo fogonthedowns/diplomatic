@@ -32,8 +32,10 @@ LDFLAGS = -ldflags="$$()"
          print "\n"; }     
 
 help:           ##@miscellaneous Show this help.
+	@echo
+	@echo "GOPATH=$(GOPATH)"
+	@echo
 	@perl -e '$(HELP_FORMAT)' $(MAKEFILE_LIST)
-
 
 .PHONY: run
 run: bin ## This will cause "bin" target to be build first
