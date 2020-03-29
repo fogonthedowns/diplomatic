@@ -116,7 +116,7 @@ func (e *Engine) fetchTerritories(ctx context.Context, args ...interface{}) ([]*
 			&data.Country,
 		)
 		if err != nil {
-			fmt.Printf("error \n", err)
+			fmt.Printf("error %v \n", err)
 			return nil, err
 		}
 		payload = append(payload, data)
@@ -141,7 +141,7 @@ func (e *Engine) countActivePiecesByPlayer(ctx context.Context, args ...interfac
 			&country,
 		)
 		if err != nil {
-			fmt.Printf("error \n", err)
+			fmt.Printf("error %v \n", err)
 			return nil, err
 		}
 		data[country] = count
@@ -173,7 +173,7 @@ func (e *Engine) fetchPieces(ctx context.Context, args ...interface{}) ([]*model
 			&data.DislodgedFrom,
 		)
 		if err != nil {
-			fmt.Printf("error \n", err)
+			fmt.Printf("error %v \n", err)
 			return nil, err
 		}
 		payload = append(payload, data)
@@ -452,7 +452,7 @@ SELECT moves.id,
 		)
 
 		if err != nil {
-			fmt.Printf("error \n", err)
+			fmt.Printf("error %v \n", err)
 			return nil, err
 		}
 		payload = append(payload, data)
@@ -479,7 +479,7 @@ func (e *Engine) GetPiecesByGame(ctx context.Context, gameId int64) ([]*model.Pi
 		)
 
 		if err != nil {
-			fmt.Printf("error \n", err)
+			fmt.Printf("error %v \n", err)
 			return nil, err
 		}
 		payload = append(payload, data)
@@ -511,7 +511,7 @@ func (e *Engine) GetPiecesByGameId(ctx context.Context, gameId int64) ([]*model.
 		)
 
 		if err != nil {
-			fmt.Printf("error \n", err)
+			fmt.Printf("error %v \n", err)
 			return nil, err
 		}
 		payload = append(payload, data)
