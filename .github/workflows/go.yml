@@ -29,6 +29,12 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
+        export GOPATH="`pwd`"
+        echo "GOPATH set to: ${GOPATH}"
+        export GOBIN="$GOPATH/bin"
+        echo "GOBIN set to: ${GOBIN}"
+        export PATH="${PATH}:${GOBIN}"
+        echo "Added GOBIN to PATH for the current session"
 
     - name: Build
       run: go build -v .
