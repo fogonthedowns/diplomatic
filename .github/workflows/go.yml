@@ -33,7 +33,8 @@ jobs:
         mkdir $GOPATH/src
         echo $GOPATH/src
         mv $(pwd)/* $GOPATH/src
-        ls $GOPATH/src
+        cd $GOPATH/src
+        ls
         go get -v -t -d ./...
         ls
         pwd
@@ -44,5 +45,4 @@ jobs:
 
     - name: Build
       run: |
-        cd $GOPATH/src
         go build -v .
