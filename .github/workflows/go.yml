@@ -52,6 +52,6 @@ jobs:
         mkdir -p $GOBIN
         echo $GOPATH
         echo $GOPATH/src
-        ls -la $GOPATH/src/fogonthedowns/diplomatic/vendor/
+        ls -la $GOPATH/src/fogonthedowns/diplomacy
         ls $GOPATH/src/github.com/fogonthedowns
         go build -v .
