@@ -34,6 +34,7 @@ jobs:
         mkdir $GOPATH/src/diplomacy
         echo $GOPATH
         echo $GOPATH/src
+        ls -la $GOPATH/src
         cp -r $(pwd)/* $GOPATH/src/github.com/fogonthedowns/diplomatic
         cd $GOPATH/src/github.com/fogonthedowns/diplomatic
         go get -v -t -d ./...
