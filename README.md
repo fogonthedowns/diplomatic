@@ -1,5 +1,4 @@
-![Go](https://github.com/fogonthedowns/diplomatic/workflows/Go/badge.svg?branch=master)
-
+![Go](https://github.com/fogonthedowns/diplomatic/workflows/Go/badge.svg)
 
 0) Loop through moves and determine if the destination is contested
 
