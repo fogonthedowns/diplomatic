@@ -29,12 +29,11 @@ jobs:
         export PATH=$PATH:$GOPATH
         export PATH=$PATH:$GOBIN
         mkdir -p $GOPATH/pkg
-        mkdir -p $GOBIN
-        ls
-        pwd
-        echo $GOPATH
+        mkdir -p $GOBIN 
         mkdir $GOPATH/src
-        cp -r $(pwd)/* $GOPATH/src
+        echo $GOPATH/src
+        mv -r $(pwd)/* $GOPATH/src
+        ls $GOPATH/src
         go get -v -t -d ./...
         ls
         pwd
