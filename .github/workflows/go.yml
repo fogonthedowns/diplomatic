@@ -44,7 +44,21 @@ jobs:
 
     - name: Build
       run: |
-        cd $GOPATH/src/diplomacy      
-        ls
-        pwd
+        export GOPATH=$HOME/go
+        export GOBIN=$(go env GOPATH)/bin
+        export PATH=$PATH:$GOPATH
+        export PATH=$PATH:$GOBIN
+        mkdir -p $GOPATH/pkg
+        mkdir -p $GOBIN
+        mkdir $GOPATH/src
+        mkdir $GOPATH/src/diplomacy
+        echo $GOPATH
+        echo $GOPATH/src
+        cp -r $(pwd)/* $GOPATH/src/diplomacy
+        cd $GOPATH/src/diplomacy
+        go get -v -t -d ./...
+        if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+        fi
         go build -v .
