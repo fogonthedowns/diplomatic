@@ -50,8 +50,7 @@
     - ✅ verify the piece is at the matching start location 
 
 10. design considerations:
-
-✅ you can not attack your own territory
-✅ you must be able to issue support and convoy orders for others
-✅ Players who have not issued moves, will issue hold orders
-Move accepts phase, should it? Should it be a lookup on game?
+  - ✅ you can not attack your own territory
+  - ✅ you must be able to issue support and convoy orders for others
+  - ✅ Players who have not issued moves, will issue hold orders
+  - Move accepts phase, should it? Should it be a lookup on game?
