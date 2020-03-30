@@ -44,4 +44,5 @@ jobs:
 
     - name: Build
       run: |
+        cd $GOPATH/src
         go build -v .
