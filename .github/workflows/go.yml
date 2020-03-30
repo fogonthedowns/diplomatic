@@ -31,10 +31,11 @@ jobs:
         mkdir -p $GOPATH/pkg
         mkdir -p $GOBIN 
         mkdir $GOPATH/src
+        mkdir $GOPATH/src/diplomacy
         echo $GOPATH
         echo $GOPATH/src
-        cp -r $(pwd)/* $GOPATH/src
-        cd $GOPATH/src
+        cp -r $(pwd)/* $GOPATH/src/diplomacy
+        cd $GOPATH/src/diplomacy
         go get -v -t -d ./...
         if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
