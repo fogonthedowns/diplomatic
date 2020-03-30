@@ -32,7 +32,7 @@ jobs:
         mkdir -p $GOBIN 
         mkdir $GOPATH/src
         echo $GOPATH/src
-        mv -r $(pwd)/* $GOPATH/src
+        mv $(pwd)/* $GOPATH/src
         ls $GOPATH/src
         go get -v -t -d ./...
         ls
