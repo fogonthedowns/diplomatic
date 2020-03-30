@@ -34,8 +34,8 @@ jobs:
         mkdir $GOPATH/src/diplomacy
         echo $GOPATH
         echo $GOPATH/src
-        cp -r $(pwd)/* $GOPATH/src/diplomacy
-        cd $GOPATH/src/diplomacy
+        cp -r $(pwd)/* $GOPATH/src/github.com/fogonthedowns/diplomatic
+        cd $GOPATH/src/github.com/fogonthedowns/diplomatic
         go get -v -t -d ./...
         if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
@@ -53,5 +53,5 @@ jobs:
         echo $GOPATH
         echo $GOPATH/src
         ls -la $GOPATH/src/
-        ls $GOPATH/src/github.com/fogonthedowns
+        ls $GOPATH/src/github.com/fogonthedowns/diplomatic
         go build -v .
