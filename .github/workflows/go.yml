@@ -32,9 +32,7 @@ jobs:
         mkdir -p $GOBIN 
         mkdir $GOPATH/src
         echo $GOPATH/src
-        mv $(pwd)/* $GOPATH/src
-        cd $GOPATH/src
-        ls
+        cp -r $(pwd)/* $GOPATH/src
         go get -v -t -d ./...
         ls
         pwd
@@ -45,4 +43,6 @@ jobs:
 
     - name: Build
       run: |
+        ls
+        pwd
         go build -v .
