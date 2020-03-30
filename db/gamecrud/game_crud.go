@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	model "diplomacy/model"
+	model "github.com/fogonthedowns/diplomatic/model"
 )
 
 // NewSQLPostRepo retunrs implement of game db interface

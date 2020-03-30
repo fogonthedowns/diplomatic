@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	model "diplomacy/model"
+	model "github.com/fogonthedowns/diplomatic/model"
 )
 
 // NewSQLPostRepo retunrs implement of game db interface
