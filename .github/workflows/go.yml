@@ -32,7 +32,6 @@ jobs:
         mkdir -p $GOBIN
         ls
         pwd
-        mv $(pwd)/* $GOPATH/home/runner/work/diplomatic/diplomatic
         go get -v -t -d ./...
         if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
