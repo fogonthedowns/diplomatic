@@ -44,6 +44,7 @@ jobs:
 
     - name: Build
       run: |
+        cd $GOPATH/src/diplomacy      
         ls
         pwd
         go build -v .
