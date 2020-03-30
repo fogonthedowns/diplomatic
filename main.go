@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os"
 
-	"diplomacy/driver"
-	gameHandler "diplomacy/handler/http"
+	"github.com/fogonthedowns/diplomatic/driver"
+	gameHandler "github.com/fogonthedowns/diplomatic/handler/http"
 )
 
 func main() {

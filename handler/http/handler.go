@@ -7,12 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	// "github.com/go-chi/chi"
-
-	// db "diplomacy/db/engine"
-	gamecrud "diplomacy/db/gamecrud"
-	"diplomacy/driver"
-	model "diplomacy/model"
+	gamecrud "github.com/fogonthedowns/diplomatic/db/gamecrud"
+	"github.com/fogonthedowns/diplomatic/driver"
+	model "github.com/fogonthedowns/diplomatic/model"
 )
 
 // NewGameHandler() creates a new HTTP handler
