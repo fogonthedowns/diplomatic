@@ -30,7 +30,8 @@ jobs:
         export PATH=$PATH:$GOBIN
         mkdir -p $GOPATH/pkg
         mkdir -p $GOBIN
-        mv $(pwd)/* $GOPATH/src/github.com/fogonthedowns/diplomatic
+        ls
+        mv $(pwd)/* $GOPATH/src/github.com/*
         go get -v -t -d ./...
         if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
