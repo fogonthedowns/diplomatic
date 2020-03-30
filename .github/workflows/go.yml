@@ -52,6 +52,6 @@ jobs:
         mkdir -p $GOBIN
         echo $GOPATH
         echo $GOPATH/src
-        ls -la $GOPATH
-        ls $GOPATH/src 
+        ls -la $GOPATH/src/github.com
+        ls $GOPATH/src/github.com
         go build -v .
