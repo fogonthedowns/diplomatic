@@ -29,6 +29,7 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
+        mkdir /home/runner/go/bin
         export GOPATH="`pwd`"
         echo "GOPATH set to: ${GOPATH}"
         export GOBIN="$GOPATH/bin"
