@@ -3,7 +3,7 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test ./...
-GOGET=$(GOCMD) get -u -v
+GOGET=$(GOCMD) get -v -t -d ./...
 
 # Detect the os so that we can build proper statically linked binary
 OS := $(shell uname -s | awk '{print tolower($$0)}')
@@ -61,6 +61,10 @@ clean:		## Remove coverage report and the binary
 	$(GOCLEAN)
 	@rm -f ${BINARY}-$(OS)-${GOARCH}
 	@rm -f coverage.out
+
+.PHONY: goget
+goget:   ## Runs go get
+	 $(GOGET)
 
 .PHONY: deps
 deps:		## There are much better ways to manage deps in golang, I'm going go get just for brevity
