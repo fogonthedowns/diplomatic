@@ -56,3 +56,10 @@ jobs:
         ls -la $GOPATH/src/
         cd $GOPATH/src/github.com/fogonthedowns/diplomatic
         go build -v .
+
+    - name: Build
+      run: |
+        export GOPATH=$HOME/go
+        cd $GOPATH/src/github.com/fogonthedowns/diplomatic
+        make test
+
