@@ -57,7 +57,7 @@ jobs:
         cd $GOPATH/src/github.com/fogonthedowns/diplomatic
         go build -v .
 
-    - name: Build
+    - name: Test
       run: |
         export GOPATH=$HOME/go
         cd $GOPATH/src/github.com/fogonthedowns/diplomatic
