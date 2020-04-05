@@ -62,4 +62,6 @@ jobs:
         export GOPATH=$HOME/go
         cd $GOPATH/src/github.com/fogonthedowns/diplomatic
         make test
+      env:
+              RUNNING_GITHUB_ACTIONS: true
 

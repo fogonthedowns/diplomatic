@@ -30,5 +30,7 @@ func ConnectSQL(host, port, uname, pass, dbname string) (*DB, error) {
 		panic(err)
 	}
 	dbConn.SQL = d
+	d.SetMaxOpenConns(10)
+	//	d.SetMaxIdleConns(2)
 	return dbConn, err
 }
