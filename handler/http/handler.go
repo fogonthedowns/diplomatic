@@ -46,6 +46,25 @@ func (g *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Creates a new user
+func (g *GameHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	userInput := model.UserInput{}
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&userInput)
+	if err != nil {
+		panic(err)
+	}
+
+	err = g.db.CreateUser(r.Context(), &userInput)
+
+	if err != nil {
+		respondwithJSON(w, http.StatusInternalServerError, model.ErrorMessage{Message: fmt.Sprintf("%v", err)})
+	} else {
+		respondwithJSON(w, http.StatusCreated, map[string]string{"result": "success"})
+	}
+}
+
 // Used to Join Game
 // Update a post by game id
 // Read UserGames Table
