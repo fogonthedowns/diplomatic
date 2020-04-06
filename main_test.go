@@ -8,9 +8,10 @@ import (
 )
 
 func TestCreateGame(t *testing.T) {
-	if len(os.Getenv("RUNNING_GITHUB_ACTIONS")) > 0 {
+	if os.Getenv("RUNNING_GITHUB_ACTIONS") == "true" {
 		t.Skip("requires database, skipping github actions")
 	}
+
 	requestBody := `{
  "title": "Game Created in Test Mode"
 }`
