@@ -46,6 +46,7 @@ func postRouter(game *gameHandler.GameHandler) http.Handler {
 	r.Get("/", game.Fetch)
 	r.Get("/{[0-9]+}", game.GetByID)
 	r.Post("/", game.Create)
+	r.Post("/users/", game.CreateUser)
 	r.Put("/{[0-9]+}", game.Update)
 	// r.Delete("/{id:[0-9]+}", pHandler.Delete)
 

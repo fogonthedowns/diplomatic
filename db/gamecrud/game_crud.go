@@ -71,6 +71,41 @@ func (e *Engine) Create(ctx context.Context, in *model.GameInput) (int64, error)
 	return game_id, err
 }
 
+// POST /users
+// JSON email, user_name and passowrd (required string)
+// curl --header "Content-Type: application/json" --request POST --data '{"email":"name", "user_name":"name", "password":"password"}' localhost:8005/users
+func (e *Engine) CreateUser(ctx context.Context, in *model.UserInput) error {
+	if in.Email == "" {
+		return errors.New("email missing from input")
+	}
+
+	if in.Password == "" {
+		return errors.New("password missing from input")
+	}
+
+	if in.UserName == "" {
+		return errors.New("Username missing from input")
+	}
+	query := "Insert into users SET email=?, user_name=?, password=?"
+
+	stmt, err := e.Conn.PrepareContext(ctx, query)
+
+	if err != nil {
+		fmt.Printf("**** PrepareContext %v", err)
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx, in.Email, in.UserName, in.Password)
+	defer stmt.Close()
+
+	if err != nil {
+		fmt.Printf("**** ExecContext %v", err)
+		return err
+	}
+
+	return err
+}
+
 func (e *Engine) fetch(ctx context.Context, query string, args ...interface{}) ([]*model.Game, error) {
 	rows, err := e.Conn.QueryContext(ctx, query, args...)
 	if err != nil {

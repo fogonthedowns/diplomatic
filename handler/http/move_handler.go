@@ -10,7 +10,7 @@ import (
 	model "github.com/fogonthedowns/diplomatic/model"
 )
 
-// NewGameHandler() creates a new HTTP handler
+// NewMovesHandler() creates a new HTTP handler
 // To handle web requests for Game
 func NewMovesHandler(db *driver.DB) *MovesHandler {
 	return &MovesHandler{
